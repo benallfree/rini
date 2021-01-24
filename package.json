@@ -8,9 +8,6 @@
   "scripts": {
     "app": "yarn workspace @ayo/app"
   },
-  "workspaces": [
-    "packages/*"
-  ],
   "private": true,
   "dependencies": {
     "prettier": "^2.2.1",
