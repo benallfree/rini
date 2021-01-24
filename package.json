@@ -1,0 +1,17 @@
+{
+  "name": "ayo",
+  "version": "0.0.1",
+  "description": "Say hi to others",
+  "main": "dist/index.js",
+  "author": "Ben Allfree",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "private": true,
+  "dependencies": {
+    "prettier": "^2.2.1",
+    "prettier-plugin-organize-imports": "^1.1.1",
+    "typescript": "^4.1.3"
+  }
+}
