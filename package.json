@@ -5,6 +5,9 @@
   "main": "dist/index.js",
   "author": "Ben Allfree",
   "license": "MIT",
+  "scripts": {
+    "app": "yarn workspace @ayo/app"
+  },
   "workspaces": [
     "packages/*"
   ],
