@@ -9,11 +9,13 @@
     "submit": "EXPO_APPLE_APP_SPECIFIC_PASSWORD=`cat ../../.secrets/apple-app-specific-password` eas submit -p ios",
     "eject:clean": "rm -rf ios",
     "eject": "expo eject -p ios",
-    "reset:ios": "yarn eject:clean && yarn eject"
+    "reset:ios": "yarn eject:clean && yarn eject",
+    "pod": "cd ios && pod install && cd .."
   },
   "dependencies": {
     "@babel/core": "~7.9.0",
     "@react-native-firebase/app": "^10.5.0",
+    "@react-native-firebase/auth": "^10.5.1",
     "@types/react": "~16.9.35",
     "@types/react-dom": "~16.9.8",
     "@types/react-native": "~0.63.2",
@@ -27,11 +29,13 @@
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-native": "~0.63.4",
+    "react-native-elements": "^3.1.0",
     "react-native-gesture-handler": "~1.8.0",
     "react-native-reanimated": "~1.13.0",
     "react-native-screens": "~2.15.0",
     "react-native-udp": "^4.1.2",
     "react-native-unimodules": "~0.12.0",
+    "react-native-vector-icons": "^8.0.0",
     "react-native-web": "~0.13.12",
     "react-test-renderer": "~16.13.1",
     "typescript": "^4.1.3"

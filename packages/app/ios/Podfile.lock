@@ -49,8 +49,16 @@ PODS:
     - React-Core (= 0.63.4)
     - React-jsi (= 0.63.4)
     - ReactCommon/turbomodule/core (= 0.63.4)
+  - Firebase/Auth (7.4.0):
+    - Firebase/CoreOnly
+    - FirebaseAuth (~> 7.4.0)
   - Firebase/CoreOnly (7.4.0):
     - FirebaseCore (= 7.4.0)
+  - FirebaseAuth (7.4.0):
+    - FirebaseCore (~> 7.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.0)
+    - GoogleUtilities/Environment (~> 7.0)
+    - GTMSessionFetcher/Core (~> 1.4)
   - FirebaseCore (7.4.0):
     - FirebaseCoreDiagnostics (~> 7.4)
     - GoogleUtilities/Environment (~> 7.0)
@@ -72,10 +80,22 @@ PODS:
   - glog (0.3.5)
   - GoogleDataTransport (8.2.0):
     - nanopb (~> 2.30907.0)
+  - GoogleUtilities/AppDelegateSwizzler (7.2.0):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
   - GoogleUtilities/Environment (7.2.0):
     - PromisesObjC (~> 1.2)
   - GoogleUtilities/Logger (7.2.0):
     - GoogleUtilities/Environment
+  - GoogleUtilities/Network (7.2.0):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (7.2.0)"
+  - GoogleUtilities/Reachability (7.2.0):
+    - GoogleUtilities/Logger
+  - GTMSessionFetcher/Core (1.5.0)
   - nanopb (2.30907.0):
     - nanopb/decode (= 2.30907.0)
     - nanopb/encode (= 2.30907.0)
@@ -314,11 +334,17 @@ PODS:
   - RNFBApp (10.5.0):
     - Firebase/CoreOnly (~> 7.4.0)
     - React-Core
+  - RNFBAuth (10.5.1):
+    - Firebase/Auth (~> 7.4.0)
+    - React-Core
+    - RNFBApp
   - RNGestureHandler (1.8.0):
     - React
   - RNReanimated (1.13.2):
     - React-Core
   - RNScreens (2.15.2):
+    - React-Core
+  - RNVectorIcons (8.0.0):
     - React-Core
   - UMAppLoader (1.4.0)
   - UMBarCodeScannerInterface (5.4.0)
@@ -383,9 +409,11 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
+  - "RNFBAuth (from `../node_modules/@react-native-firebase/auth`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
   - UMBarCodeScannerInterface (from `../node_modules/unimodules-barcode-scanner-interface/ios`)
   - UMCameraInterface (from `../node_modules/unimodules-camera-interface/ios`)
@@ -406,10 +434,12 @@ SPEC REPOS:
     - boost-for-react-native
     - CocoaAsyncSocket
     - Firebase
+    - FirebaseAuth
     - FirebaseCore
     - FirebaseCoreDiagnostics
     - GoogleDataTransport
     - GoogleUtilities
+    - GTMSessionFetcher
     - nanopb
     - PromisesObjC
 
@@ -496,12 +526,16 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
+  RNFBAuth:
+    :path: "../node_modules/@react-native-firebase/auth"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNVectorIcons:
+    :path: "../node_modules/react-native-vector-icons"
   UMAppLoader:
     :path: "../node_modules/unimodules-app-loader/ios"
   UMBarCodeScannerInterface:
@@ -552,12 +586,14 @@ SPEC CHECKSUMS:
   FBLazyVector: 3bb422f41b18121b71783a905c10e58606f7dc3e
   FBReactNativeSpec: f2c97f2529dd79c083355182cc158c9f98f4bd6e
   Firebase: 09fb40287b6dfc8ee65f726fa0b788719d3f2a07
+  FirebaseAuth: d8dba8db90a1705ee2493857047282ca4f6e7598
   FirebaseCore: 99c06e5a1e8d6952e75cb1f0a6d0b23c0f5ccdcf
   FirebaseCoreDiagnostics: 3770093ac4f2be4590fa03cfa1d3a6e5602d4557
   Folly: b73c3869541e86821df3c387eb0af5f65addfab4
   glog: 40a13f7840415b9a77023fbcae0f1e6f43192af3
   GoogleDataTransport: 1024b1a4dfbd7a0e92cb20d7e0a6f1fb66b449a4
   GoogleUtilities: d866834472f1324d080496bc67ab3ce5d0d46027
+  GTMSessionFetcher: b3503b20a988c4e20cc189aa798fd18220133f52
   nanopb: 59221d7f958fb711001e6a449489542d92ae113e
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
   RCTRequired: 082f10cd3f905d6c124597fd1c14f6f2655ff65e
@@ -582,9 +618,11 @@ SPEC CHECKSUMS:
   React-RCTVibration: ae4f914cfe8de7d4de95ae1ea6cc8f6315d73d9d
   ReactCommon: 73d79c7039f473b76db6ff7c6b159c478acbbb3b
   RNFBApp: 43a062dc6a1a88edd934d2229d1ba64f25381598
+  RNFBAuth: b5b1ba3df98f23b1f41829b762477ccb60b0e747
   RNGestureHandler: 7a5833d0f788dbd107fbb913e09aa0c1ff333c39
   RNReanimated: e03f7425cb7a38dcf1b644d680d1bfc91c3337ad
   RNScreens: 3d682bcaba69a4f8e55543d90818704f34338db1
+  RNVectorIcons: f67a1abce2ec73e62fe4606e8110e95a832bc859
   UMAppLoader: 92d044af52626af3d81a69796ad666fc7a9a7d78
   UMBarCodeScannerInterface: 3f6c1b09ef4b867ce752b8c0b3893bcf9cd85f32
   UMCameraInterface: d516032121192fee9a6c93bdfff0bb2cc7282796
