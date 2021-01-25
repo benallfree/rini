@@ -2,7 +2,7 @@
   "name": "@rini/app",
   "version": "0.0.1",
   "scripts": {
-    "start": "expo start",
+    "start": "react-native start",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "build": "eas build --platform ios",

@@ -34,6 +34,8 @@ function PhoneSignIn() {
     )
   }
 
+  console.log('hey')
+
   return (
     <>
       <Input
