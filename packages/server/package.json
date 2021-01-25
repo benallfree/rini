@@ -1,0 +1,14 @@
+{
+  "name": "@rini/server",
+  "version": "0.0.1",
+  "description": "Realtime server",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "serve": "ts-node ./src/index.ts"
+  },
+  "dependencies": {
+    "@types/node": "^14.14.22",
+    "ts-node": "^9.1.1"
+  }
+}
