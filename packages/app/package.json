@@ -6,7 +6,8 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "web": "expo start --web",
-    "build": "eas build --platform ios"
+    "build": "eas build --platform ios",
+    "submit": "EXPO_APPLE_APP_SPECIFIC_PASSWORD=`cat ../../.secrets/apple-app-specific-password` eas submit -p ios"
   },
   "dependencies": {
     "expo": "~40.0.0",
