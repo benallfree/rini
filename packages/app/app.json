@@ -4,9 +4,9 @@
     "slug": "rini",
     "version": "0.0.1",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/generated/icon.png",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/generated/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -21,14 +21,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/generated/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.benallfree.rini",
       "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/generated/favicon.png"
     }
   }
 }

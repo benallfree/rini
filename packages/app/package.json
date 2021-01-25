@@ -2,17 +2,27 @@
   "name": "@rini/app",
   "version": "0.0.1",
   "scripts": {
-    "start": "expo start",
+    "start": "react-native start",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "build": "eas build --platform ios",
-    "submit": "EXPO_APPLE_APP_SPECIFIC_PASSWORD=`cat ../../.secrets/apple-app-specific-password` eas submit -p ios"
+    "submit": "EXPO_APPLE_APP_SPECIFIC_PASSWORD=`cat ../../.secrets/apple-app-specific-password` eas submit -p ios",
+    "eject:clean": "rm -rf ios",
+    "eject": "expo eject -p ios",
+    "reset:ios": "yarn eject:clean && yarn eject"
   },
   "dependencies": {
+    "@babel/core": "~7.9.0",
+    "@types/react": "~16.9.35",
+    "@types/react-dom": "~16.9.8",
+    "@types/react-native": "~0.63.2",
+    "babel-jest": "~25.2.6",
     "expo": "~40.0.0",
+    "expo-cli": "^4.0.17",
     "expo-splash-screen": "~0.8.0",
     "expo-status-bar": "~1.0.3",
     "expo-updates": "~0.4.0",
+    "jest": "~25.2.6",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-native": "~0.63.4",
@@ -22,11 +32,11 @@
     "react-native-udp": "^4.1.2",
     "react-native-unimodules": "~0.12.0",
     "react-native-web": "~0.13.12",
-    "typescript": "^4.1.3",
+    "react-test-renderer": "~16.13.1",
+    "typescript": "^4.1.3"
+  },
+  "devDependencies": {
     "@babel/core": "~7.9.0",
-    "@types/react": "~16.9.35",
-    "@types/react-dom": "~16.9.8",
-    "@types/react-native": "~0.63.2",
     "babel-jest": "~25.2.6",
     "jest": "~25.2.6",
     "react-test-renderer": "~16.13.1"
