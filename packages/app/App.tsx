@@ -1,14 +1,18 @@
 import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth'
-import React, { FC, useCallback, useEffect, useState } from 'react'
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Button, Input, Text, ThemeProvider } from 'react-native-elements'
+import PhoneInput from 'react-native-phone-number-input'
 import Icon from 'react-native-vector-icons/FontAwesome'
 
 function PhoneSignIn() {
   // If null, no SMS has been sent
   const [confirm, setConfirm] = useState<FirebaseAuthTypes.ConfirmationResult>()
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [formattedPhoneNumber, setFormattedPhoneNumber] = useState('')
 
   const [code, setCode] = useState('')
+  const phoneInput = useRef<PhoneInput>(null)
 
   // Handle the button press
   async function signInWithPhoneNumber(phoneNumber: string) {
@@ -28,10 +32,29 @@ function PhoneSignIn() {
 
   if (!confirm) {
     return (
-      <Button
-        title="Phone Number Sign In"
-        onPress={() => signInWithPhoneNumber('+1 805-403-2380')}
-      />
+      <>
+        <PhoneInput
+          ref={phoneInput}
+          defaultValue={phoneNumber}
+          defaultCode="US"
+          layout="first"
+          onChangeText={(text) => {
+            setPhoneNumber(text)
+          }}
+          onChangeFormattedText={(text) => {
+            setFormattedPhoneNumber(text)
+          }}
+          withDarkTheme
+          withShadow
+          autoFocus
+        />
+        <Button
+          title="Sign In"
+          containerStyle={{ width: '100%' }}
+          style={{ margin: 15 }}
+          onPress={() => signInWithPhoneNumber(formattedPhoneNumber)}
+        />
+      </>
     )
   }
 
@@ -83,6 +106,14 @@ const App: FC = () => {
     <ThemeProvider>
       <View style={styles.container}>
         <Authenticated>
+          <Button
+            title="Log Out"
+            onPress={() =>
+              auth()
+                .signOut()
+                .then(() => console.log('User signed out!'))
+            }
+          />
           <Text h1>Hello world</Text>
         </Authenticated>
       </View>
