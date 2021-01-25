@@ -1,7 +1,7 @@
 import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth'
-import React, { useCallback, useState } from 'react'
+import React, { FC, useCallback, useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { Button, Input, ThemeProvider } from 'react-native-elements'
+import { Button, Input, Text, ThemeProvider } from 'react-native-elements'
 import Icon from 'react-native-vector-icons/FontAwesome'
 
 function PhoneSignIn() {
@@ -21,9 +21,10 @@ function PhoneSignIn() {
     try {
       await confirm.confirm(code)
     } catch (error) {
-      console.log('Invalid code.')
+      console.log('Invalid code.', error)
+      setConfirm(undefined)
     }
-  }, [confirm])
+  }, [confirm, code])
 
   if (!confirm) {
     return (
@@ -33,8 +34,6 @@ function PhoneSignIn() {
       />
     )
   }
-
-  console.log('hey')
 
   return (
     <>
@@ -52,15 +51,46 @@ function PhoneSignIn() {
   )
 }
 
-export default function App() {
+const Authenticated: FC = ({ children }) => {
+  const [initializing, setInitializing] = useState(true)
+  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null)
+
+  // Handle user state changes
+  const onAuthStateChanged = useCallback(
+    (user: FirebaseAuthTypes.User | null) => {
+      setUser(user)
+      if (initializing) setInitializing(false)
+    },
+    [initializing]
+  )
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged)
+    return subscriber // unsubscribe on unmount
+  }, [onAuthStateChanged])
+
+  if (initializing) return null
+
+  if (!user) {
+    return <PhoneSignIn />
+  }
+
+  return children
+}
+
+const App: FC = () => {
   return (
     <ThemeProvider>
       <View style={styles.container}>
-        <PhoneSignIn />
+        <Authenticated>
+          <Text h1>Hello world</Text>
+        </Authenticated>
       </View>
     </ThemeProvider>
   )
 }
+
+export default App
 
 const styles = StyleSheet.create({
   container: {
