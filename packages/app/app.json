@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ayo",
-    "slug": "ayo",
+    "name": "Rini",
+    "slug": "rini",
     "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +16,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.benallfree.ayo",
+      "bundleIdentifier": "com.benallfree.rini",
       "buildNumber": "0.0.1"
     },
     "android": {
@@ -24,7 +24,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.benallfree.ayo",
+      "package": "com.benallfree.rini",
       "versionCode": 1
     },
     "web": {

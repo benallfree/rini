@@ -1,5 +1,5 @@
 {
-  "name": "@ayo/app",
+  "name": "@rini/app",
   "version": "0.0.1",
   "scripts": {
     "start": "react-native start",
