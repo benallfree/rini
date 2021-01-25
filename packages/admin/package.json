@@ -1,6 +1,6 @@
 {
-  "name": "admin",
-  "version": "0.1.0",
+  "name": "@rini/admin",
+  "version": "0.0.1",
   "private": true,
   "dependencies": {
     "@craco/craco": "^6.0.0",

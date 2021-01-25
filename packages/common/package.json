@@ -1,0 +1,10 @@
+{
+  "name": "@rini/common",
+  "version": "0.0.1",
+  "main": "src/index.ts",
+  "license": "MIT",
+  "dependencies": {
+    "@types/struct": "^0.0.3",
+    "strict": "^0.0.0"
+  }
+}
