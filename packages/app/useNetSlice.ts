@@ -1,4 +1,4 @@
-import { makeAuthMessage } from '@rini/common'
+import { createClientNetcode } from '@rini/common'
 import { useEffect, useState } from 'react'
 import dgram from 'react-native-udp'
 import { randomPort } from './randomPort'
@@ -14,49 +14,46 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
     console.log('useEffect')
     const socket = dgram.createSocket({ type: 'udp4' })
     const port = randomPort()
-    const address = '192.168.1.19'
+    const remotePort = 41234
+    const remoteAddress = '192.168.1.19'
     socket.bind(port)
+
+    const client = createClientNetcode({
+      send: (buf) =>
+        new Promise<void>((resolve) => {
+          socket.send(
+            buf,
+            undefined,
+            undefined,
+            remotePort,
+            remoteAddress,
+            (err) => {
+              if (err) throw err
+              console.log('Message sent!')
+              resolve()
+            }
+          )
+        }),
+    })
+
     socket.once('listening', () => {
       setIsConnected(true)
       console.log('listening for messages')
-
-      const sendLoginMessage = async () => {
-        return new Promise<void>((resolve) => {
+      ;(async () => {
+        try {
           if (!user.data) {
             throw new Error(`User does not exist, cannot log in.`)
           }
-          user.data?.getIdToken().then((token) => {
-            const waitForAck = (msg: any, rinfo: any) => {
-              console.log('Messagxe receiveddd', { msg, rinfo })
-              socket.off('message', waitForAck)
-            }
-            socket.on('message', waitForAck)
-            console.log(token.length, token)
-            socket.send(
-              makeAuthMessage(token),
-              undefined,
-              undefined,
-              41234,
-              address,
-              (err) => {
-                if (err) throw err
-                console.log('Message sent!')
-                resolve()
-              }
-            )
-          })
-        })
-      }
-      try {
-        sendLoginMessage()
-      } catch (e) {
-        console.log(e)
-      }
+          const token = await user.data.getIdToken()
+          const reply = await client.sendLoginMessage({ idToken: token })
+          console.log('got login reply', { reply })
+        } catch (e) {
+          console.error(e)
+        }
+      })()
     })
 
-    socket.on('message', (msg, rinfo) => {
-      console.log('Message receiveddd', { msg, rinfo })
-    })
+    socket.on('message', client.handleMessage)
 
     return () => {
       console.log(`Unmounting`)

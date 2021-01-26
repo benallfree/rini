@@ -1,11 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import {
-  handleMessage,
-  MessageTypes,
-  onRawMessage,
-  RawMessage,
-} from '@rini/common'
+import { createServerNetcode } from '@rini/common'
 import * as dgram from 'dgram'
 import * as admin from 'firebase-admin'
 import { resolve } from 'path'
@@ -22,32 +17,27 @@ admin.initializeApp({
 
 const server = dgram.createSocket('udp4')
 
+const netcode = createServerNetcode({
+  onLogin: async (msg) => {
+    const decodedIdToken = await admin.auth().verifyIdToken(msg.idToken)
+    if (!decodedIdToken.uid) return // Silently ignore auth that fails
+    return { uid: decodedIdToken.uid }
+  },
+  send: (buf, port, address) =>
+    new Promise((resolve) => {
+      server.send(buf, port, address, (err, bytes) => {
+        if (err) throw err
+        resolve(bytes)
+      })
+    }),
+})
+
 server.on('error', (err) => {
   console.log(`server error:\n${err.stack}`)
   server.close()
 })
 
-server.on('message', handleMessage)
-
-const dispatch: { [_ in MessageTypes]: (e: RawMessage) => void } = {
-  [MessageTypes.Login]: async (e) => {
-    const idToken = e.payload.toString()
-    const decodedIdToken = await admin.auth().verifyIdToken(idToken)
-
-    console.log({ decodedIdToken })
-    console.log('auth?', e.payload.toString())
-  },
-  [MessageTypes.Ack]: () => {}, // Noop
-}
-
-onRawMessage((e) => {
-  console.log('got a message', { e })
-  try {
-    dispatch[e.type](e)
-  } catch (e) {
-    console.error(e)
-  }
-})
+server.on('message', netcode.handleMessage)
 
 server.on('listening', () => {
   const address = server.address()
