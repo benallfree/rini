@@ -26,8 +26,6 @@
     "packages": [
       "packages/*"
     ],
-    "nohoist": [
-      "**/app/**"
-    ]
+    "nohoist": []
   }
 }
