@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@types/node": "^14.14.22",
+    "firebase-admin": "^9.4.2",
     "ts-node": "^9.1.1"
   }
 }

@@ -31,6 +31,7 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
               socket.off('message', waitForAck)
             }
             socket.on('message', waitForAck)
+            console.log(token.length, token)
             socket.send(
               makeAuthMessage(token),
               undefined,
