@@ -13,6 +13,7 @@ export const sendMessageAndAwaitReply = async (
       reject(`Timed out awaiting reply to ${messageId}`)
     }, 1000)
     const unsub = onRawMessage((m) => {
+      console.log('got raw message', m)
       if (m.refMessageId !== messageId) return // Skip, it's not our message
       unsub()
       clearTimeout(tid)

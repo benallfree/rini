@@ -1,6 +1,7 @@
 import { ClientNetcode, createClientNetcode } from '@rini/common'
 import { useEffect, useState } from 'react'
 import dgram from 'react-native-udp'
+import { randomPort } from '../randomPort'
 import { useAuthSlice } from './useAuthSlice'
 
 export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
@@ -10,43 +11,34 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
   const [client, setClient] = useState<ClientNetcode>()
 
   useEffect(() => {
-    setTimeout(() => {
-      console.log('snding')
-      const sock = dgram.createSocket({ type: 'udp4', debug: true })
-
-      sock.send('fooo', undefined, undefined, 41234, '192.168.1.19')
-    }, 5000)
-
     const socket = dgram.createSocket({ type: 'udp4', debug: true })
-    socket.on('connect', () => console.log('connect'))
-    socket.on('listening', () => console.log('connect'))
-    socket.on('error', (e) => console.log('error', e))
-    socket.on('message', (m) => console.log('message', m))
-
-    const client = createClientNetcode({
-      send: (buf) =>
-        new Promise<void>((resolve) => {
-          const remotePort = 41234
-          const remoteAddress = '192.168.1.19'
-          console.log(`Sending msg to`, buf, { remoteAddress, remotePort })
-          socket.send(
-            buf,
-            undefined,
-            undefined,
-            remotePort,
-            remoteAddress,
-            (err) => {
-              if (err) {
-                console.error(err)
-                throw err
+    socket.bind(randomPort())
+    socket.once('listening', function () {
+      const client = createClientNetcode({
+        send: (buf) =>
+          new Promise<void>((resolve) => {
+            const remotePort = 41234
+            const remoteAddress = '192.168.1.19'
+            console.log(`Sending msg to`, buf, { remoteAddress, remotePort })
+            socket.send(
+              buf,
+              undefined,
+              undefined,
+              remotePort,
+              remoteAddress,
+              (err) => {
+                if (err) {
+                  console.error(err)
+                  throw err
+                }
+                resolve()
               }
-              console.log('Message sent!', buf)
-              resolve()
-            }
-          )
-        }),
+            )
+          }),
+      })
+      socket.on('message', client.handleSocketDataEvent)
+      setClient(client)
     })
-    setClient(client)
 
     return () => {
       console.log(`Unmounting useNetSlice`)

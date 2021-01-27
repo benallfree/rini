@@ -25,6 +25,7 @@ const netcode = createServerNetcode({
   },
   send: (buf, port, address) =>
     new Promise((resolve) => {
+      console.log('sending message', buf)
       server.send(buf, port, address, (err, bytes) => {
         if (err) throw err
         resolve(bytes)
@@ -37,10 +38,7 @@ server.on('error', (err) => {
   server.close()
 })
 
-server.on('message', (m) => {
-  console.log('message', m)
-  netcode.handleSocketDataEvent
-})
+server.on('message', netcode.handleSocketDataEvent)
 
 server.on('listening', () => {
   const address = server.address()
