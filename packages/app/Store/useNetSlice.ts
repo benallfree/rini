@@ -1,7 +1,5 @@
 import { ClientNetcode, createClientNetcode } from '@rini/common'
 import { useEffect, useState } from 'react'
-import dgram from 'react-native-udp'
-import { randomPort } from '../randomPort'
 import { useAuthSlice } from './useAuthSlice'
 
 export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
@@ -11,39 +9,17 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
   const [client, setClient] = useState<ClientNetcode>()
 
   useEffect(() => {
-    const socket = dgram.createSocket({ type: 'udp4', debug: true })
-    socket.bind(randomPort())
-    socket.once('listening', function () {
-      const client = createClientNetcode({
-        send: (buf) =>
-          new Promise<void>((resolve) => {
-            const remotePort = 41234
-            const remoteAddress = '192.168.1.19'
-            console.log(`Sending msg to`, buf, { remoteAddress, remotePort })
-            socket.send(
-              buf,
-              undefined,
-              undefined,
-              remotePort,
-              remoteAddress,
-              (err) => {
-                if (err) {
-                  console.error(err)
-                  throw err
-                }
-                resolve()
-              }
-            )
-          }),
-      })
-      socket.on('message', client.handleSocketDataEvent)
-      setClient(client)
+    const client = createClientNetcode({
+      address: '192.168.1.19',
+      port: 41234,
     })
+
+    setClient(client)
 
     return () => {
       console.log(`Unmounting useNetSlice`)
       setIsAuthenticated(false)
-      socket.close()
+      client.close()
     }
   }, [])
 
@@ -66,7 +42,6 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
           setAuthenticationError(e)
           tid = setTimeout(login, 5000)
         })
-        .finally(() => console.log('finally'))
     login()
     return () => {
       clearTimeout(tid)

@@ -1,21 +1,40 @@
+import { createSocket } from 'dgram'
 import { LoginMessage, sendLoginMessage } from './messages'
-import {
-  handleSocketDataEvent,
-  onRawMessage,
-} from './private/handleSocketDataEvent'
+import { handleSocketDataEvent } from './private/handleSocketDataEvent'
 
 export type ClientMessageSender = (msg: Buffer) => Promise<void>
 
 export type ClientNetcodeConfig = {
-  send: ClientMessageSender
+  address: string
+  port: number
+}
+
+export function randomPort() {
+  return (Math.random() * 60536) | (0 + 5000) // 60536-65536
 }
 
 export const createClientNetcode = (settings: ClientNetcodeConfig) => {
-  const { send } = settings
+  const { address, port } = settings
+
+  const socket = createSocket({ type: 'udp4' })
+  socket.bind(randomPort())
+
+  const send = (buf: Buffer) =>
+    new Promise<void>((resolve) => {
+      console.log(`Sending msg to`, buf, { address, port })
+      socket.send(buf, 0, buf.length, port, address, (err) => {
+        if (err) {
+          console.error(err)
+          throw err
+        }
+        resolve()
+      })
+    })
+
+  socket.on('message', handleSocketDataEvent)
 
   return {
-    onRawMessage,
-    handleSocketDataEvent,
+    close: () => socket.close(),
     sendLoginMessage: (msg: LoginMessage) => sendLoginMessage(msg, send),
   }
 }
