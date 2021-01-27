@@ -1,5 +1,5 @@
 import { SmartBuffer } from 'smart-buffer'
-import { ClientMessageSender } from '..'
+import { ClientMessageSender } from '../createClientNetcode'
 import { MessageTypes, MessageWrapper } from '../private'
 import { packMessage } from '../private/packMessage'
 import { sendMessageAndAwaitReply } from '../private/sendMessageAndAwaitReply'

@@ -1,4 +1,4 @@
-import { ClientMessageSender } from '..'
+import { ClientMessageSender } from '../createClientNetcode'
 import { MessageTypes, MessageWrapper } from '../private'
 import { packMessage } from '../private/packMessage'
 import { sendMessageAndForget } from '../private/sendMessageAndForget'

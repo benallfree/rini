@@ -1,6 +1,6 @@
 import { MessageWrapper } from '.'
-import { ClientMessageSender } from '../index'
-import { onRawMessage } from './handleMessage'
+import { ClientMessageSender } from '../createClientNetcode'
+import { onRawMessage } from './handleSocketDataEvent'
 
 export const sendMessageAndAwaitReply = async (
   packed: Buffer,
@@ -9,6 +9,7 @@ export const sendMessageAndAwaitReply = async (
   const messageId = packed.readUInt32BE(0)
   return new Promise<MessageWrapper>((resolve, reject) => {
     const tid = setTimeout(() => {
+      unsub()
       reject(`Timed out awaiting reply to ${messageId}`)
     }, 1000)
     const unsub = onRawMessage((m) => {
@@ -17,6 +18,6 @@ export const sendMessageAndAwaitReply = async (
       clearTimeout(tid)
       resolve(m)
     })
-    send(packed)
+    send(packed).catch(reject)
   })
 }

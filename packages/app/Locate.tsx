@@ -5,7 +5,6 @@ import { Button, Text } from 'react-native-elements'
 export const Locate: FC = () => {
   return (
     <>
-      {' '}
       <Button
         title="Log Out"
         onPress={() =>

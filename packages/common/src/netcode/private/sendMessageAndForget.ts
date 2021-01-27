@@ -1,4 +1,4 @@
-import { ClientMessageSender } from '../index'
+import { ClientMessageSender } from '../createClientNetcode'
 
 export const sendMessageAndForget = async (
   packed: Buffer,

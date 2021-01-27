@@ -31,7 +31,7 @@ export function event<TData extends EventData>(): EventPair<TData> {
   return [
     (callback: EventHandler<TData>): Unsubscribe => {
       emitter.on('event', callback)
-      return () => emitter.off('event', callback)
+      return () => emitter.removeAllListeners('event')
     },
     (data: TData) => {
       emitter.emit('event', data)

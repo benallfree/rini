@@ -3,11 +3,10 @@ import { Text } from 'react-native-elements'
 import { useNet } from './Store'
 
 export const NetReady: FC = ({ children }) => {
-  const { isConnected, isAuthenticated } = useNet()
+  const { isAuthenticated, authenticationError } = useNet()
 
-  if (!isConnected) return <Text>Connecting...</Text>
-
-  if (!isAuthenticated) return <Text>Handshaking...</Text>
+  if (authenticationError) return <Text>Reconnecting to mother ship...</Text>
+  if (!isAuthenticated) return <Text>Connecting to mother ship...</Text>
 
   return <>{children}</>
 }

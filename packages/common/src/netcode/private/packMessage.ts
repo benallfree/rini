@@ -1,7 +1,7 @@
 import { SmartBuffer } from 'smart-buffer'
 import { MessageTypes } from '.'
 
-export let messageId = 0
+export let messageId = 1
 
 export const packMessage = (
   type: MessageTypes,

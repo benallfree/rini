@@ -8,23 +8,24 @@ import {
 } from '.'
 import { event } from '../../event'
 
-export const msgBuf = sb()
+export const dataBuf = sb()
 
 export let currentHeader: Header | undefined
 
 const [onRawMessage, emitRawMessage] = event<MessageWrapper>()
 
-export const handleMessage = (msg: Buffer, rinfo: RemoteInfo) => {
-  msgBuf.writeBuffer(msg)
+export const handleSocketDataEvent = (data: Buffer, rinfo: RemoteInfo) => {
+  console.log(`Data event`, data)
+  dataBuf.writeBuffer(data)
   if (!currentHeader) {
-    if (msgBuf.length < HEADER_LEN) return // nothing to do yet
+    if (dataBuf.length < HEADER_LEN) return // nothing to do yet
     currentHeader = {
-      id: msgBuf.readUInt32BE(),
-      refMessageId: msgBuf.readUInt32BE(),
+      id: dataBuf.readUInt32BE(),
+      refMessageId: dataBuf.readUInt32BE(),
       address: rinfo.address,
       port: rinfo.port,
-      type: msgBuf.readUInt8(),
-      payloadLength: msgBuf.readUInt16BE(),
+      type: dataBuf.readUInt8(),
+      payloadLength: dataBuf.readUInt16BE(),
     }
     if (!currentHeader.id) {
       throw new Error(`Unexpected message ID ${currentHeader.id}`)
@@ -34,10 +35,10 @@ export const handleMessage = (msg: Buffer, rinfo: RemoteInfo) => {
     }
   }
   if (currentHeader) {
-    if (msgBuf.length < currentHeader.payloadLength) return // nothing to do yet
+    if (dataBuf.length < currentHeader.payloadLength) return // nothing to do yet
     const e: MessageWrapper = {
       ...currentHeader,
-      payload: msgBuf.readBuffer(currentHeader.payloadLength),
+      payload: dataBuf.readBuffer(currentHeader.payloadLength),
     }
     emitRawMessage(e)
     currentHeader = undefined

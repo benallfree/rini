@@ -37,12 +37,17 @@ server.on('error', (err) => {
   server.close()
 })
 
-server.on('message', netcode.handleMessage)
+server.on('message', (m) => {
+  console.log('message', m)
+  netcode.handleSocketDataEvent
+})
 
 server.on('listening', () => {
   const address = server.address()
   console.log(`server listening ${address.address}:${address.port}`)
 })
+
+server.on('close', () => console.log('closed'))
 
 server.bind(41234)
 // Prints: server listening 0.0.0.0:41234
