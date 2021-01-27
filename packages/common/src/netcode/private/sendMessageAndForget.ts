@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer'
 import { ClientMessageSender } from '../index'
 
 export const sendMessageAndForget = async (

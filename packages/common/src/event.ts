@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Buffer } from 'buffer'
-import { createNanoEvents } from 'nanoevents'
+import NodeEventEmitter = require('events')
 
 export type DataPrimitives = Buffer | string | number
 export type EventData = { [_: string]: DataPrimitives }
@@ -29,11 +27,11 @@ unsub() // Unsubscribe, stop listening
 
 */
 export function event<TData extends EventData>(): EventPair<TData> {
-  const emitter = createNanoEvents()
+  const emitter = new NodeEventEmitter()
   return [
     (callback: EventHandler<TData>): Unsubscribe => {
-      const unbind = emitter.on('event', callback)
-      return unbind
+      emitter.on('event', callback)
+      return () => emitter.off('event', callback)
     },
     (data: TData) => {
       emitter.emit('event', data)

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-import { Buffer } from 'buffer'
 import { SmartBuffer } from 'smart-buffer'
 import { ClientMessageSender } from '..'
 import { MessageTypes, MessageWrapper } from '../private'

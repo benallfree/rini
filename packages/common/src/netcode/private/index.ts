@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer'
 import { SmartBuffer } from 'smart-buffer'
 
 export enum MessageTypes {

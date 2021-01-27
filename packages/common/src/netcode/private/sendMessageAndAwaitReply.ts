@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer'
 import { MessageWrapper } from '.'
 import { ClientMessageSender } from '../index'
 import { onRawMessage } from './handleMessage'
