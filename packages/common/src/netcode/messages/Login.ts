@@ -10,6 +10,7 @@ export type LoginMessage = {
 export type LoginReply = {
   uid: string
 }
+
 export const packLoginMessage = (msg: LoginMessage): Buffer => {
   const payload = Buffer.from(msg.idToken)
   return packMessage(MessageTypes.Login, 0, SmartBuffer.fromBuffer(payload))
@@ -28,7 +29,7 @@ export const packLoginReply = (
 ): Buffer => {
   const payload = Buffer.from(msg.uid)
   return packMessage(
-    MessageTypes.Ack,
+    MessageTypes.LoginReply,
     wrapper.id,
     SmartBuffer.fromBuffer(payload)
   )

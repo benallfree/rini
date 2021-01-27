@@ -19,9 +19,14 @@ const server = dgram.createSocket('udp4')
 
 const netcode = createServerNetcode({
   onLogin: async (msg) => {
-    const decodedIdToken = await admin.auth().verifyIdToken(msg.idToken)
-    if (!decodedIdToken.uid) return // Silently ignore auth that fails
-    return { uid: decodedIdToken.uid }
+    try {
+      const decodedIdToken = await admin.auth().verifyIdToken(msg.idToken)
+      if (!decodedIdToken.uid) return // Silently ignore auth that fails
+      return { uid: decodedIdToken.uid }
+    } catch (e) {
+      console.error(e)
+      return // Silently ignore errors
+    }
   },
   send: (buf, port, address) =>
     new Promise((resolve) => {

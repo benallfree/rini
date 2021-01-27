@@ -32,7 +32,7 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       const packed = packLoginReply(e, reply)
       await settings.send(packed, e.port, e.address)
     },
-    [MessageTypes.Ack]: () => {
+    [MessageTypes.LoginReply]: () => {
       return
     },
   }

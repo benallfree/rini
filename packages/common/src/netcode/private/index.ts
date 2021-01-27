@@ -2,7 +2,7 @@ import { SmartBuffer } from 'smart-buffer'
 
 export enum MessageTypes {
   Login = 0,
-  Ack = 1,
+  LoginReply = 1,
 }
 
 export const HEADER_LEN = (32 + 32 + 8 + 16) / 8

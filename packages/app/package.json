@@ -11,7 +11,8 @@
     "eject": "expo eject -p ios",
     "reset:ios": "yarn eject:clean && yarn eject",
     "pod": "cd ios && pod install && cd ..",
-    "postinstall": "rn-nodeify --install --hack --yarn"
+    "postinstall": "rn-nodeify --install --hack --yarn",
+    "reshim": "rn-nodeify --install --hack --yarn"
   },
   "dependencies": {
     "@babel/core": "~7.9.0",
