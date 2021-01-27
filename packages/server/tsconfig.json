@@ -1,4 +1,7 @@
 {
+  "ts-node": {
+    "ignore": ["/node_modules/(?!@rini)/"]
+  },
   "compilerOptions": {
     "lib": ["esnext"],
     "moduleResolution": "node",

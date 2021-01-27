@@ -1,4 +1,4 @@
-import NodeEventEmitter = require('events')
+import { EventEmitter as NodeEventEmitter } from 'events'
 
 export type DataPrimitives = Buffer | string | number
 export type EventData = { [_: string]: DataPrimitives }
