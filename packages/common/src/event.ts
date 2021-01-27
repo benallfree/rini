@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Buffer } from 'buffer'
 import { createNanoEvents } from 'nanoevents'
 
 export type DataPrimitives = Buffer | string | number

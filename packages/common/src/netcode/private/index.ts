@@ -1,4 +1,4 @@
-import * as dgram from 'dgram'
+import { Buffer } from 'buffer'
 import { SmartBuffer } from 'smart-buffer'
 
 export enum MessageTypes {
@@ -22,7 +22,10 @@ export type Header = {
   payloadLength: number
 }
 
-export type RemoteInfo = dgram.RemoteInfo
+export type RemoteInfo = {
+  address: string
+  port: number
+}
 
 export type MessageWrapper = Header & {
   payload: Buffer

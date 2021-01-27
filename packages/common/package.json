@@ -4,11 +4,8 @@
   "main": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "@types/struct": "^0.0.3",
     "buffer": "^6.0.3",
-    "c-struct": "^0.0.5",
     "nanoevents": "^5.1.10",
-    "smart-buffer": "^4.1.0",
-    "strict": "^0.0.0"
+    "smart-buffer": "^4.1.0"
   }
 }

@@ -1,13 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+import { Buffer } from 'buffer'
 import { SmartBuffer } from 'smart-buffer'
 import { ClientMessageSender } from '..'
 import { MessageTypes, MessageWrapper } from '../private'
 import { packMessage } from '../private/packMessage'
 import { sendMessageAndAwaitReply } from '../private/sendMessageAndAwaitReply'
-
-global.Buffer = require('buffer').Buffer
-
-console.log('ayo', global.Buffer)
 
 export type LoginMessage = {
   idToken: string

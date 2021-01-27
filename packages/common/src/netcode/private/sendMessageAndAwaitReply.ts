@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import { MessageWrapper } from '.'
 import { ClientMessageSender } from '../index'
 import { onRawMessage } from './handleMessage'
@@ -6,7 +7,7 @@ export const sendMessageAndAwaitReply = async (
   packed: Buffer,
   send: ClientMessageSender
 ): Promise<MessageWrapper> => {
-  const messageId = packed.readUInt32BE()
+  const messageId = packed.readUInt32BE(0)
   return new Promise<MessageWrapper>((resolve, reject) => {
     const tid = setTimeout(() => {
       reject(`Timed out awaiting reply to ${messageId}`)

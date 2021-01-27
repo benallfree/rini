@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import { ClientMessageSender } from '..'
 import { MessageTypes, MessageWrapper } from '../private'
 import { packMessage } from '../private/packMessage'

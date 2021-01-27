@@ -6,7 +6,7 @@
   "author": "Ben Allfree",
   "license": "MIT",
   "scripts": {
-    "app": "yarn workspace @ayo/app"
+    "app": "yarn workspace @rini/app"
   },
   "private": true,
   "dependencies": {
@@ -21,11 +21,5 @@
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
     "eslint": "^7.18.0"
-  },
-  "workspaces": {
-    "packages": [
-      "packages/*"
-    ],
-    "nohoist": []
   }
 }

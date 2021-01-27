@@ -1,5 +1,12 @@
-import * as dgram from 'dgram'
-import { Header, HEADER_LEN, MessageTypeValues, MessageWrapper, sb } from '.'
+import { Buffer } from 'buffer'
+import {
+  Header,
+  HEADER_LEN,
+  MessageTypeValues,
+  MessageWrapper,
+  RemoteInfo,
+  sb,
+} from '.'
 import { event } from '../../event'
 
 export const msgBuf = sb()
@@ -8,7 +15,7 @@ export let currentHeader: Header | undefined
 
 const [onRawMessage, emitRawMessage] = event<MessageWrapper>()
 
-export const handleMessage = (msg: Buffer, rinfo: dgram.RemoteInfo) => {
+export const handleMessage = (msg: Buffer, rinfo: RemoteInfo) => {
   msgBuf.writeBuffer(msg)
   if (!currentHeader) {
     if (msgBuf.length < HEADER_LEN) return // nothing to do yet

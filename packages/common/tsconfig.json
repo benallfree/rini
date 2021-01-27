@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "target": "esnext",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "typeRoots": ["node_modules/@types"]
+  }
+}
