@@ -1,5 +1,5 @@
 import { createSocket } from 'dgram'
-import { LoginMessage, sendLoginMessage } from './messages'
+import { LoginRequest, sendLoginRequest } from './messages'
 import { handleSocketDataEvent } from './private/handleSocketDataEvent'
 
 export type ClientMessageSender = (msg: Buffer) => Promise<void>
@@ -35,7 +35,7 @@ export const createClientNetcode = (settings: ClientNetcodeConfig) => {
 
   return {
     close: () => socket.close(),
-    sendLoginMessage: (msg: LoginMessage) => sendLoginMessage(msg, send),
+    sendLoginMessage: (msg: LoginRequest) => sendLoginRequest(msg, send),
   }
 }
 

@@ -4,28 +4,28 @@ import { MessageTypes, MessageWrapper } from '../private'
 import { packMessage } from '../private/packMessage'
 import { sendMessageAndAwaitReply } from '../private/sendMessageAndAwaitReply'
 
-export type LoginMessage = {
+export type LoginRequest = {
   idToken: string
 }
-export type LoginReply = {
+export type LoginResponse = {
   uid: string
 }
 
-export const packLoginMessage = (msg: LoginMessage): Buffer => {
+export const packLoginRequest = (msg: LoginRequest): Buffer => {
   const payload = Buffer.from(msg.idToken)
   return packMessage(MessageTypes.Login, 0, SmartBuffer.fromBuffer(payload))
 }
 
-export const unpackLoginMessage = (wrapper: MessageWrapper): LoginMessage => {
-  const msg: LoginMessage = {
+export const unpackLoginRequest = (wrapper: MessageWrapper): LoginRequest => {
+  const msg: LoginRequest = {
     idToken: wrapper.payload.toString(),
   }
   return msg
 }
 
-export const packLoginReply = (
+export const packLoginResponse = (
   wrapper: MessageWrapper,
-  msg: LoginReply
+  msg: LoginResponse
 ): Buffer => {
   const payload = Buffer.from(msg.uid)
   return packMessage(
@@ -35,18 +35,18 @@ export const packLoginReply = (
   )
 }
 
-export const unpackLoginReply = (wrapper: MessageWrapper): LoginReply => {
-  const msg: LoginReply = {
+export const unpackLoginResponse = (wrapper: MessageWrapper): LoginResponse => {
+  const msg: LoginResponse = {
     uid: wrapper.payload.toString(),
   }
   return msg
 }
 
-export const sendLoginMessage = async (
-  msg: LoginMessage,
+export const sendLoginRequest = async (
+  msg: LoginRequest,
   send: ClientMessageSender
-): Promise<LoginReply> => {
-  const packed = packLoginMessage(msg)
+): Promise<LoginResponse> => {
+  const packed = packLoginRequest(msg)
   const wrapper = await sendMessageAndAwaitReply(packed, send)
-  return unpackLoginReply(wrapper)
+  return unpackLoginResponse(wrapper)
 }

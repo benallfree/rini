@@ -1,8 +1,8 @@
 import {
-  LoginMessage,
-  LoginReply,
-  packLoginReply,
-  unpackLoginMessage,
+  LoginRequest,
+  LoginResponse,
+  packLoginResponse,
+  unpackLoginRequest,
 } from './messages'
 import { MessageTypes, MessageWrapper } from './private'
 import {
@@ -17,7 +17,7 @@ export type ServerMessageSender = (
 ) => Promise<number>
 
 export type ServerNetcodeConfig = {
-  onLogin: (msg: LoginMessage) => Promise<LoginReply | undefined>
+  onLogin: (msg: LoginRequest) => Promise<LoginResponse | undefined>
   send: ServerMessageSender
 }
 
@@ -26,10 +26,10 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
     [_ in MessageTypes]: (e: MessageWrapper) => void
   } = {
     [MessageTypes.Login]: async (e) => {
-      const msg = unpackLoginMessage(e)
+      const msg = unpackLoginRequest(e)
       const reply = await settings.onLogin(msg)
       if (!reply) return // don't send reply
-      const packed = packLoginReply(e, reply)
+      const packed = packLoginResponse(e, reply)
       await settings.send(packed, e.port, e.address)
     },
     [MessageTypes.LoginReply]: () => {

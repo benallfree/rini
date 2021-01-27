@@ -34,6 +34,7 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
         .sendLoginMessage({ idToken })
         .then((reply) => {
           console.log('got login reply', { reply })
+          setAuthenticationError(undefined)
           return setIsAuthenticated(true)
         })
         .catch((e) => {
