@@ -1,11 +1,11 @@
 import React, { FC } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { ThemeProvider } from 'react-native-elements'
+import { Store } from '../Store'
 import { Authenticated } from './Authenticated'
 import { EnsureLocationPermission } from './EnsurePermission'
 import { Locate } from './Locate'
 import { NetReady } from './NetReady'
-import { Store } from './Store'
 
 export type PermissionCheckStatus =
   | 'unavailable'
