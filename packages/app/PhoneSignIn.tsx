@@ -62,7 +62,7 @@ export function PhoneSignIn() {
       <Input
         placeholder="1234"
         value={code}
-        onChangeText={(text) => setCode(text)}
+        onChangeText={(text) => setCode(text.trim())}
       />
       <Button
         icon={<Icon name="arrow-right" size={15} color="white" />}

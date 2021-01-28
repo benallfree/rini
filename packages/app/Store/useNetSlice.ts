@@ -10,7 +10,7 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
 
   useEffect(() => {
     const client = createClientNetcode({
-      address: '192.168.1.19',
+      address: '192.168.1.114',
       port: 41234,
     })
 
