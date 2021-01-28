@@ -11,9 +11,13 @@ export type LoginResponse = {
   uid: string
 }
 
-export const packLoginRequest = (msg: LoginRequest): Buffer => {
+export const packRequest = (msg: LoginRequest): Buffer => {
   const payload = Buffer.from(msg.idToken)
-  return packMessage(MessageTypes.Login, 0, SmartBuffer.fromBuffer(payload))
+  return packMessage(
+    MessageTypes.LoginRequest,
+    0,
+    SmartBuffer.fromBuffer(payload)
+  )
 }
 
 export const unpackLoginRequest = (wrapper: MessageWrapper): LoginRequest => {
@@ -23,7 +27,7 @@ export const unpackLoginRequest = (wrapper: MessageWrapper): LoginRequest => {
   return msg
 }
 
-export const packLoginResponse = (
+export const packResponse = (
   wrapper: MessageWrapper,
   msg: LoginResponse
 ): Buffer => {
@@ -35,7 +39,7 @@ export const packLoginResponse = (
   )
 }
 
-export const unpackLoginResponse = (wrapper: MessageWrapper): LoginResponse => {
+export const unpackResponse = (wrapper: MessageWrapper): LoginResponse => {
   const msg: LoginResponse = {
     uid: wrapper.payload.toString(),
   }
@@ -46,7 +50,7 @@ export const sendLoginRequest = async (
   msg: LoginRequest,
   send: ClientMessageSender
 ): Promise<LoginResponse> => {
-  const packed = packLoginRequest(msg)
+  const packed = packRequest(msg)
   const wrapper = await sendMessageAndAwaitReply(packed, send)
-  return unpackLoginResponse(wrapper)
+  return unpackResponse(wrapper)
 }

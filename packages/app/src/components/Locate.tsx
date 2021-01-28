@@ -1,43 +1,37 @@
 import auth from '@react-native-firebase/auth'
-import React, { FC } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import { Button, Text } from 'react-native-elements'
-import RNLocation from 'react-native-location'
+import Geolocation from 'react-native-geolocation-service'
+import { useNet } from '../Store'
 
-RNLocation.configure({
-  distanceFilter: 5.0,
-  allowsBackgroundLocationUpdates: true,
-  showsBackgroundLocationIndicator: true,
-})
 export const Locate: FC = () => {
-  RNLocation.requestPermission({
-    ios: 'always',
-    android: {
-      detail: 'coarse',
-    },
-  }).then((granted) => {
-    if (granted) {
-      const locationSubscription = RNLocation.subscribeToLocationUpdates(
-        (locations) => {
-          console.log({ locations })
-          /* Example location returned
-          {
-            speed: -1,
-            longitude: -0.1337,
-            latitude: 51.50998,
-            accuracy: 5,
-            heading: -1,
-            altitude: 0,
-            altitudeAccuracy: -1
-            floor: 0
-            timestamp: 1446007304457.029,
-            fromMockProvider: false
-          }
-          */
-        }
-      )
-    }
-  })
+  const [location, setLocation] = useState<Geolocation.GeoPosition>()
+  const { sendPosition } = useNet()
 
+  useEffect(() => {
+    const watchId = Geolocation.watchPosition(
+      (position) => {
+        console.log({ position })
+        sendPosition({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        })
+        setLocation(position)
+      },
+      (error) => {
+        console.error(error)
+      },
+      {
+        forceRequestLocation: true,
+        enableHighAccuracy: true,
+        fastestInterval: 500,
+        distanceFilter: 1,
+      }
+    )
+    return () => {
+      Geolocation.clearWatch(watchId)
+    }
+  }, [])
   return (
     <>
       <Button
@@ -49,6 +43,12 @@ export const Locate: FC = () => {
         }
       />
       <Text h1>Hello world</Text>
+      {location && (
+        <>
+          <Text h3>Lat: {location.coords.latitude}</Text>
+          <Text h3>Lng: {location.coords.longitude}</Text>
+        </>
+      )}
     </>
   )
 }

@@ -1,7 +1,7 @@
 import {
   LoginRequest,
   LoginResponse,
-  packLoginResponse,
+  packResponse,
   unpackLoginRequest,
 } from './messages'
 import { MessageTypes, MessageWrapper } from './private'
@@ -23,24 +23,25 @@ export type ServerNetcodeConfig = {
 
 export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   const dispatch: {
-    [_ in MessageTypes]: (e: MessageWrapper) => void
+    [_ in MessageTypes]?: (e: MessageWrapper) => void
   } = {
-    [MessageTypes.Login]: async (e) => {
+    [MessageTypes.LoginRequest]: async (e) => {
       const msg = unpackLoginRequest(e)
       const reply = await settings.onLogin(msg)
       if (!reply) return // don't send reply
-      const packed = packLoginResponse(e, reply)
+      const packed = packResponse(e, reply)
       await settings.send(packed, e.port, e.address)
-    },
-    [MessageTypes.LoginReply]: () => {
-      return
     },
   }
 
   onRawMessage((e) => {
     console.log('got a message', { e })
     try {
-      dispatch[e.type](e)
+      const d = dispatch[e.type]
+      if (!d) {
+        throw new Error(`Unhandled message type ${e.type}`)
+      }
+      d(e)
     } catch (e) {
       console.error(e)
     }

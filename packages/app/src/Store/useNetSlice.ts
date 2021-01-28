@@ -1,4 +1,8 @@
-import { ClientNetcode, createClientNetcode } from '@rini/common'
+import {
+  ClientNetcode,
+  createClientNetcode,
+  PositionUpdateRequest,
+} from '@rini/common'
 import { useEffect, useState } from 'react'
 import { useAuthSlice } from './useAuthSlice'
 
@@ -10,7 +14,7 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
 
   useEffect(() => {
     const client = createClientNetcode({
-      address: '192.168.1.114',
+      address: 'localhost',
       port: 41234,
     })
 
@@ -49,5 +53,7 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
     }
   }, [client, idToken])
 
-  return { isAuthenticated, authenticationError }
+  const sendPosition = (pos: PositionUpdateRequest) => client?.sendPosition(pos)
+
+  return { isAuthenticated, authenticationError, sendPosition }
 }
