@@ -1,11 +1,12 @@
 {
-  "ts-node": {
-    "ignore": ["/node_modules/(?!@rini)/"]
-  },
   "compilerOptions": {
     "lib": ["esnext"],
     "moduleResolution": "node",
     "strict": true,
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "target": "es3",
+    "declaration": true,
+    "sourceMap": true
   }
 }

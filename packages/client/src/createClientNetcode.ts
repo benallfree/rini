@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-ignore
-import { createMessageHandler, MessageWrapper } from '@rini/common'
-import net, { Socket } from 'net'
 import {
+  createMessageHandler,
   LoginRequest,
   LoginResponse,
+  MessageWrapper,
   packLoginRequest,
   packPositionUpdateRequest,
   PositionUpdateRequest,
   unpackLoginResponse,
-} from '../../common/src/netcode/messages'
+} from '@rini/common'
+import net, { Socket } from 'net'
 
 export type ClientMessageSender = (msg: Buffer) => Promise<void>
 

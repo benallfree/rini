@@ -6,20 +6,40 @@
   "author": "Ben Allfree",
   "license": "MIT",
   "scripts": {
+    "watch": "concurrently --raw 'yarn:watch:*'",
+    "watch:common": "yarn common watch",
+    "watch:bot": "yarn bot watch",
+    "watch:server": "yarn server watch",
+    "watch:client": "yarn client watch",
+    "common": "yarn workspace @rini/common",
+    "bot": "yarn workspace @rini/bot",
+    "client": "yarn workspace @rini/client",
+    "server": "yarn workspace @rini/server",
     "app": "yarn workspace @rini/app"
   },
   "private": true,
   "dependencies": {
+    "concurrently": "^5.3.0",
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-react-native": "^3.10.0",
+    "nodemon": "^2.0.7",
     "prettier": "^2.2.1",
     "prettier-plugin-organize-imports": "^1.1.1",
+    "rimraf": "^3.0.2",
     "typescript": "^4.1.3"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
     "eslint": "^7.18.0"
+  },
+  "workspaces": {
+    "nohoist": [
+      "**/app/**"
+    ],
+    "packages": [
+      "packages/*"
+    ]
   }
 }

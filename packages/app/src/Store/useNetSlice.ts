@@ -1,4 +1,4 @@
-import { ClientNetcode, createClientNetcode } from '@rini/common'
+import { ClientNetcode, createClientNetcode } from '@rini/client'
 import { useEffect, useState } from 'react'
 import { useAuthSlice } from './useAuthSlice'
 

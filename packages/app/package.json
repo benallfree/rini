@@ -2,7 +2,7 @@
   "name": "@rini/app",
   "version": "0.0.1",
   "scripts": {
-    "start": "react-native start",
+    "start": "./link.sh && yarn reshim && react-native start",
     "android": "react-native run-android",
     "ios": "react-native run-ios --no-packager",
     "build": "eas build --platform ios",
@@ -19,7 +19,7 @@
     "@react-native-community/cli-platform-ios": "^4.13.0",
     "@react-native-firebase/app": "^10.5.0",
     "@react-native-firebase/auth": "^10.5.1",
-    "@rini/common": "../common",
+    "@rini/client": "0.0.1",
     "@tradle/react-native-http": "^2.0.0",
     "@types/react": "~16.9.35",
     "@types/react-dom": "~16.9.8",

@@ -1,9 +1,15 @@
 {
   "name": "@rini/client",
   "version": "0.0.1",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "license": "MIT",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsc",
+    "watch": "tsc -w --preserveWatchOutput",
+    "dev": "nodemon -w 'dist/**/*.js' ./dist/index.js"
+  },
   "dependencies": {
-    "@rini/common": "../common"
+    "@rini/common": "0.0.1"
   }
 }

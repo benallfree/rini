@@ -1,4 +1,0 @@
-{
-  "watch": ["src/**/*.ts", "node_modules/@rini/**/*.ts", "tsconfig.json"],
-  "exec": "ts-node"
-}
