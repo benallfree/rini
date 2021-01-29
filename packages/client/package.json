@@ -6,8 +6,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "build": "tsc",
-    "watch": "tsc -w --preserveWatchOutput",
-    "dev": "nodemon -w 'dist/**/*.js' ./dist/index.js"
+    "watch": "tsc -w --preserveWatchOutput"
   },
   "dependencies": {
     "@rini/common": "0.0.1"

@@ -22,27 +22,41 @@ const createBot = (speedMs = 100, updateMs = 500) => {
   const final = [...b, ...a]
 
   ;(async () => {
-    const client = createClientNetcode()
+    const client = createClientNetcode('foo')
+
+    const { onConnect, onDisconnect, isConnected } = client
 
     let idx = 0
 
+    let mtid: ReturnType<typeof setTimeout>
     const move = () => {
+      if (!isConnected()) return
       idx++
       if (idx >= final.length) idx = 0
       console.log(`Moved to `, final[idx])
-      setTimeout(move, speedMs)
+      mtid = setTimeout(move, speedMs)
     }
-    setTimeout(move, speedMs)
 
+    let ptid: ReturnType<typeof setTimeout>
     const ping = () => {
       console.log(`Ping from `, final[idx])
-      client.updatePosition({
-        latitude: final[idx].lat,
-        longitude: final[idx].lon,
-      })
-      setTimeout(ping, updateMs)
+      if (isConnected()) {
+        client.updatePosition({
+          latitude: final[idx].lat,
+          longitude: final[idx].lon,
+        })
+        ptid = setTimeout(ping, updateMs)
+      }
     }
-    ping()
+
+    onConnect(() => {
+      move()
+      ping()
+    })
+    onDisconnect(() => {
+      clearTimeout(mtid)
+      clearTimeout(ptid)
+    })
   })()
 }
 

@@ -14,7 +14,10 @@ import { createServer } from 'net'
 export type ServerMessageSender = (msg: Buffer) => Promise<number>
 
 export type ServerNetcodeConfig = {
-  onLogin: (connId: number, msg: LoginRequest) => Promise<LoginResponse | void>
+  onLogin: (
+    connId: number,
+    msg: LoginRequest
+  ) => Promise<LoginResponse | undefined>
   onPositionUpdate: (
     connId: number,
     msg: PositionUpdateRequest
@@ -23,6 +26,7 @@ export type ServerNetcodeConfig = {
 
 export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   let connId = 0
+  const authenticated: { [_: number]: string | undefined } = {}
 
   const server = createServer((sock) => {
     connId++
@@ -34,6 +38,7 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       [MessageTypes.LoginRequest]: async (e) => {
         const msg = unpackLoginRequest(e)
         const reply = await settings.onLogin(connId, msg)
+        authenticated[connId] = reply?.uid
         if (!reply) return // don't send reply
         const packed = packLoginResponse(e, reply)
         sock.write(packed)
@@ -47,6 +52,8 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
     const { onRawMessage, handleSocketDataEvent } = createMessageHandler()
     onRawMessage((e) => {
       try {
+        if (e.type != MessageTypes.LoginRequest && !authenticated[connId])
+          return // Silently ignore unauthenticated
         const d = dispatch[e.type]
         if (!d) {
           throw new Error(`Unhandled message type ${e.type}`)
