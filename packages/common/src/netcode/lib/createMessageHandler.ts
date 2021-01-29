@@ -1,8 +1,9 @@
-import { Header, HEADER_LEN, MessageTypeValues, MessageWrapper, sb } from '.'
+import { SmartBuffer } from 'smart-buffer'
+import { Header, HEADER_LEN, MessageTypeValues, MessageWrapper } from '.'
 import { event } from '../../event'
 
 export const createMessageHandler = () => {
-  const dataBuf = sb()
+  const dataBuf = new SmartBuffer()
 
   let currentHeader: Header | undefined
 

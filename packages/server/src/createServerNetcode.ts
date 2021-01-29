@@ -1,7 +1,9 @@
+import {
+  createMessageHandler,
+  MessageTypes,
+  MessageWrapper,
+} from '@rini/common'
 import { createServer } from 'net'
-import { MessageWrapper } from './lib'
-import { createMessageHandler } from './lib/createMessageHandler'
-import { MessageTypes } from './lib/MessageTypes'
 import {
   LoginRequest,
   LoginResponse,
@@ -9,7 +11,7 @@ import {
   PositionUpdateRequest,
   unpackLoginRequest,
   unpackPositionUpdateRequest,
-} from './messages'
+} from '../../common/src/netcode/messages'
 
 export type ServerMessageSender = (msg: Buffer) => Promise<number>
 

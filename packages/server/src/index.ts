@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { createServerNetcode } from '@rini/common'
 import * as admin from 'firebase-admin'
 import { resolve } from 'path'
+import { createServerNetcode } from './createServerNetcode'
 
 const serviceAccount = require(resolve(
   __dirname,

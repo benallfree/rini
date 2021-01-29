@@ -1,3 +1,2 @@
-export * from './createClientNetcode'
-export * from './createServerNetcode'
+export * from './lib'
 export * from './messages'

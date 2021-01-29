@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "serve": "ts-node ./src/index.ts",
-    "dev": "ts-node-dev --deps ./src/index.ts"
+    "dev": "nodemon --watch 'src/**/*.ts' --watch 'node_modules/@rini/**/*.ts' --exec 'ts-node --files' ./src/index.ts"
   },
   "dependencies": {
     "@rini/common": "../common",

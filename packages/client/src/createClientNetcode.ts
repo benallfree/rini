@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-ignore
+import { createMessageHandler, MessageWrapper } from '@rini/common'
 import net, { Socket } from 'net'
-import { MessageWrapper } from './lib'
-import { createMessageHandler } from './lib/createMessageHandler'
 import {
   LoginRequest,
   LoginResponse,
@@ -10,7 +9,7 @@ import {
   packPositionUpdateRequest,
   PositionUpdateRequest,
   unpackLoginResponse,
-} from './messages'
+} from '../../common/src/netcode/messages'
 
 export type ClientMessageSender = (msg: Buffer) => Promise<void>
 
@@ -23,8 +22,15 @@ export function randomPort() {
   return (Math.random() * 60536) | (0 + 5000) // 60536-65536
 }
 
-export const createClientNetcode = (settings: ClientNetcodeConfig) => {
-  const { address, port } = settings
+export const createClientNetcode = (
+  settings?: Partial<ClientNetcodeConfig>
+) => {
+  const _settings: ClientNetcodeConfig = {
+    address: 'localhost',
+    port: 41234,
+    ...settings,
+  }
+  const { address, port } = _settings
 
   console.log({ net })
   const socket: Socket = net.createConnection(
