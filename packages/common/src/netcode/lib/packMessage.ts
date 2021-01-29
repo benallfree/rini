@@ -1,5 +1,5 @@
 import { SmartBuffer } from 'smart-buffer'
-import { MessageTypes } from '.'
+import { MessageTypes } from './MessageTypes'
 
 export let messageId = 1
 

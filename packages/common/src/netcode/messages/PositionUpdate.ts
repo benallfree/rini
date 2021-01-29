@@ -1,8 +1,7 @@
 import { SmartBuffer } from 'smart-buffer'
-import { ClientMessageSender } from '../createClientNetcode'
-import { MessageTypes, MessageWrapper } from '../private'
-import { packMessage } from '../private/packMessage'
-import { sendMessageAndForget } from '../private/sendMessageAndForget'
+import { MessageWrapper } from '../lib'
+import { MessageTypes } from '../lib/MessageTypes'
+import { packMessage } from '../lib/packMessage'
 
 export type PositionUpdateRequest = {
   latitude: number
@@ -13,14 +12,18 @@ export type PositionUpdateResponse = {
   tid: number
 }
 
-const packRequest = (msg: PositionUpdateRequest): Buffer => {
+export const packPositionUpdateRequest = (
+  msg: PositionUpdateRequest
+): Buffer => {
   const payload = new SmartBuffer()
   payload.writeFloatBE(msg.latitude)
   payload.writeFloatBE(msg.longitude)
   return packMessage(MessageTypes.PositionUpdateRequest, 0, payload)
 }
 
-const unpackRequest = (wrapper: MessageWrapper): PositionUpdateRequest => {
+export const unpackPositionUpdateRequest = (
+  wrapper: MessageWrapper
+): PositionUpdateRequest => {
   const msg: PositionUpdateRequest = {
     latitude: wrapper.payload.readFloatBE(),
     longitude: wrapper.payload.readFloatBE(),
@@ -28,7 +31,7 @@ const unpackRequest = (wrapper: MessageWrapper): PositionUpdateRequest => {
   return msg
 }
 
-const packResponse = (
+export const packPositionUpdateResponse = (
   wrapper: MessageWrapper,
   msg: PositionUpdateResponse
 ): Buffer => {
@@ -37,17 +40,11 @@ const packResponse = (
   return packMessage(MessageTypes.PositionUpdateResponse, wrapper.id, payload)
 }
 
-const unpackResponse = (wrapper: MessageWrapper): PositionUpdateResponse => {
+export const unpackPositionUpdateResponse = (
+  wrapper: MessageWrapper
+): PositionUpdateResponse => {
   const msg: PositionUpdateResponse = {
     tid: wrapper.payload.readUInt32BE(),
   }
   return msg
-}
-
-export const sendPositionUpdateRequest = async (
-  msg: PositionUpdateRequest,
-  send: ClientMessageSender
-): Promise<void> => {
-  const packed = packRequest(msg)
-  const wrapper = await sendMessageAndForget(packed, send)
 }

@@ -1,8 +1,4 @@
-import {
-  ClientNetcode,
-  createClientNetcode,
-  PositionUpdateRequest,
-} from '@rini/common'
+import { ClientNetcode, createClientNetcode } from '@rini/common'
 import { useEffect, useState } from 'react'
 import { useAuthSlice } from './useAuthSlice'
 
@@ -35,7 +31,7 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
     let tid: ReturnType<typeof setTimeout>
     const login = () =>
       client
-        .sendLoginMessage({ idToken })
+        .login({ idToken })
         .then((reply) => {
           console.log('got login reply', { reply })
           setAuthenticationError(undefined)
@@ -53,7 +49,9 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
     }
   }, [client, idToken])
 
-  const sendPosition = (pos: PositionUpdateRequest) => client?.sendPosition(pos)
-
-  return { isAuthenticated, authenticationError, sendPosition }
+  return {
+    isAuthenticated,
+    authenticationError,
+    sendPosition: client?.updatePosition,
+  }
 }

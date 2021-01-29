@@ -1,56 +1,83 @@
+import { createServer } from 'net'
+import { MessageWrapper } from './lib'
+import { createMessageHandler } from './lib/createMessageHandler'
+import { MessageTypes } from './lib/MessageTypes'
 import {
   LoginRequest,
   LoginResponse,
-  packResponse,
+  packLoginResponse,
+  PositionUpdateRequest,
   unpackLoginRequest,
+  unpackPositionUpdateRequest,
 } from './messages'
-import { MessageTypes, MessageWrapper } from './private'
-import {
-  handleSocketDataEvent,
-  onRawMessage,
-} from './private/handleSocketDataEvent'
 
-export type ServerMessageSender = (
-  msg: Buffer,
-  port: number,
-  address: string
-) => Promise<number>
+export type ServerMessageSender = (msg: Buffer) => Promise<number>
 
 export type ServerNetcodeConfig = {
-  onLogin: (msg: LoginRequest) => Promise<LoginResponse | undefined>
-  send: ServerMessageSender
+  onLogin: (connId: number, msg: LoginRequest) => Promise<LoginResponse | void>
+  onPositionUpdate: (
+    connId: number,
+    msg: PositionUpdateRequest
+  ) => Promise<void>
 }
 
 export const createServerNetcode = (settings: ServerNetcodeConfig) => {
-  const dispatch: {
-    [_ in MessageTypes]?: (e: MessageWrapper) => void
-  } = {
-    [MessageTypes.LoginRequest]: async (e) => {
-      const msg = unpackLoginRequest(e)
-      const reply = await settings.onLogin(msg)
-      if (!reply) return // don't send reply
-      const packed = packResponse(e, reply)
-      await settings.send(packed, e.port, e.address)
-    },
-  }
+  let connId = 0
 
-  onRawMessage((e) => {
-    console.log('got a message', { e })
-    try {
-      const d = dispatch[e.type]
-      if (!d) {
-        throw new Error(`Unhandled message type ${e.type}`)
-      }
-      d(e)
-    } catch (e) {
-      console.error(e)
+  const server = createServer((sock) => {
+    connId++
+    console.log(`C${connId}: connect`)
+
+    const dispatch: {
+      [_ in MessageTypes]?: (e: MessageWrapper) => void
+    } = {
+      [MessageTypes.LoginRequest]: async (e) => {
+        const msg = unpackLoginRequest(e)
+        const reply = await settings.onLogin(connId, msg)
+        if (!reply) return // don't send reply
+        const packed = packLoginResponse(e, reply)
+        sock.write(packed)
+      },
+      [MessageTypes.PositionUpdateRequest]: async (e) => {
+        const msg = unpackPositionUpdateRequest(e)
+        settings.onPositionUpdate(connId, msg)
+      },
     }
-  })
 
-  return {
-    onRawMessage,
-    handleSocketDataEvent,
-  }
+    const { onRawMessage, handleSocketDataEvent } = createMessageHandler()
+    onRawMessage((e) => {
+      try {
+        const d = dispatch[e.type]
+        if (!d) {
+          throw new Error(`Unhandled message type ${e.type}`)
+        }
+        d(e)
+      } catch (e) {
+        console.error(e)
+      }
+    })
+
+    sock.on('close', (hadError) =>
+      console.log(`C${connId}: close`, { hadError })
+    )
+    sock.on('connect', () => console.log(`C${connId}: connect`))
+    sock.on('data', handleSocketDataEvent)
+    sock.on('drain', () => console.log(`C${connId}: drain`))
+    sock.on('end', () => console.log(`C${connId}: end`))
+    sock.on('error', (err) => console.error(`C${connId}: error`, err))
+    sock.on('lookup', (err, address, family, host) =>
+      console.log(`C${connId}: lookup`, { err, address, family, host })
+    )
+    sock.on('timeout', () => console.log(`C${connId}: timeout`))
+  })
+  server.listen(41234, () => {
+    console.log(`Server is now listening`)
+  })
+  server.on('close', () => console.log('main:close'))
+  server.on('error', (err: Error) => console.error(`main:`, err))
+  server.on('listening', () => console.log('main:listening'))
+
+  return {}
 }
 
 export type ServerNetcode = ReturnType<typeof createServerNetcode>

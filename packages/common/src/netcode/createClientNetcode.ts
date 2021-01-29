@@ -1,11 +1,16 @@
-import { createSocket } from 'dgram'
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+//@ts-ignore
+import net, { Socket } from 'net'
+import { MessageWrapper } from './lib'
+import { createMessageHandler } from './lib/createMessageHandler'
 import {
   LoginRequest,
+  LoginResponse,
+  packLoginRequest,
+  packPositionUpdateRequest,
   PositionUpdateRequest,
-  sendLoginRequest,
-  sendPositionUpdateRequest,
+  unpackLoginResponse,
 } from './messages'
-import { handleSocketDataEvent } from './private/handleSocketDataEvent'
 
 export type ClientMessageSender = (msg: Buffer) => Promise<void>
 
@@ -21,29 +26,76 @@ export function randomPort() {
 export const createClientNetcode = (settings: ClientNetcodeConfig) => {
   const { address, port } = settings
 
-  const socket = createSocket({ type: 'udp4' })
-  socket.bind(randomPort())
+  console.log({ net })
+  const socket: Socket = net.createConnection(
+    { port: 41234, host: 'localhost' },
+    () => {
+      console.log('connected')
+    }
+  )
+  socket.on('connect', () => console.log('connected'))
+  socket.on('close', () => console.log('close'))
+  socket.on('end', () => console.log('end'))
+  socket.on('error', () => console.log('error'))
+  socket.on('drain', () => console.log('drain'))
+  socket.on('lookup', () => console.log('lookup'))
+  socket.on('timeout', () => console.log('timeout'))
 
   const send = (buf: Buffer) =>
     new Promise<void>((resolve) => {
       console.log(`Sending msg to`, buf, { address, port })
-      socket.send(buf, 0, buf.length, port, address, (err) => {
+      socket.write(buf, (err) => {
         if (err) {
-          console.error(err)
+          console.error(err, err.name)
           throw err
         }
         resolve()
       })
     })
 
-  socket.on('message', handleSocketDataEvent)
+  const { onRawMessage, handleSocketDataEvent } = createMessageHandler()
+  socket.on('data', handleSocketDataEvent)
+  onRawMessage((msg) => {
+    console.log(`got msg`, msg)
+  })
 
-  return {
-    close: () => socket.close(),
-    sendLoginMessage: (msg: LoginRequest) => sendLoginRequest(msg, send),
-    sendPosition: (msg: PositionUpdateRequest) =>
-      sendPositionUpdateRequest(msg, send),
+  const sendMessageAndAwaitReply = async (
+    packed: Buffer
+  ): Promise<MessageWrapper> => {
+    const messageId = packed.readUInt32BE(0)
+    return new Promise<MessageWrapper>((resolve, reject) => {
+      const tid = setTimeout(() => {
+        unsub()
+        reject(`Timed out awaiting reply to ${messageId}`)
+      }, 1000)
+      const unsub = onRawMessage((m) => {
+        console.log('got raw message', m)
+        if (m.refMessageId !== messageId) return // Skip, it's not our message
+        unsub()
+        clearTimeout(tid)
+        resolve(m)
+      })
+      send(packed).catch(reject)
+    })
   }
+
+  const login = async (msg: LoginRequest): Promise<LoginResponse> => {
+    const packed = packLoginRequest(msg)
+    const wrapper = await sendMessageAndAwaitReply(packed)
+    return unpackLoginResponse(wrapper)
+  }
+
+  const updatePosition = async (msg: PositionUpdateRequest): Promise<void> => {
+    const packed = packPositionUpdateRequest(msg)
+    return send(packed)
+  }
+
+  const api = {
+    close: () => socket.destroy(),
+    login,
+    updatePosition,
+  }
+  return api
 }
 
 export type ClientNetcode = ReturnType<typeof createClientNetcode>

@@ -9,6 +9,7 @@ export const Locate: FC = () => {
   const { sendPosition } = useNet()
 
   useEffect(() => {
+    if (!sendPosition) return
     const watchId = Geolocation.watchPosition(
       (position) => {
         console.log({ position })
@@ -31,7 +32,7 @@ export const Locate: FC = () => {
     return () => {
       Geolocation.clearWatch(watchId)
     }
-  }, [])
+  }, [sendPosition])
   return (
     <>
       <Button

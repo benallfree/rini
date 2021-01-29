@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "serve": "ts-node ./src/index.ts",
-    "dev": "ts-node-dev --debug --deps ./src/index.ts"
+    "dev": "ts-node-dev --deps ./src/index.ts"
   },
   "dependencies": {
     "@rini/common": "../common",
