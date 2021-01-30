@@ -1,10 +1,10 @@
 import prompts from 'prompts'
-import { createBotDataProvider } from './BotDataProvider'
+import { createBotFileProvider } from './BotFileProvider'
 import { createBotRunner } from './BotRunner'
 import { createRouteService } from './RouteService'
 
 const rs = createRouteService()
-const bd = createBotDataProvider()
+const bd = createBotFileProvider()
 
 ;(async () => {
   const response = await prompts({

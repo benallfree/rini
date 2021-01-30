@@ -1,5 +1,5 @@
 import { createClientNetcode } from '@rini/client'
-import { Bot } from './BotAuthenticator'
+import { Bot } from './BotFileProvider'
 import { RouteService } from './RouteService'
 
 export const createBotRunner = (

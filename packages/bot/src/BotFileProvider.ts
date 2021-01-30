@@ -7,7 +7,7 @@ export type BotCollection = {
   [_: string]: Bot
 }
 
-export const createBotDataProvider = () => {
+export const createBotFileProvider = () => {
   const bots: Bot[] = require('../../../.secrets/bots.json')
 
   const botsByIdToken: BotCollection = bots.reduce(
@@ -30,7 +30,10 @@ export const createBotDataProvider = () => {
       return bot
     },
     botsByIdToken: () => botsByIdToken,
+    authenticate(idToken: string) {
+      return botsByIdToken[idToken]
+    },
   }
 }
 
-export type BotDataProvider = ReturnType<typeof createBotDataProvider>
+export type BotProvider = ReturnType<typeof createBotFileProvider>
