@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { createBotFileProvider } from '@rini/bot'
+import { forEach } from '@s-libs/micro-dash'
 import * as admin from 'firebase-admin'
 import { resolve } from 'path'
+import { createClient } from 'redis'
 import { createServerNetcode } from './createServerNetcode'
+import { initialize } from './georedis-promised'
 
 const serviceAccount = require(resolve(
   __dirname,
@@ -17,22 +20,46 @@ admin.initializeApp({
 
 const bd = createBotFileProvider()
 
-createServerNetcode({
-  onLogin: async (connId, msg) => {
-    try {
-      const bot = bd.authenticate(msg.idToken)
-      if (bot) return { uid: bot.uid }
-      const decodedIdToken = await admin.auth().verifyIdToken(msg.idToken)
-      if (!decodedIdToken.uid) return // Silently ignore auth that fails
-      return { uid: decodedIdToken.uid }
-    } catch (e) {
-      console.error(e)
-      return // Silently ignore errors
-    }
-  },
-  async onPositionUpdate(connId, msg) {
-    // console.log(connId, msg)
-  },
-})
+const client = createClient()
 
-// Prints: server listening 0.0.0.0:41234
+const geo = initialize(client)
+
+;(async () => {
+  await geo.delete()
+
+  const positionExpirations: { [_: string]: number } = {}
+
+  const purgePositions = () => {
+    const now = +new Date()
+    const expired: string[] = []
+    forEach(positionExpirations, (exp, uid) => {
+      if (now < exp) return
+      expired.push(uid)
+    })
+    if (expired.length > 0) {
+      geo.removeLocations(expired)
+    }
+    setTimeout(purgePositions, 1000)
+  }
+  setTimeout(purgePositions, 1000)
+
+  createServerNetcode({
+    async getUidFromAuthToken(idToken) {
+      try {
+        const bot = bd.authenticate(idToken)
+        if (bot) return bot.uid
+        const decodedIdToken = await admin.auth().verifyIdToken(idToken)
+        if (!decodedIdToken.uid) return // Silently ignore auth that fails
+        return decodedIdToken.uid
+      } catch (e) {
+        console.error(e)
+        return // Silently ignore errors
+      }
+    },
+    async onPositionUpdate(session, msg) {
+      await geo.addLocation(session.uid, msg)
+      positionExpirations[session.uid] = +new Date() + 1000
+      // console.log(connId, msg)
+    },
+  })
+})()

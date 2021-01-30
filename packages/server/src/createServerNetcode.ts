@@ -1,7 +1,5 @@
 import {
   createMessageHandler,
-  LoginRequest,
-  LoginResponse,
   MessageTypes,
   MessageWrapper,
   packLoginResponse,
@@ -13,20 +11,24 @@ import { createServer } from 'net'
 
 export type ServerMessageSender = (msg: Buffer) => Promise<number>
 
+export type Session = {
+  connectionId: number
+  idToken: string
+  uid: string
+}
+
+export type MessageHandler<TIn, TOut = undefined> = (
+  session: Session,
+  msg: TIn
+) => Promise<TOut | void>
 export type ServerNetcodeConfig = {
-  onLogin: (
-    connId: number,
-    msg: LoginRequest
-  ) => Promise<LoginResponse | undefined>
-  onPositionUpdate: (
-    connId: number,
-    msg: PositionUpdateRequest
-  ) => Promise<void>
+  getUidFromAuthToken: (idToken: string) => Promise<string | void>
+  onPositionUpdate: MessageHandler<PositionUpdateRequest>
 }
 
 export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   let connId = 0
-  const authenticated: { [_: number]: string | undefined } = {}
+  const sessions: { [_: number]: Session } = {}
 
   let openConnectionCount = 0
   let pingCount = 0
@@ -72,28 +74,31 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
     }
 
     const dispatch: {
-      [_ in MessageTypes]?: (e: MessageWrapper) => void
+      [_ in MessageTypes]?: (e: MessageWrapper) => Promise<void>
     } = {
       [MessageTypes.LoginRequest]: async (e) => {
         const msg = unpackLoginRequest(e)
-        const reply = await settings.onLogin(thisConnId, msg)
-        authenticated[thisConnId] = reply?.uid
-        if (!reply) return // don't send reply
-        const packed = packLoginResponse(e, reply)
+        const uid = await settings.getUidFromAuthToken(msg.idToken)
+        if (!uid) return // don't send reply
+        sessions[thisConnId] = {
+          uid,
+          connectionId: thisConnId,
+          idToken: msg.idToken,
+        }
+        const packed = packLoginResponse(e, { uid })
         sock.write(packed)
       },
       [MessageTypes.PositionUpdateRequest]: async (e) => {
         const msg = unpackPositionUpdateRequest(e)
         pingCount++
-        settings.onPositionUpdate(thisConnId, msg)
+        await settings.onPositionUpdate(sessions[thisConnId], msg)
       },
     }
 
     const { onRawMessage, handleSocketDataEvent } = createMessageHandler()
     onRawMessage((e) => {
       try {
-        if (e.type != MessageTypes.LoginRequest && !authenticated[thisConnId])
-          return // Silently ignore unauthenticated
+        if (e.type != MessageTypes.LoginRequest && !sessions[thisConnId]) return // Silently ignore unauthenticated
         const d = dispatch[e.type]
         if (!d) {
           throw new Error(`Unhandled message type ${e.type}`)
