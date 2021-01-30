@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-empty-function */
+import { createBotAuthenticator } from '@rini/bot'
 import * as admin from 'firebase-admin'
 import { resolve } from 'path'
 import { createServerNetcode } from './createServerNetcode'
@@ -14,9 +15,13 @@ admin.initializeApp({
   databaseURL: 'https://rini-1234a-default-rtdb.firebaseio.com',
 })
 
+const ba = createBotAuthenticator()
+
 createServerNetcode({
   onLogin: async (connId, msg) => {
     try {
+      const bot = ba.authenticate(msg.idToken)
+      if (bot) return { uid: bot.uid }
       const decodedIdToken = await admin.auth().verifyIdToken(msg.idToken)
       if (!decodedIdToken.uid) return // Silently ignore auth that fails
       return { uid: decodedIdToken.uid }
@@ -26,7 +31,7 @@ createServerNetcode({
     }
   },
   async onPositionUpdate(connId, msg) {
-    console.log(connId, msg)
+    // console.log(connId, msg)
   },
 })
 

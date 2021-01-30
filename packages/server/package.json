@@ -11,6 +11,7 @@
     "dev": "nodemon ./dist/index.js"
   },
   "dependencies": {
+    "@rini/bot": "0.0.1",
     "@rini/common": "0.0.1",
     "@types/node": "^14.14.22",
     "firebase-admin": "^9.4.2",

@@ -16,7 +16,7 @@ import net, { Socket } from 'net'
 export type ClientMessageSender = (msg: Buffer) => Promise<void>
 
 export type ClientNetcodeConfig = {
-  address: string
+  host: string
   port: number
   maxRetries: number
   retryDelayMs: number
@@ -38,7 +38,7 @@ export const createClientNetcode = (
   let isConnected = false
 
   const _settings: ClientNetcodeConfig = {
-    address: 'localhost',
+    host: 'localhost',
     port: 41234,
     maxRetries: 0,
     retryDelayMs: 5000,
@@ -46,7 +46,7 @@ export const createClientNetcode = (
     ...settings,
   }
   const {
-    address,
+    host,
     port,
     maxRetries,
     retryDelayMs,
@@ -59,16 +59,11 @@ export const createClientNetcode = (
   let socket: Socket
   const connect = () => {
     retryTid = undefined
-    socket = net.createConnection({ port: 41234, host: 'localhost' })
+    socket = net.createConnection({ port, host })
     socket.on('connect', () => {
       console.log('connected')
       socket.on('data', handleSocketDataEvent)
       console.log('listening for data')
-
-      const unsub = onRawMessage((msg) => {
-        console.log(`got msg`, msg)
-      })
-      cleanups.push(unsub)
 
       login({ idToken })
         .then(() => {
@@ -150,7 +145,6 @@ export const createClientNetcode = (
         reject(`Timed out awaiting reply to ${messageId}`)
       }, awaitReplyTimeoutMs)
       const unsub = onRawMessage((m) => {
-        console.log('got raw message', m)
         if (m.refMessageId !== messageId) return // Skip, it's not our message
         unsub()
         clearTimeout(tid)
@@ -173,7 +167,7 @@ export const createClientNetcode = (
 
   const send = (buf: Buffer) =>
     new Promise<void>((resolve) => {
-      console.log(`Sending msg to`, buf, { address, port })
+      // console.log(`Sending msg to`, buf, { address, port })
       socket.write(buf, (err) => {
         if (err) {
           console.error(err, err.name)

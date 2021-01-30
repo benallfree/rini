@@ -28,31 +28,71 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   let connId = 0
   const authenticated: { [_: number]: string | undefined } = {}
 
+  let openConnectionCount = 0
+  let pingCount = 0
+  let startTimeMs = +new Date()
+  const heartbeat = () => {
+    const endTimeMs = +new Date()
+    const totalMs = endTimeMs - startTimeMs
+    const pingsPerSec = pingCount / (totalMs / 1000)
+    const pingsExpectedPerSec = openConnectionCount * 2
+    const missedPingsPerSec = Math.max(0, pingsExpectedPerSec - pingsPerSec)
+
+    const pressure = pingsExpectedPerSec
+      ? missedPingsPerSec / pingsExpectedPerSec
+      : 0
+    console.log({
+      openConnectionCount,
+      startTimeMs,
+      endTimeMs,
+      totalMs,
+      pingCount,
+      pingsPerSec,
+      pingsExpectedPerSec,
+      missedPingsPerSec,
+      pressure,
+    })
+    startTimeMs = +new Date()
+    pingCount = 0
+    setTimeout(heartbeat, 5000)
+  }
+  setTimeout(heartbeat, 5000)
+
   const server = createServer((sock) => {
-    connId++
-    console.log(`C${connId}: connect`)
+    const thisConnId = connId++
+    openConnectionCount++
+    console.log(`C${thisConnId} (${openConnectionCount} connections)`)
+    let isCleanedUp = false
+
+    const cleanup = () => {
+      if (isCleanedUp) return
+      isCleanedUp = true
+      console.log(`C${thisConnId} cleanup`, sock.destroyed)
+      openConnectionCount--
+    }
 
     const dispatch: {
       [_ in MessageTypes]?: (e: MessageWrapper) => void
     } = {
       [MessageTypes.LoginRequest]: async (e) => {
         const msg = unpackLoginRequest(e)
-        const reply = await settings.onLogin(connId, msg)
-        authenticated[connId] = reply?.uid
+        const reply = await settings.onLogin(thisConnId, msg)
+        authenticated[thisConnId] = reply?.uid
         if (!reply) return // don't send reply
         const packed = packLoginResponse(e, reply)
         sock.write(packed)
       },
       [MessageTypes.PositionUpdateRequest]: async (e) => {
         const msg = unpackPositionUpdateRequest(e)
-        settings.onPositionUpdate(connId, msg)
+        pingCount++
+        settings.onPositionUpdate(thisConnId, msg)
       },
     }
 
     const { onRawMessage, handleSocketDataEvent } = createMessageHandler()
     onRawMessage((e) => {
       try {
-        if (e.type != MessageTypes.LoginRequest && !authenticated[connId])
+        if (e.type != MessageTypes.LoginRequest && !authenticated[thisConnId])
           return // Silently ignore unauthenticated
         const d = dispatch[e.type]
         if (!d) {
@@ -64,18 +104,28 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       }
     })
 
-    sock.on('close', (hadError) =>
-      console.log(`C${connId}: close`, { hadError })
-    )
-    sock.on('connect', () => console.log(`C${connId}: connect`))
+    sock.on('close', (hadError) => {
+      console.log(`C${thisConnId}: close`, { hadError })
+      cleanup()
+    })
+
     sock.on('data', handleSocketDataEvent)
-    sock.on('drain', () => console.log(`C${connId}: drain`))
-    sock.on('end', () => console.log(`C${connId}: end`))
-    sock.on('error', (err) => console.error(`C${connId}: error`, err))
+    sock.on('drain', () => console.log(`C${thisConnId}: drain`))
+    sock.on('end', () => {
+      console.log(`C${thisConnId}: end`)
+      cleanup()
+    })
+    sock.on('error', (err) => {
+      console.error(`C${thisConnId}: error`, err)
+      cleanup()
+    })
     sock.on('lookup', (err, address, family, host) =>
-      console.log(`C${connId}: lookup`, { err, address, family, host })
+      console.log(`C${thisConnId}: lookup`, { err, address, family, host })
     )
-    sock.on('timeout', () => console.log(`C${connId}: timeout`))
+    sock.on('timeout', () => {
+      console.log(`C${thisConnId}: timeout`)
+      cleanup()
+    })
   })
   server.listen(41234, () => {
     console.log(`Server is now listening`)
