@@ -2,5 +2,5 @@
   "execMap": {
     "js": "node --enable-source-maps"
   },
-  "watch": ["../common/dist", "../bot/dist", "dist"]
+  "watch": ["../common/dist", "../bot/dist", "../georedis-promised", "dist"]
 }
