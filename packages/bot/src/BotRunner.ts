@@ -12,7 +12,11 @@ export const createBotRunner = (
   const splitIdx = Math.floor(Math.random() * points.length - 1)
   const a = points.slice(0, splitIdx)
   const b = points.slice(splitIdx)
-  const final = [...b, ...a]
+  const final = (() => {
+    const final = [...b, ...a]
+    if (Math.random() > 0.5) return final
+    return final.reverse()
+  })()
 
   ;(async () => {
     const client = createClientNetcode(bot.idToken)
