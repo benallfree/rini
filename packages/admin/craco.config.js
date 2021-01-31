@@ -1,6 +1,5 @@
 const path = require('path')
 const { getLoader, loaderByName } = require('@craco/craco')
-const absolutePath = path.join(__dirname, '../common')
 
 module.exports = {
   webpack: {
@@ -15,7 +14,7 @@ module.exports = {
         const include = Array.isArray(match.loader.include)
           ? match.loader.include
           : [match.loader.include]
-        match.loader.include = include.concat[absolutePath]
+        match.loader.include = include.concat[path.join(__dirname, '../common')]
       }
       return webpackConfig
     },
