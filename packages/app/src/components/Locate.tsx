@@ -3,6 +3,21 @@ import React, { FC, useEffect, useState } from 'react'
 import { Button, Text } from 'react-native-elements'
 import Geolocation from 'react-native-geolocation-service'
 import { useNet } from '../Store'
+import MapView, { Marker } from 'react-native-maps'
+import { StyleSheet, View } from 'react-native'
+
+const styles = StyleSheet.create({
+  container: {
+    ...StyleSheet.absoluteFillObject,
+    height: '100%',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+})
 
 export const Locate: FC = () => {
   const [location, setLocation] = useState<Geolocation.GeoPosition>()
@@ -43,11 +58,25 @@ export const Locate: FC = () => {
             .then(() => console.log('User signed out!'))
         }
       />
-      <Text h1>Hello world</Text>
       {location && (
         <>
-          <Text h3>Lat: {location.coords.latitude}</Text>
-          <Text h3>Lng: {location.coords.longitude}</Text>
+          <View style={styles.container}>
+            <MapView
+              style={styles.map}
+              region={{
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              }}
+            >
+              <Marker
+                coordinate={location.coords}
+                title={'Me'}
+                description={'My Location'}
+              />
+            </MapView>
+          </View>
         </>
       )}
     </>

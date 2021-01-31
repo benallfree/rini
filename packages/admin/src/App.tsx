@@ -1,5 +1,5 @@
 import firebase from 'firebase'
-import React, { FC } from 'react'
+import React, { FC, useEffect } from 'react'
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth'
 import { MapContainer, Marker, TileLayer } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-markercluster'
@@ -8,6 +8,7 @@ import {
   FirebaseAuthProvider,
   FirebaseAuthConsumer,
 } from '@react-firebase/auth'
+import { Store } from './Store'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCQrCIh-R6v-t0Qz-YWrnXRwsn-XhxVQgE',
@@ -47,24 +48,26 @@ const Map: FC = () => {
 }
 const App: FC = () => {
   return (
-    <FirebaseAuthProvider {...firebaseConfig} firebase={firebase}>
-      <div>
-        <FirebaseAuthConsumer>
-          {({ isSignedIn }) => {
-            if (isSignedIn === true) {
-              return <Map />
-            }
-            return (
-              <StyledFirebaseAuth
-                uiConfig={uiConfig}
-                firebaseAuth={firebase.auth()}
-              />
-            )
-          }}
-        </FirebaseAuthConsumer>
-      </div>
-      <div>Another div</div>
-    </FirebaseAuthProvider>
+    <Store.Provider>
+      <FirebaseAuthProvider {...firebaseConfig} firebase={firebase}>
+        <div>
+          <FirebaseAuthConsumer>
+            {({ isSignedIn }) => {
+              if (isSignedIn === true) {
+                return <Map />
+              }
+              return (
+                <StyledFirebaseAuth
+                  uiConfig={uiConfig}
+                  firebaseAuth={firebase.auth()}
+                />
+              )
+            }}
+          </FirebaseAuthConsumer>
+        </div>
+        <div>Another div</div>
+      </FirebaseAuthProvider>
+    </Store.Provider>
   )
 }
 

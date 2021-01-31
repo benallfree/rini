@@ -276,6 +276,8 @@ PODS:
   - React-jsinspector (0.63.4)
   - react-native-geolocation-service (5.1.1):
     - React
+  - react-native-maps (0.27.1):
+    - React
   - react-native-randombytes (3.6.0):
     - React-Core
   - react-native-tcp-socket (4.5.5):
@@ -418,6 +420,7 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - react-native-geolocation-service (from `../node_modules/react-native-geolocation-service`)
+  - react-native-maps (from `../node_modules/react-native-maps`)
   - react-native-randombytes (from `../node_modules/react-native-randombytes`)
   - react-native-tcp-socket (from `../node_modules/react-native-tcp-socket`)
   - react-native-udp (from `../node_modules/react-native-udp`)
@@ -535,6 +538,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/jsinspector"
   react-native-geolocation-service:
     :path: "../node_modules/react-native-geolocation-service"
+  react-native-maps:
+    :path: "../node_modules/react-native-maps"
   react-native-randombytes:
     :path: "../node_modules/react-native-randombytes"
   react-native-tcp-socket:
@@ -651,6 +656,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 93bd528844ad21dc07aab1c67cb10abae6df6949
   React-jsinspector: 58aef7155bc9a9683f5b60b35eccea8722a4f53a
   react-native-geolocation-service: f33626f1ae12381ca2ae60f98b2f5edd676bf95a
+  react-native-maps: f4b89da81626ad7f151a8bfcb79733295d31ce5c
   react-native-randombytes: b6677f7d495c27e9ee0dbd77ebc97b3c59173729
   react-native-tcp-socket: 6b4108c9000d0ad48f5ea89d3c971fb2e73da6ca
   react-native-udp: f074c83f072beaf52a97369315372c7dba48fda2
@@ -687,6 +693,6 @@ SPEC CHECKSUMS:
   UMTaskManagerInterface: 4c60b43eaf3cb05a164bc9113258a171c18b7bf7
   Yoga: 4bd86afe9883422a7c4028c00e34790f560923d6
 
-PODFILE CHECKSUM: 45f1a8292e761a41a6a7464e1169d3bc0ebc820f
+PODFILE CHECKSUM: 8cb7a40a48d4d14397576513dfb6f313ffbb6aa7
 
 COCOAPODS: 1.9.3

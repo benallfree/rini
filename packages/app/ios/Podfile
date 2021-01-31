@@ -6,6 +6,7 @@ platform :ios, '10.0'
 
 target 'Rini' do
   use_unimodules!
+  
   config = use_native_modules!
 
   use_react_native!(:path => config["reactNativePath"])

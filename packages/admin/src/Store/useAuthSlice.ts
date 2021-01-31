@@ -1,19 +1,18 @@
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth'
 import { useEffect, useState } from 'react'
 import { AsyncState } from './AsyncState'
+import firebase from 'firebase'
 
+const auth = firebase.auth
 export const useAuthSlice = () => {
-  const [user, setUser] = useState<AsyncState<FirebaseAuthTypes.User | null>>({
+  const [user, setUser] = useState<AsyncState<firebase.User | null>>({
     promised: true,
   })
   const [idToken, setIdToken] = useState<string>()
 
   useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(
-      (user: FirebaseAuthTypes.User | null) => {
-        setUser({ promised: false, data: user })
-      }
-    )
+    const subscriber = auth().onAuthStateChanged((user) => {
+      setUser({ promised: false, data: user })
+    })
     return subscriber // unsubscribe on unmount
   }, [])
 

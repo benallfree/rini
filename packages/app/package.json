@@ -48,6 +48,7 @@
     "react-native-geolocation-service": "^5.1.1",
     "react-native-gesture-handler": "~1.8.0",
     "react-native-level-fs": "^3.0.0",
+    "react-native-maps": "^0.27.1",
     "react-native-os": "^1.0.1",
     "react-native-permissions": "^3.0.0",
     "react-native-phone-number-input": "^2.0.0",
