@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["esnext"],
+    "lib": ["esnext", "DOM"],
     "moduleResolution": "node",
     "strict": true,
     "rootDir": "./src",

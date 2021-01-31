@@ -1,18 +1,20 @@
-import React from 'react'
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import React, { FC } from 'react'
+import { MapContainer, Marker, TileLayer } from 'react-leaflet'
+import MarkerClusterGroup from 'react-leaflet-markercluster'
 import './App.css'
 
-function App() {
+const App: FC = () => {
   return (
-    <MapContainer center={[51.505, -0.09]} zoom={13} scrollWheelZoom={false}>
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-      <Marker position={[51.505, -0.09]}>
-        <Popup>
-          A pretty CSS3 popup. <br /> Easily customizable.
-        </Popup>
-      </Marker>
-    </MapContainer>
+    <div>
+      <MapContainer center={[51.505, -0.09]} zoom={13} scrollWheelZoom={false}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <MarkerClusterGroup>
+          <Marker position={[49.8397, 24.0297]} />
+          <Marker position={[52.2297, 21.0122]} />
+          <Marker position={[51.5074, -0.0901]} />
+        </MarkerClusterGroup>
+      </MapContainer>
+    </div>
   )
 }
 

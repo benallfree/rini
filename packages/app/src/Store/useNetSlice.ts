@@ -9,8 +9,9 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
   const [client, setClient] = useState<ClientNetcode>()
 
   useEffect(() => {
-    const client = createClientNetcode({
-      address: 'localhost',
+    if (!idToken) return
+    const client = createClientNetcode(idToken, {
+      host: 'localhost',
       port: 41234,
     })
 
@@ -21,7 +22,7 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
       setIsAuthenticated(false)
       client.close()
     }
-  }, [])
+  }, [idToken])
 
   useEffect(() => {
     console.log({ client, data: idToken })

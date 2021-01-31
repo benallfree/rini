@@ -10,14 +10,14 @@
     "dev": "nodemon  ./dist/run.js"
   },
   "dependencies": {
-    "@rini/client": "0.0.1",
-    "@types/blessed": "^0.1.17",
+    "@rini/client": "../client",
     "@types/prompts": "^2.0.9",
     "blessed": "^0.1.81",
     "gpxparser": "benallfree/GPXParser.js#master",
-    "ios-simulator-scenarios-to-gpx": "dive/ios-simulator-scenarios-to-gpx",
-    "nodemon": "^2.0.7",
-    "prompt": "^1.1.0",
     "prompts": "^2.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7",
+    "typescript": "^4.1.3"
   }
 }

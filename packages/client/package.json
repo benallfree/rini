@@ -9,6 +9,9 @@
     "watch": "tsc -w --preserveWatchOutput"
   },
   "dependencies": {
-    "@rini/common": "0.0.1"
+    "@rini/common": "../common"
+  },
+  "devDependencies": {
+    "typescript": "^4.1.3"
   }
 }
