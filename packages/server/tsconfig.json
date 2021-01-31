@@ -8,7 +8,6 @@
     "target": "es3",
     "declaration": true,
     "sourceMap": true,
-    "resolveJsonModule": true,
-    "typeRoots": ["./node_modules/@types", "./src/@types"]
+    "resolveJsonModule": true
   }
 }

@@ -3,10 +3,10 @@
 import { createBotFileProvider } from '@rini/bot'
 import { forEach } from '@s-libs/micro-dash'
 import * as admin from 'firebase-admin'
+import { initialize } from 'georedis-promised'
 import { resolve } from 'path'
 import { createClient } from 'redis'
 import { createServerNetcode } from './createServerNetcode'
-import { initialize } from './georedis-promised'
 
 const serviceAccount = require(resolve(
   __dirname,
@@ -43,7 +43,7 @@ const geo = initialize(client)
   }
   setTimeout(purgePositions, 1000)
 
-  createServerNetcode({
+  const api = createServerNetcode({
     async getUidFromAuthToken(idToken) {
       try {
         const bot = bd.authenticate(idToken)
@@ -57,8 +57,10 @@ const geo = initialize(client)
       }
     },
     async onPositionUpdate(session, msg) {
-      await geo.addLocation(session.uid, msg)
       positionExpirations[session.uid] = +new Date() + 1000
+      await geo.addLocation(session.uid, msg)
+      const nearby = await geo.nearby(session.uid, 50)
+      console.log({ session, nearby })
       // console.log(connId, msg)
     },
   })

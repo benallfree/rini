@@ -61,6 +61,7 @@ export const createClientNetcode = (
     retryTid = undefined
     socket = net.createConnection({ port, host })
     socket.on('connect', () => {
+      retryCount = 0
       console.log('connected')
       socket.on('data', handleSocketDataEvent)
       console.log('listening for data')
@@ -102,10 +103,9 @@ export const createClientNetcode = (
       cleanup()
     })
 
-    const cleanups = [() => socket.destroy()]
     const cleanup = () => {
       console.log('Cleaning up')
-      cleanups.forEach((c) => c())
+      socket.destroy()
       isConnected = false
       emitDisconnect({
         address: socket.remoteAddress || 'unknown',
@@ -150,7 +150,11 @@ export const createClientNetcode = (
         clearTimeout(tid)
         resolve(m)
       })
-      send(packed).catch(reject)
+      send(packed).catch((e) => {
+        unsub()
+        clearTimeout(tid)
+        reject(`Error sending. Trigger reconnect`)
+      })
     })
   }
 

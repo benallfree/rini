@@ -11,6 +11,8 @@
     "watch:bot": "yarn bot watch",
     "watch:server": "yarn server watch",
     "watch:client": "yarn client watch",
+    "watch:georedis-promised": "yarn georedis watch",
+    "georedis": "yarn workspace georedis-promised",
     "common": "yarn workspace @rini/common",
     "bot": "yarn workspace @rini/bot",
     "client": "yarn workspace @rini/client",
