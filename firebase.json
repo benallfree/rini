@@ -9,16 +9,29 @@
   "functions": {
     "predeploy": "cd packages/functions && yarn build"
   },
-  "hosting": {
-    "public": "packages/static/public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  },
+  "hosting": [
+    {
+      "target": "admin",
+      "site": "rini-admin",
+      "public": "packages/admin/build",
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "target": "static",
+      "public": "packages/static/build",
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ],
   "storage": {
     "rules": "storage.rules"
   },
