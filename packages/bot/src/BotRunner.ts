@@ -21,7 +21,7 @@ export const createBotRunner = (
   ;(async () => {
     const client = createClientNetcode(bot.idToken)
 
-    const { onConnect, onDisconnect, isConnected } = client
+    const { onConnect, onDisconnect, isConnected, onNearbyEntities } = client
 
     let idx = 0
 
@@ -51,8 +51,12 @@ export const createBotRunner = (
       ping()
     })
     onDisconnect(() => {
+      console.log('disconnected')
       clearTimeout(mtid)
       clearTimeout(ptid)
+    })
+    onNearbyEntities((e) => {
+      console.log(`Nearby entities`, e.nearby)
     })
   })()
 

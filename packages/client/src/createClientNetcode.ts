@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-ignore
 import {
+  AnyMessage,
+  CertifiedMessage,
+  certifyMessage,
   createMessageHandler,
   event,
+  EventEmitter,
   LoginRequest,
   LoginResponse,
+  MessageTypes,
   MessageWrapper,
-  packLoginRequest,
-  packPositionUpdateRequest,
+  NearbyEntities,
+  packMessage,
   PositionUpdateRequest,
-  PositionUpdateResponse,
-  unpackLoginResponse,
-  unpackPositionUpdateResponse,
 } from '@rini/common'
 import net, { Socket } from 'net'
 
@@ -137,20 +139,25 @@ export const createClientNetcode = (
 
   const { onRawMessage, handleSocketDataEvent } = createMessageHandler()
 
-  const sendMessageAndAwaitReply = async (
-    packed: Buffer
-  ): Promise<MessageWrapper> => {
-    const messageId = packed.readUInt32BE(0)
-    return new Promise<MessageWrapper>((resolve, reject) => {
+  const sendMessageAndAwaitReply = async <
+    TMessage extends AnyMessage,
+    TReply extends AnyMessage
+  >(
+    msg: MessageWrapper<TMessage>
+  ): Promise<TReply> => {
+    const certified = certifyMessage(msg)
+    console.log(`sending`, { certified })
+    const packed = packMessage(certified)
+    return new Promise<TReply>((resolve, reject) => {
       const tid = setTimeout(() => {
         unsub()
-        reject(`Timed out awaiting reply to ${messageId}`)
+        reject(`Timed out awaiting reply to ${certified.id}`)
       }, awaitReplyTimeoutMs)
       const unsub = onRawMessage((m) => {
-        if (m.refMessageId !== messageId) return // Skip, it's not our message
+        if (m.refId !== certified.id) return // Skip, it's not our message
         unsub()
         clearTimeout(tid)
-        resolve(m)
+        resolve((m as unknown) as TReply)
       })
       send(packed).catch((e) => {
         unsub()
@@ -160,19 +167,36 @@ export const createClientNetcode = (
     })
   }
 
-  const login = async (msg: LoginRequest): Promise<LoginResponse> => {
-    const packed = packLoginRequest(msg)
-    const wrapper = await sendMessageAndAwaitReply(packed)
-    return unpackLoginResponse(wrapper)
+  const sendMessage = <TMessage extends AnyMessage>(
+    msg: MessageWrapper<TMessage>
+  ): CertifiedMessage<TMessage> => {
+    const certified = certifyMessage(msg)
+    const packed = packMessage(certified)
+
+    send(packed).catch((e) => {
+      console.error(`Error sending message`, e)
+    })
+    return certified
+  }
+
+  const login = async (message: LoginRequest): Promise<LoginResponse> => {
+    const response = await sendMessageAndAwaitReply<
+      LoginRequest,
+      LoginResponse
+    >({
+      message,
+      type: MessageTypes.LoginRequest,
+    })
+    return response
   }
 
   const updatePosition = async (
-    msg: PositionUpdateRequest
-  ): Promise<PositionUpdateResponse> => {
-    const packed = packPositionUpdateRequest(msg)
-    const wrapper = await sendMessageAndAwaitReply(packed)
-    const unwrapped = unpackPositionUpdateResponse(wrapper)
-    return unwrapped
+    message: PositionUpdateRequest
+  ): Promise<void> => {
+    sendMessage({
+      message,
+      type: MessageTypes.PositionUpdate,
+    })
   }
 
   const send = (buf: Buffer) =>
@@ -187,6 +211,18 @@ export const createClientNetcode = (
       })
     })
 
+  // Listen for important messages
+  const [onNearbyEntities, emitNearbyEntities] = event<NearbyEntities>()
+  const dispatchHandlers: { [_ in MessageTypes]?: EventEmitter<any> } = {
+    [MessageTypes.NearbyEntities]: emitNearbyEntities,
+  }
+  onRawMessage((m) => {
+    // console.log(`got raw message incoming`, m)
+    const dispatchHandler = dispatchHandlers[m.type]
+    if (!dispatchHandler) return // Not handled
+    dispatchHandler(m.message)
+  })
+
   const api = {
     close: () => socket.destroy(),
     login,
@@ -194,6 +230,7 @@ export const createClientNetcode = (
     onConnect,
     onDisconnect,
     isConnected: () => isConnected,
+    onNearbyEntities,
   }
   return api
 }

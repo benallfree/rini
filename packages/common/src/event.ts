@@ -1,7 +1,6 @@
 import { EventEmitter as NodeEventEmitter } from 'events'
-import { SmartBuffer } from 'smart-buffer'
 
-export type DataPrimitives = SmartBuffer | string | number
+export type DataPrimitives = any
 export type EventData = { [_: string]: DataPrimitives }
 export type Unsubscribe = () => void
 export type EventHandler<TData extends EventData> = (data: TData) => void
@@ -32,7 +31,7 @@ export function event<TData extends EventData>(): EventPair<TData> {
   return [
     (callback: EventHandler<TData>): Unsubscribe => {
       emitter.on('event', callback)
-      return () => emitter.removeAllListeners('event')
+      return () => emitter.removeListener('event', callback)
     },
     (data: TData) => {
       emitter.emit('event', data)

@@ -1,6 +1,18 @@
+import { AnyMessage } from '../messages'
+
 export enum MessageTypes {
-  LoginRequest = 0,
-  LoginReply = 1,
-  PositionUpdateRequest = 2,
-  PositionUpdateResponse = 3,
+  LoginRequest,
+  LoginReply,
+  PositionUpdate,
+  NearbyEntities,
 }
+
+export type MessageWrapper<TMessage extends AnyMessage> = {
+  type: MessageTypes
+  refId?: number
+  message: TMessage
+}
+
+export type CertifiedMessage<
+  TMessage extends AnyMessage
+> = MessageWrapper<TMessage> & { id: number }

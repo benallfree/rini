@@ -1,12 +1,13 @@
 import {
+  AnyMessage,
+  CertifiedMessage,
+  certifyAndPackMessage,
   createMessageHandler,
+  LoginRequest,
+  LoginResponse,
   MessageTypes,
-  MessageWrapper,
-  packLoginResponse,
-  packPositionUpdateResponse,
+  NearbyEntities,
   PositionUpdateRequest,
-  unpackLoginRequest,
-  unpackPositionUpdateRequest,
 } from '@rini/common'
 import { createServer } from 'net'
 import { NearbyDC } from '../../georedis-promised/node_modules/georedis'
@@ -77,42 +78,69 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
     }
 
     const dispatch: {
-      [_ in MessageTypes]?: (e: MessageWrapper) => Promise<void>
+      [_ in MessageTypes]?: (e: CertifiedMessage<AnyMessage>) => Promise<void>
     } = {
       [MessageTypes.LoginRequest]: async (e) => {
-        const msg = unpackLoginRequest(e)
+        const msg = e.message as LoginRequest
+        console.log(`processing login request`, { msg })
         const uid = await settings.getUidFromAuthToken(msg.idToken)
+        console.log(`uid resolved to `, { uid })
         if (!uid) return // don't send reply
         sessions[thisConnId] = {
           uid,
           connectionId: thisConnId,
           idToken: msg.idToken,
         }
-        const packed = packLoginResponse(e, { uid })
+
+        const packed = certifyAndPackMessage<LoginResponse>({
+          type: MessageTypes.LoginReply,
+          refId: e.id,
+          message: { uid },
+        })
+        console.log({ packed })
         sock.write(packed)
       },
-      [MessageTypes.PositionUpdateRequest]: async (e) => {
-        const msg = unpackPositionUpdateRequest(e)
+      [MessageTypes.PositionUpdate]: async (e) => {
+        const msg = e.message as PositionUpdateRequest
         pingCount++
         await settings.updatePosition(sessions[thisConnId], msg)
+        scheduleSendNearbyEntities()
+      },
+    }
+
+    let sendNearbyEntitiesTid: ReturnType<typeof setTimeout>
+    const scheduleSendNearbyEntities = () => {
+      console.log('scheduling entities')
+      if (sendNearbyEntitiesTid) return
+      const send = async () => {
         const nearby = await settings.getNearbyPlayers(sessions[thisConnId])
         if (!nearby) {
-          throw new Error(`Could not fet nearby Pla`)
+          throw new Error(`Could not fetch nearby players`)
         }
-        const packed = packPositionUpdateResponse(e, { nearby })
+
+        const packed = certifyAndPackMessage<NearbyEntities>({
+          type: MessageTypes.NearbyEntities,
+          message: { nearby },
+        })
         sock.write(packed)
-      },
+      }
+      setTimeout(send, 500)
     }
 
     const { onRawMessage, handleSocketDataEvent } = createMessageHandler()
     onRawMessage((e) => {
+      console.log(`received`, { e })
       try {
-        if (e.type != MessageTypes.LoginRequest && !sessions[thisConnId]) return // Silently ignore unauthenticated
-        const d = dispatch[e.type]
-        if (!d) {
+        if (e.type != MessageTypes.LoginRequest && !sessions[thisConnId]) {
+          console.error(`unestablished session`, { e })
+          sock.destroy()
+          return // Silently ignore unauthenticated
+        }
+        const dispatchHandler = dispatch[e.type]
+        if (!dispatchHandler) {
           throw new Error(`Unhandled message type ${e.type}`)
         }
-        d(e)
+        dispatchHandler(e)
       } catch (e) {
         console.error(e)
       }

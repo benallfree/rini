@@ -1,5 +1,5 @@
 import { ClientNetcode, createClientNetcode } from '@rini/client'
-import { PositionUpdateRequest } from '@rini/common'
+import { NearbyEntities, PositionUpdateRequest } from '@rini/common'
 import { useEffect, useState } from 'react'
 import { useAuthSlice } from './useAuthSlice'
 
@@ -8,6 +8,7 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
   const [authenticationError, setAuthenticationError] = useState<Error>()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [client, setClient] = useState<ClientNetcode>()
+  const [nearbyEntities, setNearbyEntities] = useState<NearbyEntities>()
 
   useEffect(() => {
     if (!idToken) return
@@ -24,6 +25,16 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
       client.close()
     }
   }, [idToken])
+
+  useEffect(() => {
+    // Listen for nearby entities
+    if (!client) return
+    const { onNearbyEntities } = client
+    const unsub = onNearbyEntities((e) => {
+      setNearbyEntities(e)
+    })
+    return unsub
+  }, [client])
 
   useEffect(() => {
     console.log({ client, data: idToken })
@@ -54,14 +65,14 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
   const sendPosition = async (msg: PositionUpdateRequest) => {
     if (!client) return
     console.log('updating position', { msg })
-    const response = await client.updatePosition(msg)
-    return response.nearby
+    client.updatePosition(msg)
   }
 
   const api = {
     isAuthenticated,
     authenticationError,
     sendPosition,
+    nearbyEntities,
   }
 
   return api

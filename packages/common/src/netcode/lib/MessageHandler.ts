@@ -1,41 +1,34 @@
 import { SmartBuffer } from 'smart-buffer'
-import { Header, HEADER_LEN, MessageTypeValues, MessageWrapper } from '.'
 import { event } from '../../event'
+import { AnyMessage } from '../messages'
+import { CertifiedMessage } from './MessageTypes'
 
 export const createMessageHandler = () => {
-  const dataBuf = new SmartBuffer()
+  let dataBuf = new SmartBuffer()
 
-  let currentHeader: Header | undefined
-
-  const [onRawMessage, emitRawMessage] = event<MessageWrapper>()
+  const [onRawMessage, emitRawMessage] = event<CertifiedMessage<AnyMessage>>()
 
   const handleSocketDataEvent = (data: Buffer) => {
     dataBuf.writeBuffer(data)
-    if (!currentHeader) {
-      if (dataBuf.length < HEADER_LEN) return // nothing to do yet
-      currentHeader = {
-        id: dataBuf.readUInt32BE(),
-        refMessageId: dataBuf.readUInt32BE(),
-        type: dataBuf.readUInt8(),
-        payloadLength: dataBuf.readUInt16BE(),
-      }
-      if (!currentHeader.id) {
-        throw new Error(`Unexpected message ID ${currentHeader.id}`)
-      }
-      if (!MessageTypeValues.includes(currentHeader.type)) {
-        throw new Error(`Unexpected message type ${currentHeader.type}`)
-      }
-    }
-    if (currentHeader) {
-      if (dataBuf.length < currentHeader.payloadLength) return // nothing to do yet
-      const e: MessageWrapper = {
-        ...currentHeader,
-        payload: SmartBuffer.fromBuffer(
-          dataBuf.readBuffer(currentHeader.payloadLength)
-        ),
-      }
-      emitRawMessage(e)
-      currentHeader = undefined
+    const msgLen = dataBuf.internalBuffer.readUInt32BE(dataBuf.readOffset)
+    // console.log(`wire in`, { data, msgLen })
+
+    if (dataBuf.length < msgLen + 4) return
+    dataBuf.readUInt32BE() // throw away
+    const jsonString = dataBuf.readBuffer(msgLen).toString()
+    const tmp = dataBuf.internalBuffer.slice(
+      dataBuf.readOffset,
+      dataBuf.readOffset + dataBuf.length
+    )
+    dataBuf = SmartBuffer.fromBuffer(tmp)
+    console.log('mem used', dataBuf.internalBuffer.length)
+    // console.log(`final message in`, { msg })
+
+    try {
+      const msg: CertifiedMessage<AnyMessage> = JSON.parse(jsonString)
+      emitRawMessage(msg)
+    } catch (e) {
+      console.error(`Error parsing JSON message`, jsonString)
     }
   }
 

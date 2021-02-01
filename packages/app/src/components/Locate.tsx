@@ -1,5 +1,4 @@
 import auth from '@react-native-firebase/auth'
-import { NearbyDC } from 'georedis'
 import React, { FC, useEffect, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Button, Text } from 'react-native-elements'
@@ -49,7 +48,6 @@ const usePosition = () => {
 const useReportPosition = (position: Geolocation.GeoPosition | undefined) => {
   const positionRef = useRef(position)
   const { sendPosition } = useNet()
-  const [nearby, setNearby] = useState<NearbyDC[]>([])
 
   useEffect(() => {
     positionRef.current = position
@@ -61,11 +59,10 @@ const useReportPosition = (position: Geolocation.GeoPosition | undefined) => {
       console.log('current', positionRef.current)
       if (positionRef.current && sendPosition) {
         try {
-          const nearby = await sendPosition({
+          sendPosition({
             latitude: positionRef.current.coords.latitude,
             longitude: positionRef.current.coords.longitude,
           })
-          setNearby(nearby || [])
         } catch (e) {
           console.error(e)
         }
@@ -80,15 +77,12 @@ const useReportPosition = (position: Geolocation.GeoPosition | undefined) => {
       clearTimeout(tid)
     }
   }, [sendPosition])
-
-  return { nearby }
 }
 
 export const Locate: FC = () => {
   const { position } = usePosition()
-  const { nearby } = useReportPosition(position)
-
-  console.log('render', { nearby })
+  useReportPosition(position)
+  const { nearbyEntities } = useNet()
 
   if (!position) {
     return <Text h1>Locating...</Text>
@@ -116,7 +110,7 @@ export const Locate: FC = () => {
                 longitudeDelta: 0.0421,
               }}
             >
-              {nearby.map((player) => (
+              {nearbyEntities?.nearby.map((player) => (
                 <Marker
                   pinColor={'blue'}
                   key={player.key}
