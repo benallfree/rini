@@ -9,7 +9,9 @@ import {
   packLoginRequest,
   packPositionUpdateRequest,
   PositionUpdateRequest,
+  PositionUpdateResponse,
   unpackLoginResponse,
+  unpackPositionUpdateResponse,
 } from '@rini/common'
 import net, { Socket } from 'net'
 
@@ -164,9 +166,13 @@ export const createClientNetcode = (
     return unpackLoginResponse(wrapper)
   }
 
-  const updatePosition = async (msg: PositionUpdateRequest): Promise<void> => {
+  const updatePosition = async (
+    msg: PositionUpdateRequest
+  ): Promise<PositionUpdateResponse> => {
     const packed = packPositionUpdateRequest(msg)
-    return send(packed)
+    const wrapper = await sendMessageAndAwaitReply(packed)
+    const unwrapped = unpackPositionUpdateResponse(wrapper)
+    return unwrapped
   }
 
   const send = (buf: Buffer) =>

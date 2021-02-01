@@ -1,3 +1,4 @@
+import { SmartBuffer } from 'smart-buffer'
 import { MessageTypes } from './MessageTypes'
 
 export const HEADER_LEN = (32 + 32 + 8 + 16) / 8
@@ -18,8 +19,8 @@ export type RemoteInfo = {
 }
 
 export type MessageWrapper = Header & {
-  payload: Buffer
+  payload: SmartBuffer
 }
 
-export * from './createMessageHandler'
+export * from './MessageHandler'
 export * from './MessageTypes'

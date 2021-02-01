@@ -1,0 +1,9 @@
+{
+  "exec": "./link.sh && yarn reshim && react-native start",
+  "watch": [
+    "node_modules/@rini",
+    "node_modules/georedis-promised",
+    "node_modules/node-georedis",
+    "dist"
+  ]
+}

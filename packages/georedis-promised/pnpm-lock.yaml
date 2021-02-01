@@ -1,7 +1,7 @@
 dependencies:
   '@types/node': 14.14.22
   '@types/redis': 2.8.28
-  georedis: github.com/benallfree/node-georedis/4aeef078f2df0af083aec55a0fdc25a89bac1152
+  georedis: link:../../../../../../../Users/meta/.nvm/versions/node/v12.14.1/pnpm-global/node_modules/georedis
   redis: 3.0.2
 devDependencies:
   rimraf: 3.0.2
@@ -43,10 +43,6 @@ packages:
     dev: true
     resolution:
       integrity: sha1-FQStJSMVjKpA20onh8sBQRmU6k8=
-  /geolib/2.0.24:
-    dev: false
-    resolution:
-      integrity: sha512-NR0AyYyEnGrFS9JvSFmmotQDxVCORJgDHdvBwSatxl5aHarOLMh3KuGI83bCvCfObjfoEiDe8Ung8GGLGAtthw==
   /glob/7.1.6:
     dependencies:
       fs.realpath: 1.0.0
@@ -75,12 +71,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA==
-  /ngeohash/0.6.3:
-    dev: false
-    engines:
-      node: '>=v0.2.0'
-    resolution:
-      integrity: sha512-kltF0cOxgx1AbmVzKxYZaoB0aj7mOxZeHaerEtQV0YaqnkXNq26WWqMmJ6lTqShYxVRWZ/mwvvTrNeOwdslWiw==
   /once/1.4.0:
     dependencies:
       wrappy: 1.0.2
@@ -140,20 +130,10 @@ packages:
     dev: true
     resolution:
       integrity: sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
-  github.com/benallfree/node-georedis/4aeef078f2df0af083aec55a0fdc25a89bac1152:
-    dependencies:
-      '@types/redis': 2.8.28
-      geolib: 2.0.24
-      ngeohash: 0.6.3
-    dev: false
-    name: georedis
-    resolution:
-      tarball: https://codeload.github.com/benallfree/node-georedis/tar.gz/4aeef078f2df0af083aec55a0fdc25a89bac1152
-    version: 3.1.3
 specifiers:
   '@types/node': ^14.14.22
   '@types/redis': ^2.8.28
-  georedis: benallfree/node-georedis#master
+  georedis: benallfree/node-georedis#typescript
   redis: ^3.0.2
   rimraf: ^3.0.2
   typescript: ^4.1.3

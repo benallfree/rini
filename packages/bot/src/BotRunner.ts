@@ -5,7 +5,7 @@ import { RouteService } from './RouteService'
 export const createBotRunner = (
   bot: Bot,
   routeService: RouteService,
-  speedMs = 100,
+  speedMs = 1000,
   updateMs = 500
 ) => {
   const { points } = routeService

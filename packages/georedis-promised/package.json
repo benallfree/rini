@@ -11,7 +11,7 @@
   "dependencies": {
     "@types/node": "^14.14.22",
     "@types/redis": "^2.8.28",
-    "georedis": "benallfree/node-georedis#master",
+    "georedis": "benallfree/node-georedis#typescript",
     "redis": "^3.0.2"
   },
   "devDependencies": {

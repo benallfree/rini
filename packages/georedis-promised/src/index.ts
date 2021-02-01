@@ -1,4 +1,4 @@
-import type { NearbyOptions, Point } from 'georedis'
+import type { NearbyOptions, Point, NearbyReturnTypes } from 'georedis'
 import { initialize as _init } from 'georedis'
 import { RedisClient } from 'redis'
 
@@ -26,7 +26,10 @@ export const initialize = (client: RedisClient) => {
       exec<boolean>(_geo.removeLocations.bind(_geo), [locationNames]),
     addLocation: (locationName: string, position: Point) =>
       exec<boolean>(_geo.addLocation.bind(_geo), [locationName, position]),
-    nearby: (locationName: string, radius: number, options?: NearbyOptions) =>
-      exec<string[]>(_geo.nearby.bind(_geo), [locationName, radius, options]),
+    nearby: <TRet extends NearbyReturnTypes>(
+      locationName: string,
+      radius: number,
+      options?: Partial<NearbyOptions>
+    ) => exec<TRet[]>(_geo.nearby.bind(_geo), [locationName, radius, options]),
   }
 }

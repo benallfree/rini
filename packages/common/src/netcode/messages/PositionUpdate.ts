@@ -1,4 +1,5 @@
 import { SmartBuffer } from 'smart-buffer'
+import { NearbyDC } from 'georedis'
 import { MessageWrapper } from '../lib'
 import { MessageTypes } from '../lib/MessageTypes'
 import { packMessage } from '../lib/packMessage'
@@ -9,7 +10,7 @@ export type PositionUpdateRequest = {
 }
 
 export type PositionUpdateResponse = {
-  tid: number
+  nearby: NearbyDC[]
 }
 
 export const packPositionUpdateRequest = (
@@ -36,15 +37,32 @@ export const packPositionUpdateResponse = (
   msg: PositionUpdateResponse
 ): Buffer => {
   const payload = new SmartBuffer()
-  payload.writeUInt32BE(msg.tid)
+  payload.writeUInt32BE(msg.nearby.length)
+  msg.nearby.forEach((player) => {
+    payload.writeStringNT(player.key)
+    payload.writeFloatBE(player.latitude)
+    payload.writeFloatBE(player.longitude)
+    payload.writeFloatBE(player.distance)
+  })
   return packMessage(MessageTypes.PositionUpdateResponse, wrapper.id, payload)
 }
 
 export const unpackPositionUpdateResponse = (
   wrapper: MessageWrapper
 ): PositionUpdateResponse => {
+  const nearby: NearbyDC[] = []
+  const { payload } = wrapper
+  const playerCount = payload.readUInt32BE()
+  for (let i = 0; i < playerCount; i++) {
+    nearby.push({
+      key: payload.readStringNT(),
+      latitude: payload.readFloatBE(),
+      longitude: payload.readFloatBE(),
+      distance: payload.readFloatBE(),
+    })
+  }
   const msg: PositionUpdateResponse = {
-    tid: wrapper.payload.readUInt32BE(),
+    nearby,
   }
   return msg
 }

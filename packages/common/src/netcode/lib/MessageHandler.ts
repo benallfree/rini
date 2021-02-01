@@ -30,7 +30,9 @@ export const createMessageHandler = () => {
       if (dataBuf.length < currentHeader.payloadLength) return // nothing to do yet
       const e: MessageWrapper = {
         ...currentHeader,
-        payload: dataBuf.readBuffer(currentHeader.payloadLength),
+        payload: SmartBuffer.fromBuffer(
+          dataBuf.readBuffer(currentHeader.payloadLength)
+        ),
       }
       emitRawMessage(e)
       currentHeader = undefined

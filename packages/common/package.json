@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/node": "^14.14.22",
+    "georedis": "github:benallfree/node-georedis#typescript",
     "smart-buffer": "^4.1.0"
   },
   "devDependencies": {

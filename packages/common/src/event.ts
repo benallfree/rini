@@ -1,6 +1,7 @@
 import { EventEmitter as NodeEventEmitter } from 'events'
+import { SmartBuffer } from 'smart-buffer'
 
-export type DataPrimitives = Buffer | string | number
+export type DataPrimitives = SmartBuffer | string | number
 export type EventData = { [_: string]: DataPrimitives }
 export type Unsubscribe = () => void
 export type EventHandler<TData extends EventData> = (data: TData) => void

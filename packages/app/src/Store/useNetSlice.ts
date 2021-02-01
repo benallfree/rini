@@ -1,4 +1,5 @@
 import { ClientNetcode, createClientNetcode } from '@rini/client'
+import { PositionUpdateRequest } from '@rini/common'
 import { useEffect, useState } from 'react'
 import { useAuthSlice } from './useAuthSlice'
 
@@ -50,9 +51,18 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
     }
   }, [client, idToken])
 
-  return {
+  const sendPosition = async (msg: PositionUpdateRequest) => {
+    if (!client) return
+    console.log('updating position', { msg })
+    const response = await client.updatePosition(msg)
+    return response.nearby
+  }
+
+  const api = {
     isAuthenticated,
     authenticationError,
-    sendPosition: client?.updatePosition,
+    sendPosition,
   }
+
+  return api
 }

@@ -1,10 +1,11 @@
 import auth from '@react-native-firebase/auth'
-import React, { FC, useEffect, useState } from 'react'
+import { NearbyDC } from 'georedis'
+import React, { FC, useEffect, useRef, useState } from 'react'
+import { StyleSheet, View } from 'react-native'
 import { Button, Text } from 'react-native-elements'
 import Geolocation from 'react-native-geolocation-service'
-import { useNet } from '../Store'
 import MapView, { Marker } from 'react-native-maps'
-import { StyleSheet, View } from 'react-native'
+import { useNet } from '../Store'
 
 const styles = StyleSheet.create({
   container: {
@@ -19,20 +20,13 @@ const styles = StyleSheet.create({
   },
 })
 
-export const Locate: FC = () => {
-  const [location, setLocation] = useState<Geolocation.GeoPosition>()
-  const { sendPosition } = useNet()
+const usePosition = () => {
+  const [position, setPosition] = useState<Geolocation.GeoPosition>()
 
   useEffect(() => {
-    if (!sendPosition) return
     const watchId = Geolocation.watchPosition(
       (position) => {
-        console.log({ position })
-        sendPosition({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        })
-        setLocation(position)
+        setPosition(position)
       },
       (error) => {
         console.error(error)
@@ -40,14 +34,66 @@ export const Locate: FC = () => {
       {
         forceRequestLocation: true,
         enableHighAccuracy: true,
-        fastestInterval: 500,
+        fastestInterval: 100,
         distanceFilter: 1,
       }
     )
     return () => {
       Geolocation.clearWatch(watchId)
     }
+  }, [])
+
+  return { position }
+}
+
+const useReportPosition = (position: Geolocation.GeoPosition | undefined) => {
+  const positionRef = useRef(position)
+  const { sendPosition } = useNet()
+  const [nearby, setNearby] = useState<NearbyDC[]>([])
+
+  useEffect(() => {
+    positionRef.current = position
+  }, [position])
+
+  useEffect(() => {
+    let tid: ReturnType<typeof setTimeout>
+    const update = async () => {
+      console.log('current', positionRef.current)
+      if (positionRef.current && sendPosition) {
+        try {
+          const nearby = await sendPosition({
+            latitude: positionRef.current.coords.latitude,
+            longitude: positionRef.current.coords.longitude,
+          })
+          setNearby(nearby || [])
+        } catch (e) {
+          console.error(e)
+        }
+      }
+      tid = setTimeout(update, 500)
+    }
+    console.log('starting position watcher')
+    tid = setTimeout(update, 500)
+    return () => {
+      console.log('stopping position watcher')
+
+      clearTimeout(tid)
+    }
   }, [sendPosition])
+
+  return { nearby }
+}
+
+export const Locate: FC = () => {
+  const { position } = usePosition()
+  const { nearby } = useReportPosition(position)
+
+  console.log('render', { nearby })
+
+  if (!position) {
+    return <Text h1>Locating...</Text>
+  }
+
   return (
     <>
       <Button
@@ -58,22 +104,33 @@ export const Locate: FC = () => {
             .then(() => console.log('User signed out!'))
         }
       />
-      {location && (
+      {position && (
         <>
           <View style={styles.container}>
             <MapView
               style={styles.map}
               region={{
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
               }}
             >
+              {nearby.map((player) => (
+                <Marker
+                  pinColor={'blue'}
+                  key={player.key}
+                  coordinate={player}
+                  title={player.key}
+                  description={player.distance.toString()}
+                  zIndex={50}
+                />
+              ))}
               <Marker
-                coordinate={location.coords}
+                coordinate={position.coords}
                 title={'Me'}
                 description={'My Location'}
+                zIndex={1000}
               />
             </MapView>
           </View>

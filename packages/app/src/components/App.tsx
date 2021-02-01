@@ -14,6 +14,10 @@ export type PermissionCheckStatus =
   | 'granted'
   | 'limited'
 
+const EnsureBadge: FC = ({ children }) => {
+  return <>{children}</>
+}
+
 const App: FC = () => {
   return (
     <Store.Provider>
@@ -21,9 +25,11 @@ const App: FC = () => {
         <View style={styles.container}>
           <EnsureLocationPermission>
             <Authenticated>
-              <NetReady>
-                <Locate />
-              </NetReady>
+              <EnsureBadge>
+                <NetReady>
+                  <Locate />
+                </NetReady>
+              </EnsureBadge>
             </Authenticated>
           </EnsureLocationPermission>
         </View>

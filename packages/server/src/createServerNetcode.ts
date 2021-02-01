@@ -3,11 +3,13 @@ import {
   MessageTypes,
   MessageWrapper,
   packLoginResponse,
+  packPositionUpdateResponse,
   PositionUpdateRequest,
   unpackLoginRequest,
   unpackPositionUpdateRequest,
 } from '@rini/common'
 import { createServer } from 'net'
+import { NearbyDC } from '../../georedis-promised/node_modules/georedis'
 
 export type ServerMessageSender = (msg: Buffer) => Promise<number>
 
@@ -23,7 +25,8 @@ export type MessageHandler<TIn, TOut = undefined> = (
 ) => Promise<TOut | void>
 export type ServerNetcodeConfig = {
   getUidFromAuthToken: (idToken: string) => Promise<string | void>
-  onPositionUpdate: MessageHandler<PositionUpdateRequest>
+  updatePosition: MessageHandler<PositionUpdateRequest>
+  getNearbyPlayers: MessageHandler<void, NearbyDC[]>
 }
 
 export const createServerNetcode = (settings: ServerNetcodeConfig) => {
@@ -91,7 +94,13 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       [MessageTypes.PositionUpdateRequest]: async (e) => {
         const msg = unpackPositionUpdateRequest(e)
         pingCount++
-        await settings.onPositionUpdate(sessions[thisConnId], msg)
+        await settings.updatePosition(sessions[thisConnId], msg)
+        const nearby = await settings.getNearbyPlayers(sessions[thisConnId])
+        if (!nearby) {
+          throw new Error(`Could not fet nearby Pla`)
+        }
+        const packed = packPositionUpdateResponse(e, { nearby })
+        sock.write(packed)
       },
     }
 
