@@ -3,8 +3,8 @@
 import { createBotFileProvider } from '@rini/bot'
 import { forEach } from '@s-libs/micro-dash'
 import * as admin from 'firebase-admin'
-import { initialize } from 'georedis-promised'
 import { NearbyDC } from 'georedis'
+import { initialize } from 'georedis-promised'
 import { resolve } from 'path'
 import { createClient } from 'redis'
 import { createServerNetcode } from './createServerNetcode'
@@ -33,14 +33,14 @@ const geo = initialize(client)
   const purgePositions = () => {
     const now = +new Date()
     const expired: string[] = []
-    console.log({ positionExpirations })
+    // console.log({ positionExpirations })
     forEach(positionExpirations, (exp, uid) => {
       if (now < exp) return
       expired.push(uid)
       delete positionExpirations[uid]
     })
     if (expired.length > 0) {
-      console.log('purging', expired)
+      // console.log('purging', expired)
       geo.removeLocations(expired)
     }
     setTimeout(purgePositions, 1000)
@@ -70,7 +70,7 @@ const geo = initialize(client)
         withDistances: true,
       })
       const final = nearby.filter((rec) => rec.key !== session.uid)
-      if (!session.uid.startsWith('bot')) console.log({ session, final })
+      // if (!session.uid.startsWith('bot')) console.log({ session, final })
       return final
       // console.log(connId, msg)
     },
