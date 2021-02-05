@@ -2,7 +2,7 @@ import { AnyMessage } from '../messages'
 
 export enum MessageTypes {
   LoginRequest,
-  LoginReply,
+  Session,
   PositionUpdate,
   NearbyEntities,
 }

@@ -1,35 +1,24 @@
-import { SmartBuffer } from 'smart-buffer'
+import { BufferList } from 'bl'
 import { event } from '../../event'
 import { AnyMessage } from '../messages'
-import { CertifiedMessage } from './MessageTypes'
+import { MessageWrapper, unpack } from './transport'
 
 export const createMessageHandler = () => {
-  let dataBuf = new SmartBuffer()
+  const dataBuf = new BufferList()
 
-  const [onRawMessage, emitRawMessage] = event<CertifiedMessage<AnyMessage>>()
+  const [onRawMessage, emitRawMessage] = event<MessageWrapper<AnyMessage>>()
 
   const handleSocketDataEvent = (data: Buffer) => {
-    dataBuf.writeBuffer(data)
-    const msgLen = dataBuf.internalBuffer.readUInt32BE(dataBuf.readOffset)
-    // console.log(`wire in`, { data, msgLen })
+    dataBuf.append(data)
+    if (dataBuf.length < 2) return
+    const msgLen = dataBuf.readUInt16BE()
+    const streamLen = msgLen + 2
+    if (dataBuf.length < streamLen) return
+    const unpacked = unpack(dataBuf.slice(0, streamLen))
+    dataBuf.consume(streamLen)
+    console.log('mem used', dataBuf.length)
 
-    if (dataBuf.length < msgLen + 4) return
-    dataBuf.readUInt32BE() // throw away
-    const jsonString = dataBuf.readBuffer(msgLen).toString()
-    const tmp = dataBuf.internalBuffer.slice(
-      dataBuf.readOffset,
-      dataBuf.readOffset + dataBuf.length
-    )
-    dataBuf = SmartBuffer.fromBuffer(tmp)
-    console.log('mem used', dataBuf.internalBuffer.length)
-    // console.log(`final message in`, { msg })
-
-    try {
-      const msg: CertifiedMessage<AnyMessage> = JSON.parse(jsonString)
-      emitRawMessage(msg)
-    } catch (e) {
-      console.error(`Error parsing JSON message`, jsonString)
-    }
+    emitRawMessage(unpacked)
   }
 
   return { handleSocketDataEvent, onRawMessage }

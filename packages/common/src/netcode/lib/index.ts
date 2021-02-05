@@ -11,4 +11,3 @@ export type RemoteInfo = {
 
 export * from './MessageHandler'
 export * from './MessageTypes'
-export * from './packMessage'

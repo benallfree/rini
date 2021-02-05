@@ -1,14 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { MessageTypes } from '../netcode'
-import { binpack } from './binpack'
-import { LoginReply, LoginReplySchema } from './LoginReply'
-import { LoginRequest, LoginRequestSchema } from './LoginRequest'
-import { MESSAGE_WRAPPER_LENGTH, pack, unpack } from './transport'
+import { binpack } from '../netcode/lib/binpack'
+import {
+  MESSAGE_WRAPPER_HEADER_LENGTH,
+  pack,
+  unpack,
+} from '../netcode/lib/transport'
+import {
+  LoginRequest,
+  LoginRequestSchema,
+  Session,
+  SessionSchema,
+} from '../netcode/messages'
 
 beforeAll(() => {
   expect(LoginRequestSchema).toBeDefined()
-  expect(LoginReplySchema).toBeDefined()
+  expect(SessionSchema).toBeDefined()
 })
 
 describe('it can netmsg', () => {
@@ -25,18 +33,18 @@ describe('it can netmsg', () => {
       idToken: 'foo',
     }
     const packed = pack(MessageTypes.LoginRequest, data)
-    expect(packed.length).toBe(MESSAGE_WRAPPER_LENGTH + 4)
+    expect(packed.length).toBe(MESSAGE_WRAPPER_HEADER_LENGTH + 4)
     const unpacked = unpack<LoginRequest>(packed)
     expect(unpacked.message.idToken).toBe('foo')
   })
 
   test('wrap a LoginReply', () => {
-    const data: LoginReply = {
+    const data: Session = {
       uid: 'baz',
     }
-    const packed = pack(MessageTypes.LoginReply, data, 42)
-    expect(packed.length).toBe(MESSAGE_WRAPPER_LENGTH + 4)
-    const unpacked = unpack<LoginReply>(packed)
+    const packed = pack(MessageTypes.Session, data, 42)
+    expect(packed.length).toBe(MESSAGE_WRAPPER_HEADER_LENGTH + 4)
+    const unpacked = unpack<Session>(packed)
     expect(unpacked.message.uid).toBe('baz')
     expect(unpacked.refId).toBe(42)
   })

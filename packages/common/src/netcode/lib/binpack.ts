@@ -1,0 +1,245 @@
+import { SmartBuffer } from 'smart-buffer'
+import { MessageTypes } from '..'
+
+export type TypeOrArrayOfType<T> = T | T[]
+export class BinpackValueError extends Error {}
+
+export type BinpackValueTypePrimitive = string | number | Buffer | SmartBuffer
+
+export type BinpackStructElementPrimitive =
+  | BinpackValueTypePrimitive
+  | BinpackStruct
+
+export type BinpackStructElement = TypeOrArrayOfType<BinpackStructElementPrimitive>
+
+export type BinpackStruct = {
+  [_: string]: BinpackStructElement
+}
+
+export type SchemaValue<
+  TData extends BinpackStructElement = BinpackStructElement
+> = TData extends BinpackValueTypePrimitive[]
+  ? [Packer<TData[number]>]
+  : TData extends BinpackStruct[]
+  ? [Schema<TData[number]>]
+  : TData extends BinpackValueTypePrimitive
+  ? Packer<TData>
+  : TData extends BinpackStruct
+  ? Schema<TData>
+  : never
+
+export type Schema<TData extends BinpackStruct> = {
+  [_ in keyof TData]: SchemaValue<TData[_]> | Schema<BinpackStruct>
+}
+
+export type Packer<
+  TData extends BinpackValueTypePrimitive = BinpackValueTypePrimitive
+> = {
+  _type: string
+  pack(n: TData, buf: SmartBuffer): SmartBuffer
+  unpack(buf: SmartBuffer): TData
+}
+
+export const Binpacker: {
+  Uint8: Packer<number>
+  Uint16: Packer<number>
+  Uint32: Packer<number>
+  Float: Packer<number>
+  String: Packer<string>
+  Buffer: Packer<Buffer>
+  SmartBuffer: Packer<SmartBuffer>
+} = {
+  Uint8: {
+    _type: 'UInt8',
+    pack(n, buf) {
+      buf.writeUInt8(n)
+      return buf
+    },
+    unpack(buf) {
+      return buf.readUInt8()
+    },
+  },
+  Uint16: {
+    _type: 'UInt16',
+    pack(n, buf) {
+      buf.writeUInt16BE(n)
+      return buf
+    },
+    unpack(buf) {
+      return buf.readUInt16BE()
+    },
+  },
+  Uint32: {
+    _type: 'UInt32',
+    pack(n, buf) {
+      buf.writeUInt32BE(n)
+      return buf
+    },
+    unpack(buf) {
+      return buf.readUInt32BE()
+    },
+  },
+  Float: {
+    _type: 'Float',
+    pack(n, buf) {
+      buf.writeFloatBE(n)
+      return buf
+    },
+    unpack(buf) {
+      return buf.readFloatBE()
+    },
+  },
+  String: {
+    _type: 'String',
+    pack(n, buf) {
+      buf.writeStringNT(n)
+      return buf
+    },
+    unpack(buf) {
+      return buf.readStringNT()
+    },
+  },
+  Buffer: {
+    _type: 'Buffer',
+    pack(n, buf) {
+      buf.writeUInt16BE(n.length)
+      buf.writeBuffer(n)
+      return buf
+    },
+    unpack(buf) {
+      const length = buf.readUInt16BE()
+      const ret = buf.readBuffer(length)
+      return ret
+    },
+  },
+  SmartBuffer: {
+    _type: 'SmartBuffer',
+    pack(n, buf) {
+      buf.writeUInt16BE(n.length)
+      buf.writeBuffer(n.toBuffer())
+      return buf
+    },
+    unpack(buf) {
+      const length = buf.readUInt16BE()
+      const ret = SmartBuffer.fromBuffer(buf.readBuffer(length))
+      return ret
+    },
+  },
+}
+
+const schemas: { [_ in MessageTypes]?: Schema<BinpackStruct> } = {}
+
+export const registerSchema = <TMessage extends BinpackStruct>(
+  type: MessageTypes,
+  schema: Schema<TMessage>
+) => {
+  return (schemas[type] = schema)
+}
+export const getSchema = <TData extends BinpackStruct>(type: MessageTypes) => {
+  if (!schemas[type]) {
+    throw new Error(`Schema ${type} is not registered.`)
+  }
+  return schemas[type] as Schema<TData>
+}
+
+const isPacker = (p: any): p is Packer => {
+  return '_type' in p
+}
+
+export const binpack = <TData extends BinpackStruct>(
+  schema: Schema<TData>,
+  data: TData
+): Buffer => {
+  return _binpack<TData>(schema, data, new SmartBuffer())
+}
+
+export const _binpack = <TData extends BinpackStruct>(
+  schema: Schema<TData>,
+  data: TData,
+  buf: SmartBuffer
+): Buffer => {
+  const keys = Object.keys(schema)
+  keys.forEach((key) => {
+    const packerOrSchemaOrArray = schema[key]
+    if (Array.isArray(packerOrSchemaOrArray)) {
+      const packerOrSchema = packerOrSchemaOrArray[0] as
+        | Packer
+        | Schema<BinpackStruct>
+      const v = data[key] as BinpackStructElementPrimitive[]
+      buf.writeUInt16BE(v.length)
+      if (isPacker(packerOrSchema)) {
+        // It's an array of packers
+        const v = data[key] as BinpackValueTypePrimitive[]
+        const packer = packerOrSchema as Packer
+        v.forEach((e) => {
+          packer.pack(e, buf)
+        })
+      } else {
+        // It's an array of schemas
+        const v = data[key] as BinpackStruct[]
+        const schema = packerOrSchema as Schema<BinpackStruct>
+        v.forEach((e) => _binpack(schema, e, buf))
+      }
+    } else {
+      const packerOrSchema = packerOrSchemaOrArray
+      if (isPacker(packerOrSchema)) {
+        const packer = packerOrSchema
+        const v = data[key] as BinpackValueTypePrimitive
+        packer.pack(v, buf)
+      } else {
+        _binpack(
+          schema[key] as Schema<BinpackStruct>,
+          data[key] as BinpackStruct,
+          buf
+        )
+      }
+    }
+  })
+  return buf.toBuffer()
+}
+
+export const binunpack = <TData extends BinpackStruct>(
+  schema: Schema<TData>,
+  packed: Buffer
+): TData => {
+  return _binunpack(schema, SmartBuffer.fromBuffer(packed))
+}
+export const _binunpack = <TData extends BinpackStruct>(
+  schema: Schema<TData>,
+  packed: SmartBuffer
+): TData => {
+  const keys = Object.keys(schema)
+  const unpacked: BinpackStruct = {}
+  keys.forEach((key) => {
+    const unpackerOrSubtreeOrArray = schema[key]
+    if (Array.isArray(unpackerOrSubtreeOrArray)) {
+      const unpackerOrSchema = unpackerOrSubtreeOrArray[0] as
+        | Packer
+        | Schema<BinpackStruct>
+      const count = packed.readUInt16BE()
+      const arr = []
+      if (isPacker(unpackerOrSchema)) {
+        // It's an array of unpackers
+        const unpacker = unpackerOrSchema as Packer
+        for (let i = 0; i < count; i++) {
+          arr.push(unpacker.unpack(packed))
+        }
+      } else {
+        // It's an array of schemas
+        const schema = unpackerOrSchema as Schema<BinpackStruct>
+        for (let i = 0; i < count; i++) {
+          arr.push(_binunpack(schema, packed))
+        }
+      }
+      unpacked[key] = arr
+    } else {
+      if (unpackerOrSubtreeOrArray._type) {
+        const unpacker = unpackerOrSubtreeOrArray as Packer
+        unpacked[key] = unpacker.unpack(packed)
+      } else {
+        unpacked[key] = _binunpack(schema[key] as Schema<BinpackStruct>, packed)
+      }
+    }
+  })
+  return unpacked as TData
+}

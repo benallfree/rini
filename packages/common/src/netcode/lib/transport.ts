@@ -1,15 +1,8 @@
-import { SmartBuffer } from 'smart-buffer'
-import { MessageTypes } from '../netcode'
-import {
-  binpack,
-  BinpackData,
-  Binpacker,
-  binunpack,
-  getSchema,
-  Schema,
-} from './binpack'
+import { MessageTypes } from '..'
+import { AnyMessage } from '../messages'
+import { binpack, Binpacker, binunpack, getSchema, Schema } from './binpack'
 
-export const MESSAGE_WRAPPER_LENGTH = 2 + 4 + 4 + 1
+export const MESSAGE_WRAPPER_HEADER_LENGTH = 2 + 4 + 4 + 1
 
 export type MessageWrapperHeader = {
   length: number
@@ -18,12 +11,12 @@ export type MessageWrapperHeader = {
   type: MessageTypes
 }
 export type MessageWrapper<
-  TMessage extends BinpackData
+  TMessage extends AnyMessage
 > = MessageWrapperHeader & {
   message: TMessage
 }
 
-export const MessageWrapperHeaderSchema: Schema = {
+export const MessageWrapperHeaderSchema: Schema<MessageWrapperHeader> = {
   length: Binpacker.Uint16,
   id: Binpacker.Uint32,
   refId: Binpacker.Uint32,
@@ -31,41 +24,40 @@ export const MessageWrapperHeaderSchema: Schema = {
 }
 
 let messageId = 0
-export const pack = <TMessage extends BinpackData>(
+export const pack = <TMessage extends AnyMessage>(
   type: MessageTypes,
   message: TMessage,
   refId = 0
-) => {
+): Buffer => {
   type ThisMessageWrapper = MessageWrapper<TMessage>
 
-  const wrapperSchema: Schema = {
+  const wrapperSchema: Schema<MessageWrapper<TMessage>> = {
     ...MessageWrapperHeaderSchema,
-    message: getSchema(type),
+    message: getSchema<TMessage>(type),
   }
   const wrapper: ThisMessageWrapper = {
-    length,
+    length: 0,
     id: messageId++,
     refId,
     type,
     message,
   }
   const packed = binpack(wrapperSchema, wrapper)
-  packed.writeOffset = 0
   packed.writeUInt16BE(packed.length - 2) // Write the message length
-  packed.readOffset = 0
-  packed.writeOffset = packed.length
   return packed
 }
 
-export const unpack = <TMessage extends BinpackData>(packed: SmartBuffer) => {
+export const unpack = <TMessage extends AnyMessage>(packed: Buffer) => {
   const header = binunpack<MessageWrapperHeader>(
     MessageWrapperHeaderSchema,
     packed
   )
   const { type } = header
-  const messageSchema = getSchema(type)
-
-  const message = binunpack(messageSchema, packed)
+  const messageSchema = getSchema<TMessage>(type)
+  const message = binunpack<TMessage>(
+    messageSchema,
+    packed.slice(MESSAGE_WRAPPER_HEADER_LENGTH)
+  )
 
   return { ...header, message } as MessageWrapper<TMessage>
 }
