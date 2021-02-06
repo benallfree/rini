@@ -1,17 +1,14 @@
 import {
-  AnyMessage,
-  createMessageHandler,
   LoginRequest,
   MessageTypes,
   NearbyEntities,
   PositionUpdate,
+  schemas,
 } from '@rini/common'
-import {
-  createTransportPacker,
-  MessageWrapper,
-} from '@rini/common/dist/netcode/lib/transport'
+import { NearbyDC } from 'georedis'
+import { createNetcode, MessageWrapper } from 'n37c0d3'
 import { createServer } from 'net'
-import { NearbyDC } from '../../georedis-promised/node_modules/georedis'
+import { BinpackStruct } from '../../common/node_modules/n37c0d3/dist/binpack'
 
 export type ServerMessageSender = (msg: Buffer) => Promise<number>
 
@@ -35,7 +32,8 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   let connId = 0
   const sessions: { [_: number]: Session } = {}
 
-  const transport = createTransportPacker()
+  const transport = createNetcode(schemas)
+  const { onRawMessage, handleSocketDataEvent } = transport
 
   let openConnectionCount = 0
   let pingCount = 0
@@ -80,10 +78,12 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       openConnectionCount--
     }
 
+    type DispatchHandler = (e: MessageWrapper<BinpackStruct>) => Promise<void>
+
     const dispatch: {
-      [_ in MessageTypes]?: (e: MessageWrapper<AnyMessage>) => Promise<void>
+      [_: number]: DispatchHandler
     } = {
-      [MessageTypes.LoginRequest]: async (e) => {
+      [MessageTypes.Login]: async (e) => {
         const msg = e.message as LoginRequest
         console.log(`processing login request`, { msg })
         const uid = await settings.getUidFromAuthToken(msg.idToken)
@@ -133,18 +133,15 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       setTimeout(send, 500)
     }
 
-    const { onRawMessage, handleSocketDataEvent } = createMessageHandler(
-      transport
-    )
     onRawMessage((e) => {
       console.log(`received`, { e })
       try {
-        if (e.type != MessageTypes.LoginRequest && !sessions[thisConnId]) {
+        if (e.type != MessageTypes.Login && !sessions[thisConnId]) {
           console.error(`unestablished session`, { e })
           sock.destroy()
           return // Silently ignore unauthenticated
         }
-        const dispatchHandler = dispatch[e.type]
+        const dispatchHandler = dispatch[e.type] as DispatchHandler
         if (!dispatchHandler) {
           throw new Error(`Unhandled message type ${e.type}`)
         }

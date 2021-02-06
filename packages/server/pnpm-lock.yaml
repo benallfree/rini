@@ -5,7 +5,7 @@ dependencies:
   '@types/node': 14.14.22
   '@types/redis': 2.8.28
   firebase-admin: 9.4.2
-  georedis-promised: link:../georedis-promised
+  georedis-promised: link:../../../../../../../Users/meta/.nvm/versions/node/v12.14.1/pnpm-global/node_modules/georedis-promised
   redis: 3.0.2
 devDependencies:
   nodemon: 2.0.7
