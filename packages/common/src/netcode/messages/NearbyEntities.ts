@@ -9,11 +9,13 @@ export type NearbyEntities = {
 export const NearbyEntitiesSchema = registerSchema<NearbyEntities>(
   MessageTypes.NearbyEntities,
   {
-    nearby: {
-      key: Binpacker.String,
-      latitude: Binpacker.Float,
-      longitude: Binpacker.Float,
-      distance: Binpacker.Float,
-    },
+    nearby: [
+      {
+        key: Binpacker.String,
+        latitude: Binpacker.Float,
+        longitude: Binpacker.Float,
+        distance: Binpacker.Float,
+      },
+    ],
   }
 )

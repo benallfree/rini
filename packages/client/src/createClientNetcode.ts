@@ -2,18 +2,14 @@
 //@ts-ignore
 import {
   AnyMessage,
-  CertifiedMessage,
-  certifyMessage,
   createMessageHandler,
+  createTransportPacker,
   event,
   EventEmitter,
   LoginRequest,
-  LoginResponse,
   MessageTypes,
-  MessageWrapper,
   NearbyEntities,
-  packMessage,
-  PositionUpdateRequest,
+  PositionUpdate,
 } from '@rini/common'
 import net, { Socket } from 'net'
 
@@ -137,17 +133,20 @@ export const createClientNetcode = (
 
   connect()
 
-  const { onRawMessage, handleSocketDataEvent } = createMessageHandler()
+  const transport = createTransportPacker()
+  const { onRawMessage, handleSocketDataEvent } = createMessageHandler(
+    transport
+  )
 
   const sendMessageAndAwaitReply = async <
     TMessage extends AnyMessage,
     TReply extends AnyMessage
   >(
-    msg: MessageWrapper<TMessage>
+    type: MessageTypes,
+    msg: TMessage
   ): Promise<TReply> => {
-    const certified = certifyMessage(msg)
-    console.log(`sending`, { certified })
-    const packed = packMessage(certified)
+    const [packed, certified] = transport.pack(type, msg)
+    console.log({ certified })
     return new Promise<TReply>((resolve, reject) => {
       const tid = setTimeout(() => {
         unsub()
@@ -168,35 +167,20 @@ export const createClientNetcode = (
   }
 
   const sendMessage = <TMessage extends AnyMessage>(
-    msg: MessageWrapper<TMessage>
-  ): CertifiedMessage<TMessage> => {
-    const certified = certifyMessage(msg)
-    const packed = packMessage(certified)
-
+    type: MessageTypes,
+    msg: TMessage
+  ): void => {
+    const [packed] = transport.pack(type, msg)
     send(packed).catch((e) => {
       console.error(`Error sending message`, e)
     })
-    return certified
   }
 
-  const login = async (message: LoginRequest): Promise<LoginResponse> => {
-    const response = await sendMessageAndAwaitReply<
-      LoginRequest,
-      LoginResponse
-    >({
-      message,
-      type: MessageTypes.LoginRequest,
-    })
-    return response
-  }
+  const login = (message: LoginRequest) =>
+    sendMessageAndAwaitReply(MessageTypes.LoginRequest, message)
 
-  const updatePosition = async (
-    message: PositionUpdateRequest
-  ): Promise<void> => {
-    sendMessage({
-      message,
-      type: MessageTypes.PositionUpdate,
-    })
+  const updatePosition = async (message: PositionUpdate) => {
+    sendMessage(MessageTypes.PositionUpdate, message)
   }
 
   const send = (buf: Buffer) =>

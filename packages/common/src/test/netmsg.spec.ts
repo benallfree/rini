@@ -3,9 +3,8 @@
 import { MessageTypes } from '../netcode'
 import { binpack } from '../netcode/lib/binpack'
 import {
+  createTransportPacker,
   MESSAGE_WRAPPER_HEADER_LENGTH,
-  pack,
-  unpack,
 } from '../netcode/lib/transport'
 import {
   LoginRequest,
@@ -32,7 +31,8 @@ describe('it can netmsg', () => {
     const data: LoginRequest = {
       idToken: 'foo',
     }
-    const packed = pack(MessageTypes.LoginRequest, data)
+    const { pack, unpack } = createTransportPacker()
+    const [packed] = pack(MessageTypes.LoginRequest, data)
     expect(packed.length).toBe(MESSAGE_WRAPPER_HEADER_LENGTH + 4)
     const unpacked = unpack<LoginRequest>(packed)
     expect(unpacked.message.idToken).toBe('foo')
@@ -42,10 +42,21 @@ describe('it can netmsg', () => {
     const data: Session = {
       uid: 'baz',
     }
-    const packed = pack(MessageTypes.Session, data, 42)
+    const { pack, unpack } = createTransportPacker()
+    const [packed] = pack(MessageTypes.Session, data, 42)
     expect(packed.length).toBe(MESSAGE_WRAPPER_HEADER_LENGTH + 4)
     const unpacked = unpack<Session>(packed)
     expect(unpacked.message.uid).toBe('baz')
     expect(unpacked.refId).toBe(42)
+  })
+
+  test('expect length to be correct', () => {
+    const data: Session = {
+      uid: 'baz',
+    }
+    const { pack, unpack } = createTransportPacker()
+    const [packed, certified] = pack(MessageTypes.Session, data, 42)
+    expect(packed.length).toBe(MESSAGE_WRAPPER_HEADER_LENGTH + 4)
+    expect(certified.length).toBe(packed.length)
   })
 })

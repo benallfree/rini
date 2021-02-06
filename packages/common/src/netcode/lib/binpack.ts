@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SmartBuffer } from 'smart-buffer'
 import { MessageTypes } from '..'
 
@@ -38,6 +40,7 @@ export type Packer<
   _type: string
   pack(n: TData, buf: SmartBuffer): SmartBuffer
   unpack(buf: SmartBuffer): TData
+  typecheck: (v: any) => boolean
 }
 
 export const Binpacker: {
@@ -58,6 +61,7 @@ export const Binpacker: {
     unpack(buf) {
       return buf.readUInt8()
     },
+    typecheck: (v: any) => typeof v === 'number',
   },
   Uint16: {
     _type: 'UInt16',
@@ -68,6 +72,7 @@ export const Binpacker: {
     unpack(buf) {
       return buf.readUInt16BE()
     },
+    typecheck: (v: any) => typeof v === 'number',
   },
   Uint32: {
     _type: 'UInt32',
@@ -78,6 +83,7 @@ export const Binpacker: {
     unpack(buf) {
       return buf.readUInt32BE()
     },
+    typecheck: (v: any) => typeof v === 'number',
   },
   Float: {
     _type: 'Float',
@@ -88,6 +94,7 @@ export const Binpacker: {
     unpack(buf) {
       return buf.readFloatBE()
     },
+    typecheck: (v: any) => typeof v === 'number',
   },
   String: {
     _type: 'String',
@@ -98,6 +105,7 @@ export const Binpacker: {
     unpack(buf) {
       return buf.readStringNT()
     },
+    typecheck: (v: any) => typeof v === 'string',
   },
   Buffer: {
     _type: 'Buffer',
@@ -111,6 +119,7 @@ export const Binpacker: {
       const ret = buf.readBuffer(length)
       return ret
     },
+    typecheck: (v: any) => v instanceof Buffer,
   },
   SmartBuffer: {
     _type: 'SmartBuffer',
@@ -124,6 +133,7 @@ export const Binpacker: {
       const ret = SmartBuffer.fromBuffer(buf.readBuffer(length))
       return ret
     },
+    typecheck: (v: any) => v instanceof SmartBuffer,
   },
 }
 
@@ -153,6 +163,26 @@ export const binpack = <TData extends BinpackStruct>(
   return _binpack<TData>(schema, data, new SmartBuffer())
 }
 
+const assertTypeSafe = (
+  key: string,
+  v: any,
+  typecheck: (v: any) => boolean,
+  type: string
+) => {
+  if (process.env.NODE_ENV === 'production') return
+  if (typecheck(v)) return
+  throw new Error(
+    `Key '${key}' is expected to be type '${type}' but was type '${
+      Array.isArray(v) ? 'Array' : typeof v
+    }'`
+  )
+}
+
+const isArray = (v: any): v is [] => Array.isArray(v)
+
+const isObject = (v: any): v is object =>
+  !Array.isArray(v) && typeof v === 'object'
+
 export const _binpack = <TData extends BinpackStruct>(
   schema: Schema<TData>,
   data: TData,
@@ -161,7 +191,7 @@ export const _binpack = <TData extends BinpackStruct>(
   const keys = Object.keys(schema)
   keys.forEach((key) => {
     const packerOrSchemaOrArray = schema[key]
-    if (Array.isArray(packerOrSchemaOrArray)) {
+    if (isArray(packerOrSchemaOrArray)) {
       const packerOrSchema = packerOrSchemaOrArray[0] as
         | Packer
         | Schema<BinpackStruct>
@@ -170,28 +200,32 @@ export const _binpack = <TData extends BinpackStruct>(
       if (isPacker(packerOrSchema)) {
         // It's an array of packers
         const v = data[key] as BinpackValueTypePrimitive[]
+        assertTypeSafe(key, v, () => isArray(v), 'Array')
         const packer = packerOrSchema as Packer
-        v.forEach((e) => {
+        v.forEach((e, i) => {
+          assertTypeSafe(`${key}[${i}]`, e, packer.typecheck, packer._type)
           packer.pack(e, buf)
         })
       } else {
         // It's an array of schemas
         const v = data[key] as BinpackStruct[]
         const schema = packerOrSchema as Schema<BinpackStruct>
+        assertTypeSafe(key, v, () => isArray(v), 'Array<BinpackStruct>')
         v.forEach((e) => _binpack(schema, e, buf))
       }
     } else {
       const packerOrSchema = packerOrSchemaOrArray
       if (isPacker(packerOrSchema)) {
+        // It's a value
         const packer = packerOrSchema
         const v = data[key] as BinpackValueTypePrimitive
+        assertTypeSafe(key, v, packer.typecheck, packer._type)
         packer.pack(v, buf)
       } else {
-        _binpack(
-          schema[key] as Schema<BinpackStruct>,
-          data[key] as BinpackStruct,
-          buf
-        )
+        // It's a schema
+        const v = data[key] as BinpackStruct
+        assertTypeSafe(key, v, () => isObject(v), 'BinpackStruct')
+        _binpack(schema[key] as Schema<BinpackStruct>, v, buf)
       }
     }
   })

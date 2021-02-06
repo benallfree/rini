@@ -1,14 +1,15 @@
 import {
   AnyMessage,
-  CertifiedMessage,
-  certifyAndPackMessage,
   createMessageHandler,
   LoginRequest,
-  LoginResponse,
   MessageTypes,
   NearbyEntities,
-  PositionUpdateRequest,
+  PositionUpdate,
 } from '@rini/common'
+import {
+  createTransportPacker,
+  MessageWrapper,
+} from '@rini/common/dist/netcode/lib/transport'
 import { createServer } from 'net'
 import { NearbyDC } from '../../georedis-promised/node_modules/georedis'
 
@@ -26,13 +27,15 @@ export type MessageHandler<TIn, TOut = undefined> = (
 ) => Promise<TOut | void>
 export type ServerNetcodeConfig = {
   getUidFromAuthToken: (idToken: string) => Promise<string | void>
-  updatePosition: MessageHandler<PositionUpdateRequest>
+  updatePosition: MessageHandler<PositionUpdate>
   getNearbyPlayers: MessageHandler<void, NearbyDC[]>
 }
 
 export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   let connId = 0
   const sessions: { [_: number]: Session } = {}
+
+  const transport = createTransportPacker()
 
   let openConnectionCount = 0
   let pingCount = 0
@@ -78,7 +81,7 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
     }
 
     const dispatch: {
-      [_ in MessageTypes]?: (e: CertifiedMessage<AnyMessage>) => Promise<void>
+      [_ in MessageTypes]?: (e: MessageWrapper<AnyMessage>) => Promise<void>
     } = {
       [MessageTypes.LoginRequest]: async (e) => {
         const msg = e.message as LoginRequest
@@ -92,16 +95,17 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
           idToken: msg.idToken,
         }
 
-        const packed = certifyAndPackMessage<LoginResponse>({
-          type: MessageTypes.LoginReply,
-          refId: e.id,
-          message: { uid },
-        })
+        const [packed] = transport.pack(
+          MessageTypes.Session,
+          sessions[thisConnId],
+          e.id
+        )
         console.log({ packed })
         sock.write(packed)
       },
       [MessageTypes.PositionUpdate]: async (e) => {
-        const msg = e.message as PositionUpdateRequest
+        const wrapper = e as MessageWrapper<PositionUpdate>
+        const msg = wrapper.message
         pingCount++
         await settings.updatePosition(sessions[thisConnId], msg)
         scheduleSendNearbyEntities()
@@ -110,7 +114,6 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
 
     let sendNearbyEntitiesTid: ReturnType<typeof setTimeout>
     const scheduleSendNearbyEntities = () => {
-      console.log('scheduling entities')
       if (sendNearbyEntitiesTid) return
       const send = async () => {
         const nearby = await settings.getNearbyPlayers(sessions[thisConnId])
@@ -118,16 +121,21 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
           throw new Error(`Could not fetch nearby players`)
         }
 
-        const packed = certifyAndPackMessage<NearbyEntities>({
-          type: MessageTypes.NearbyEntities,
-          message: { nearby },
-        })
+        console.log({ nearby })
+        const [packed] = transport.pack<NearbyEntities>(
+          MessageTypes.NearbyEntities,
+          {
+            nearby,
+          }
+        )
         sock.write(packed)
       }
       setTimeout(send, 500)
     }
 
-    const { onRawMessage, handleSocketDataEvent } = createMessageHandler()
+    const { onRawMessage, handleSocketDataEvent } = createMessageHandler(
+      transport
+    )
     onRawMessage((e) => {
       console.log(`received`, { e })
       try {

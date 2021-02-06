@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { NearbyCH } from 'georedis'
 import { SmartBuffer } from 'smart-buffer'
 import { binpack, Binpacker, binunpack, Schema } from '../netcode/lib/binpack'
 
@@ -109,6 +110,165 @@ describe('it can binpack', () => {
     const unpacked = binunpack<typeof data>(schema, packed)
     expect(unpacked.baz[0]).toBe(42)
     expect(unpacked.baz[1]).toBe(255)
+  })
+
+  test('an empty array of UInt8', () => {
+    const data: { baz: { zab: number[] } } = {
+      baz: {
+        zab: [],
+      },
+    }
+    type T = typeof data
+    const schema: Schema<T> = {
+      baz: { zab: [Binpacker.Uint8] },
+    }
+
+    const packed = binpack(schema, data)
+    expect(packed.length).toBe(2)
+    expect(packed.readUInt16BE()).toBe(0)
+    const unpacked = binunpack<typeof data>(schema, packed)
+    expect(unpacked.baz.zab.length).toBe(0)
+  })
+
+  test('an empty array of struct', () => {
+    const data: { message: { nearby: NearbyCH[] } } = {
+      message: { nearby: [] },
+    }
+    type T = typeof data
+    const schema: Schema<T> = {
+      message: {
+        nearby: [
+          {
+            latitude: Binpacker.Float,
+            key: Binpacker.String,
+            longitude: Binpacker.Float,
+            hash: Binpacker.Uint32,
+          },
+        ],
+      },
+    }
+
+    const packed = binpack(schema, data)
+    expect(packed.length).toBe(2)
+    expect(packed.readUInt16BE()).toBe(0)
+    const unpacked = binunpack<typeof data>(schema, packed)
+    expect(unpacked.message.nearby.length).toBe(0)
+  })
+
+  test('mismatched struct and array', () => {
+    const data: { message: { nearby: NearbyCH[] } } = {
+      message: { nearby: [] },
+    }
+    type T = typeof data
+    const schema: Schema<T> = {
+      message: {
+        nearby: {
+          latitude: Binpacker.Float,
+          key: Binpacker.String,
+          longitude: Binpacker.Float,
+          hash: Binpacker.Uint32,
+        },
+      },
+    }
+
+    expect(() => binpack(schema, data)).toThrowError(
+      /Key 'nearby' is expected to be type 'BinpackStruct' but was type 'Array'/
+    )
+  })
+
+  test('mismatched array of struct and value', () => {
+    const data = {
+      message: { nearby: 42 },
+    }
+    type T = typeof data
+    const schema: Schema<T> = {
+      message: {
+        //@ts-ignore
+
+        nearby: [
+          {
+            latitude: Binpacker.Float,
+            key: Binpacker.String,
+            longitude: Binpacker.Float,
+            hash: Binpacker.Uint32,
+          },
+        ],
+      },
+    }
+
+    expect(() => binpack(schema, data)).toThrowError(
+      /Key 'nearby' is expected to be type 'Array<BinpackStruct>' but was type 'number'/
+    )
+  })
+
+  test('mismatched schema and uint data types', () => {
+    const data = { foo: 42 }
+
+    type T = typeof data
+    const schema: Schema<T> = {
+      //@ts-ignore
+      foo: { baz: Binpacker.String },
+    }
+
+    expect(() => binpack(schema, data)).toThrowError(
+      /Key 'foo' is expected to be type 'BinpackStruct' but was type 'number'/
+    )
+  })
+
+  test('mismatched array and uint data types', () => {
+    const data = { foo: 42 }
+
+    type T = typeof data
+    const schema: Schema<T> = {
+      //@ts-ignore
+      foo: [Binpacker.Uint32],
+    }
+
+    expect(() => binpack(schema, data)).toThrowError(
+      /Key 'foo' is expected to be type 'Array' but was type 'number'/
+    )
+  })
+
+  test('mismatched uint and array data types', () => {
+    const data = { foo: [42] }
+
+    type T = typeof data
+    const schema: Schema<T> = {
+      //@ts-ignore
+      foo: Binpacker.Uint32,
+    }
+
+    expect(() => binpack(schema, data)).toThrowError(
+      /Key 'foo' is expected to be type 'UInt32' but was type 'Array'/
+    )
+  })
+
+  test('mismatched array<string> and array<uint> data types', () => {
+    const data = { foo: [42] }
+
+    type T = typeof data
+    const schema: Schema<T> = {
+      //@ts-ignore
+      foo: [Binpacker.String],
+    }
+
+    expect(() => binpack(schema, data)).toThrowError(
+      /Key 'foo\[0]' is expected to be type 'String' but was type 'number'/
+    )
+  })
+
+  test('mismatched string and uint data types', () => {
+    const data = { foo: 42 }
+
+    type T = typeof data
+    const schema: Schema<T> = {
+      //@ts-ignore
+      foo: Binpacker.String,
+    }
+
+    expect(() => binpack(schema, data)).toThrowError(
+      /Key 'foo' is expected to be type 'String' but was type 'number'/
+    )
   })
 
   test('an array of uint8 objects', () => {
