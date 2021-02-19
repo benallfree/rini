@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { createBotFileProvider } from '@rini/bot'
 import { forEach } from '@s-libs/micro-dash'
 import * as admin from 'firebase-admin'
 import { NearbyDC } from 'georedis'
-import { initialize } from 'georedis-promised'
 import { resolve } from 'path'
 import { createClient } from 'redis'
+import { createBotFileProvider } from '../bot'
+import { initialize } from '../georedis-promised'
 import { createServerNetcode } from './createServerNetcode'
 
 const serviceAccount = require(resolve(

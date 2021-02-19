@@ -1,4 +1,7 @@
-import { Message } from './WebWorker'
+/// <reference types="rn-webworker"/>
+/// <reference lib="dom"/>
+
+import { Message } from './rn-webworker'
 const { log } = window
 
 window.onMessage((e) => {
@@ -10,16 +13,15 @@ var exampleSocket = new WebSocket('ws://localhost:3000')
 log('got that socket')
 
 exampleSocket.onopen = (event) => {
-  log("Here's some text that the server is urgently awaiting!")
-  exampleSocket.send('foobarzas')
+  log('onopen')
 }
 
 exampleSocket.onerror = (e) => {
-  log('got an error')
+  log('got an error', e)
 }
 
-exampleSocket.onmessage = (e) => {
-  log('got a message')
+exampleSocket.onmessage = (m) => {
+  log('got a message', m)
 }
 
 window.ready()

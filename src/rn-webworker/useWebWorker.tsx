@@ -1,6 +1,6 @@
-import { callem } from 'callem'
 import React, { useMemo, useRef, useState } from 'react'
 import { WebView, WebViewMessageEvent } from 'react-native-webview'
+import { callem } from '../callem'
 import bootstrapJs from './bootstrap.inlined'
 import { Message, MessageTypes } from './types'
 

@@ -1,4 +1,4 @@
-import { createNetcode, SchemaLookup } from 'n37c0d3'
+import { createNetcode, SchemaLookup } from '../n53'
 import { LoginRequest, LoginRequestSchema } from './LoginRequest'
 import { NearbyEntities, NearbyEntitiesSchema } from './NearbyEntities'
 import { PositionUpdate, PositionUpdateSchema } from './PositionUpdate'

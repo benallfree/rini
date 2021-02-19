@@ -1,5 +1,5 @@
 import { NearbyDC } from 'georedis'
-import { NetcodeTypes, Schema } from 'n37c0d3'
+import { NetcodeTypes, Schema } from '../n53'
 
 export type NearbyEntities = {
   nearby: NearbyDC[]

@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-ignore
+import net, { Socket } from 'net'
+import { callem, CallemEmitter } from '../callem'
 import {
   AnyMessage,
   LoginRequest,
   MessageTypes,
   NearbyEntities,
+  netcode,
   PositionUpdate,
-} from '@rini/common'
-import net, { Socket } from 'net'
-import { callem } from '../../callem'
-import { createNetcode } from '../../n53'
+} from '../common'
 
 export type ClientMessageSender = (msg: Buffer) => Promise<void>
 
@@ -61,7 +61,7 @@ export const createClientNetcode = (
     socket.on('connect', () => {
       retryCount = 0
       console.log('connected')
-      socket.on('data', handleSocketDataEvent)
+      socket.on('data', netcode.handleSocketDataEvent)
       console.log('listening for data')
 
       login({ idToken })
@@ -131,11 +131,6 @@ export const createClientNetcode = (
 
   connect()
 
-  const netcode = createNetcode()
-  const { onRawMessage, handleSocketDataEvent } = createMessageHandler(
-    transport
-  )
-
   const sendMessageAndAwaitReply = async <
     TMessage extends AnyMessage,
     TReply extends AnyMessage
@@ -143,14 +138,14 @@ export const createClientNetcode = (
     type: MessageTypes,
     msg: TMessage
   ): Promise<TReply> => {
-    const [packed, certified] = transport.pack(type, msg)
+    const [packed, certified] = netcode.pack(type, msg)
     console.log({ certified })
     return new Promise<TReply>((resolve, reject) => {
       const tid = setTimeout(() => {
         unsub()
         reject(`Timed out awaiting reply to ${certified.id}`)
       }, awaitReplyTimeoutMs)
-      const unsub = onRawMessage((m) => {
+      const unsub = netcode.onRawMessage((m) => {
         if (m.refId !== certified.id) return // Skip, it's not our message
         unsub()
         clearTimeout(tid)
@@ -168,14 +163,14 @@ export const createClientNetcode = (
     type: MessageTypes,
     msg: TMessage
   ): void => {
-    const [packed] = transport.pack(type, msg)
+    const [packed] = netcode.pack(type, msg)
     send(packed).catch((e) => {
       console.error(`Error sending message`, e)
     })
   }
 
   const login = (message: LoginRequest) =>
-    sendMessageAndAwaitReply(MessageTypes.LoginRequest, message)
+    sendMessageAndAwaitReply(MessageTypes.Login, message)
 
   const updatePosition = async (message: PositionUpdate) => {
     sendMessage(MessageTypes.PositionUpdate, message)
@@ -194,13 +189,13 @@ export const createClientNetcode = (
     })
 
   // Listen for important messages
-  const [onNearbyEntities, emitNearbyEntities] = event<NearbyEntities>()
-  const dispatchHandlers: { [_ in MessageTypes]?: EventEmitter<any> } = {
+  const [onNearbyEntities, emitNearbyEntities] = callem<NearbyEntities>()
+  const dispatchHandlers: { [_ in MessageTypes]?: CallemEmitter<any> } = {
     [MessageTypes.NearbyEntities]: emitNearbyEntities,
   }
-  onRawMessage((m) => {
+  netcode.onRawMessage((m) => {
     // console.log(`got raw message incoming`, m)
-    const dispatchHandler = dispatchHandlers[m.type]
+    const dispatchHandler = dispatchHandlers[m.type as MessageTypes]
     if (!dispatchHandler) return // Not handled
     dispatchHandler(m.message)
   })

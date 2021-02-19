@@ -1,6 +1,6 @@
 import { BufferList } from 'bl'
-import { callem } from 'callem'
 import { SchemaLookup } from '.'
+import { callem } from '../callem'
 import {
   binpack,
   BinpackStruct,

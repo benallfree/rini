@@ -1,14 +1,13 @@
+import { NearbyDC } from 'georedis'
+import { createServer } from 'net'
 import {
   LoginRequest,
   MessageTypes,
   NearbyEntities,
   PositionUpdate,
   schemas,
-} from '@rini/common'
-import { NearbyDC } from 'georedis'
-import { createNetcode, MessageWrapper } from 'n37c0d3'
-import { createServer } from 'net'
-import { BinpackStruct } from '../../common/node_modules/n37c0d3/dist/binpack'
+} from '../common'
+import { BinpackStruct, createNetcode, MessageWrapper } from '../n53'
 
 export type ServerMessageSender = (msg: Buffer) => Promise<number>
 

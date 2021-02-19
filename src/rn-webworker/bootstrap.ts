@@ -1,4 +1,4 @@
-import { callem } from 'callem'
+import { callem } from '../callem'
 import { Message, MessageTypes } from './types'
 
 const [onMessage, emitMessage] = callem<Message>()

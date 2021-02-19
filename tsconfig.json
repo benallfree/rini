@@ -2,12 +2,17 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "jsx": "react-native",
-    "lib": ["dom", "esnext"],
+    "lib": [],
     "moduleResolution": "node",
     "noEmit": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "strict": true,
-    "typeRoots": ["src/@types", "./node_modules/@types"]
-  }
+    "baseUrl": ".",
+    "paths": {
+      "*": ["./src/@types/*"]
+    },
+    "typeRoots": ["./src/@types", "./node_modules/@types"]
+  },
+  "include": ["./src"]
 }

@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar'
 import React, { FC, useEffect, useState } from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import MapView from 'react-native-maps'
-import { Message, useWebWorker } from './WebWorker'
+import { Message, useWebWorker } from './rn-webworker'
 import workerJs from './worker.inlined'
 
 const App: FC = () => {

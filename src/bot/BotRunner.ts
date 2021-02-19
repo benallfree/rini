@@ -1,4 +1,4 @@
-import { createClientNetcode } from '@rini/client'
+import { createClientNetcode } from '../client'
 import { Bot } from './BotFileProvider'
 import { RouteService } from './RouteService'
 
