@@ -1,3 +1,5 @@
+/// <reference path="index.d.ts"/>
+
 import { callem } from '../callem'
 import { Message, MessageTypes } from './types'
 

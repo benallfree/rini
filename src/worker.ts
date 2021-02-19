@@ -1,4 +1,3 @@
-/// <reference types="rn-webworker"/>
 /// <reference lib="dom"/>
 
 import { Message } from './rn-webworker'

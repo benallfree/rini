@@ -1,6 +1,6 @@
 import WebView from 'react-native-webview'
-import { CallemEmitter, CallemSubscriber } from '../../callem'
-import { Message } from '../../rn-webworker'
+import { Message } from '.'
+import { CallemEmitter, CallemSubscriber } from '../callem'
 
 declare global {
   interface Window {
