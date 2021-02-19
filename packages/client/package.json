@@ -9,7 +9,9 @@
     "watch": "tsc -w --preserveWatchOutput"
   },
   "dependencies": {
-    "@rini/common": "../common"
+    "@rini/common": "../common",
+    "callem": "link:../../../callem",
+    "n37c0d3": "link:../../../n37c0d3"
   },
   "devDependencies": {
     "typescript": "^4.1.3"

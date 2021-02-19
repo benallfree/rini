@@ -2,16 +2,14 @@
 //@ts-ignore
 import {
   AnyMessage,
-  createMessageHandler,
-  createTransportPacker,
-  event,
-  EventEmitter,
   LoginRequest,
   MessageTypes,
   NearbyEntities,
   PositionUpdate,
 } from '@rini/common'
 import net, { Socket } from 'net'
+import { callem } from '../../callem'
+import { createNetcode } from '../../n53'
 
 export type ClientMessageSender = (msg: Buffer) => Promise<void>
 
@@ -53,8 +51,8 @@ export const createClientNetcode = (
     awaitReplyTimeoutMs,
   } = _settings
 
-  const [onConnect, emitConnect] = event<ConnectEvent>()
-  const [onDisconnect, emitDisconnect] = event<DisconnectEvent>()
+  const [onConnect, emitConnect] = callem<ConnectEvent>()
+  const [onDisconnect, emitDisconnect] = callem<DisconnectEvent>()
 
   let socket: Socket
   const connect = () => {
@@ -133,7 +131,7 @@ export const createClientNetcode = (
 
   connect()
 
-  const transport = createTransportPacker()
+  const netcode = createNetcode()
   const { onRawMessage, handleSocketDataEvent } = createMessageHandler(
     transport
   )

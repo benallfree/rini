@@ -1,12 +1,14 @@
 {
   "expo": {
-    "name": "Rini",
-    "slug": "rini",
-    "version": "0.0.1",
+    "entryPoint": "./src/App.tsx",
+
+    "name": "app",
+    "slug": "app",
+    "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/generated/icon.png",
+    "icon": "./src/assets/icon.png",
     "splash": {
-      "image": "./assets/generated/splash.png",
+      "image": "./src/assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,19 +18,16 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.benallfree.rini",
-      "buildNumber": "0.0.1"
+      "bundleIdentifier": "com.benallfree.harvest"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/generated/adaptive-icon.png",
+        "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      },
-      "package": "com.benallfree.rini",
-      "versionCode": 1
+      }
     },
     "web": {
-      "favicon": "./assets/generated/favicon.png"
+      "favicon": "./src/assets/favicon.png"
     }
   }
 }

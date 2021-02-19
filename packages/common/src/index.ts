@@ -1,4 +1,4 @@
-import { SchemaLookup } from 'n37c0d3'
+import { createNetcode, SchemaLookup } from 'n37c0d3'
 import { LoginRequest, LoginRequestSchema } from './LoginRequest'
 import { NearbyEntities, NearbyEntitiesSchema } from './NearbyEntities'
 import { PositionUpdate, PositionUpdateSchema } from './PositionUpdate'
@@ -25,3 +25,5 @@ export const schemas: SchemaLookup = {
   [MessageTypes.NearbyEntities]: NearbyEntitiesSchema,
   [MessageTypes.PositionUpdate]: PositionUpdateSchema,
 }
+
+export const netcode = createNetcode(schemas)

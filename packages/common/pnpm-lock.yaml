@@ -3,7 +3,7 @@ dependencies:
   '@types/node': 14.14.22
   bl: 4.0.4
   callem: link:../../../callem
-  georedis: link:../../../../../../../Users/meta/.nvm/versions/node/v12.14.1/pnpm-global/node_modules/georedis
+  georedis: link:../../../node-georedis
   n37c0d3: link:../../../n37c0d3
   smart-buffer: 4.1.0
 devDependencies:

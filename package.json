@@ -48,5 +48,10 @@
     "plugins": [
       "./node_modules/prettier-plugin-organize-imports"
     ]
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
   }
 }
