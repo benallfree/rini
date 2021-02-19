@@ -84,3 +84,4 @@ web-build/
 # @end expo-cli
 
 .secrets
+*.log
