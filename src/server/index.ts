@@ -3,15 +3,15 @@
 import { forEach } from '@s-libs/micro-dash'
 import * as admin from 'firebase-admin'
 import { NearbyDC } from 'georedis'
-import { resolve } from 'path'
+import { dirname, resolve } from 'path'
 import { createClient } from 'redis'
 import { createBotFileProvider } from '../bot'
 import { initialize } from '../georedis-promised'
 import { createServerNetcode } from './createServerNetcode'
 
 const serviceAccount = require(resolve(
-  __dirname,
-  '../../../.secrets/rini-1234a-firebase-adminsdk-6pwsp-a18e825d44.json'
+  dirname(__filename),
+  '../../.secrets/firebase-admin.json'
 ))
 
 admin.initializeApp({

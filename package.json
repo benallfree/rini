@@ -9,7 +9,8 @@
     "app:watch:worker": "chokidar './src/worker.ts' './src/rn-webworker/bootstrap.ts' -c 'yarn app:build:worker'",
     "app:build:worker": "yarn app:build:worker:app && yarn app:build:worker:bootstrap",
     "app:build:worker:app": "esbuild  ./src/worker.ts --bundle | node ./bin/stringify.js > ./src/worker.inlined.ts",
-    "app:build:worker:bootstrap": "esbuild  ./src/rn-webworker/bootstrap.ts --bundle | node ./bin/stringify.js > ./src/rn-webworker/bootstrap.inlined.ts"
+    "app:build:worker:bootstrap": "esbuild  ./src/rn-webworker/bootstrap.ts --bundle | node ./bin/stringify.js > ./src/rn-webworker/bootstrap.inlined.ts",
+    "bot:dev": "ts-node-dev --respawn --transpile-only src/bot/run.ts"
   },
   "dependencies": {
     "@s-libs/micro-dash": "^11.2.1",
@@ -34,7 +35,8 @@
     "react-native-web": "~0.13.12",
     "react-native-webview": "11.0.0",
     "redis": "^3.0.2",
-    "smart-buffer": "^4.1.0"
+    "smart-buffer": "^4.1.0",
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v18.14.0"
   },
   "devDependencies": {
     "@babel/core": "~7.9.0",
@@ -45,6 +47,7 @@
     "esbuild": "^0.8.48",
     "prettier": "^2.2.1",
     "prettier-plugin-organize-imports": "^1.1.1",
+    "ts-node-dev": "^1.1.1",
     "typescript": "~4.0.0"
   },
   "private": true

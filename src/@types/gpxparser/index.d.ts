@@ -91,4 +91,4 @@ declare class GpxParser {
   getElementValue(element: Element, needle: string): any
 }
 
-export default GpxParser
+export = GpxParser

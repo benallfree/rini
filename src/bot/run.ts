@@ -1,4 +1,4 @@
-import prompts from 'prompts'
+import prompts = require('prompts')
 import { createBotFileProvider } from './BotFileProvider'
 import { createBotRunner } from './BotRunner'
 import { createRouteService } from './RouteService'

@@ -1,4 +1,4 @@
-import WebSocket from 'isomorphic-ws'
+import WebSocket = require('isomorphic-ws')
 import { callem, CallemEmitter, CallemSubscriber } from '../callem'
 import {
   AnyMessage,
@@ -18,10 +18,6 @@ export type ClientNetcodeConfig = {
   maxRetries: number
   retryDelayMs: number
   awaitReplyTimeoutMs: number
-}
-
-export function randomPort() {
-  return (Math.random() * 60536) | (0 + 5000) // 60536-65536
 }
 
 export type ConnectEvent = { attempt: number }
@@ -45,7 +41,7 @@ export const createClientNetcode = (
 
   const _settings: ClientNetcodeConfig = {
     host: 'localhost',
-    port: 41234,
+    port: 3000,
     maxRetries: 0,
     retryDelayMs: 5000,
     awaitReplyTimeoutMs: 1000,

@@ -1,24 +1,26 @@
 import { NearbyDC } from 'georedis'
-import { createServer } from 'net'
+import { App, DEDICATED_COMPRESSOR_3KB, WebSocket } from 'uWebSockets.js'
 import {
   LoginRequest,
   MessageTypes,
   NearbyEntities,
+  netcode,
   PositionUpdate,
-  schemas,
+  Session,
 } from '../common'
-import { BinpackStruct, createNetcode, MessageWrapper } from '../n53'
+import { MessageWrapper } from '../n53'
 
 export type ServerMessageSender = (msg: Buffer) => Promise<number>
 
-export type Session = {
+export type SocketSession = {
   connectionId: number
-  idToken: string
-  uid: string
+  idToken?: string
+  uid?: string
+  cleanup: () => void
 }
 
 export type MessageHandler<TIn, TOut = undefined> = (
-  session: Session,
+  session: SocketSession,
   msg: TIn
 ) => Promise<TOut | void>
 export type ServerNetcodeConfig = {
@@ -27,12 +29,15 @@ export type ServerNetcodeConfig = {
   getNearbyPlayers: MessageHandler<void, NearbyDC[]>
 }
 
+declare module 'uWebSockets.js' {
+  interface WebSocket {
+    connId: number
+  }
+}
+
 export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   let connId = 0
-  const sessions: { [_: number]: Session } = {}
-
-  const transport = createNetcode(schemas)
-  const { onRawMessage, handleSocketDataEvent } = transport
+  const sessions: { [_: number]: SocketSession } = {}
 
   let openConnectionCount = 0
   let pingCount = 0
@@ -64,121 +69,127 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   }
   setTimeout(heartbeat, 5000)
 
-  const server = createServer((sock) => {
-    const thisConnId = connId++
-    openConnectionCount++
-    console.log(`C${thisConnId} (${openConnectionCount} connections)`)
-    let isCleanedUp = false
+  type DispatchHandler = (ws: WebSocket, e: MessageWrapper) => Promise<void>
 
-    const cleanup = () => {
-      if (isCleanedUp) return
-      isCleanedUp = true
-      console.log(`C${thisConnId} cleanup`, sock.destroyed)
-      openConnectionCount--
-    }
+  const dispatch: {
+    [_: number]: DispatchHandler
+  } = {
+    [MessageTypes.Login]: async (ws, e) => {
+      const thisConnId = ws.connId
+      const msg = e.message as LoginRequest
+      console.log(`processing login request`, { msg })
+      const uid = await settings.getUidFromAuthToken(msg.idToken)
+      console.log(`uid resolved to `, { uid })
+      if (!uid) return // don't send reply
+      sessions[thisConnId].uid = uid
+      sessions[thisConnId].idToken = msg.idToken
 
-    type DispatchHandler = (e: MessageWrapper<BinpackStruct>) => Promise<void>
-
-    const dispatch: {
-      [_: number]: DispatchHandler
-    } = {
-      [MessageTypes.Login]: async (e) => {
-        const msg = e.message as LoginRequest
-        console.log(`processing login request`, { msg })
-        const uid = await settings.getUidFromAuthToken(msg.idToken)
-        console.log(`uid resolved to `, { uid })
-        if (!uid) return // don't send reply
-        sessions[thisConnId] = {
+      const [packed] = netcode.pack<Session>(
+        MessageTypes.Session,
+        {
           uid,
+        },
+        e.id
+      )
+      console.log({ packed })
+      ws.send(packed, false)
+    },
+    [MessageTypes.PositionUpdate]: async (ws, e) => {
+      const thisConnId = ws._rini.connId
+      const wrapper = e as MessageWrapper<PositionUpdate>
+      const msg = wrapper.message
+      pingCount++
+      await settings.updatePosition(sessions[thisConnId], msg)
+      scheduleSendNearbyEntities(ws)
+    },
+  }
+
+  let sendNearbyEntitiesTid: ReturnType<typeof setTimeout>
+  const scheduleSendNearbyEntities = (ws: WebSocket) => {
+    const thisConnId = ws._rini.connId
+    if (sendNearbyEntitiesTid) return
+    const send = async () => {
+      const nearby = await settings.getNearbyPlayers(sessions[thisConnId])
+      if (!nearby) {
+        throw new Error(`Could not fetch nearby players`)
+      }
+
+      console.log({ nearby })
+      const [packed] = netcode.pack<NearbyEntities>(
+        MessageTypes.NearbyEntities,
+        {
+          nearby,
+        }
+      )
+      ws.send(packed, false)
+    }
+    setTimeout(send, 500)
+  }
+
+  App()
+    .ws('/*', {
+      /* There are many common helper features */
+      idleTimeout: 30,
+      maxBackpressure: 1024,
+      maxPayloadLength: 512,
+      compression: DEDICATED_COMPRESSOR_3KB,
+
+      open: (ws) => {
+        const thisConnId = connId++
+        openConnectionCount++
+        console.log(`C${thisConnId} (${openConnectionCount} connections)`)
+
+        let isCleanedUp = false
+        const cleanup = () => {
+          if (isCleanedUp) return
+          isCleanedUp = true
+          console.log(`C${thisConnId} cleanup`)
+          openConnectionCount--
+          delete sessions[thisConnId]
+        }
+        sessions[thisConnId] = {
           connectionId: thisConnId,
-          idToken: msg.idToken,
+          cleanup,
         }
-
-        const [packed] = transport.pack(
-          MessageTypes.Session,
-          sessions[thisConnId],
-          e.id
-        )
-        console.log({ packed })
-        sock.write(packed)
+        ws.connId = thisConnId
       },
-      [MessageTypes.PositionUpdate]: async (e) => {
-        const wrapper = e as MessageWrapper<PositionUpdate>
-        const msg = wrapper.message
-        pingCount++
-        await settings.updatePosition(sessions[thisConnId], msg)
-        scheduleSendNearbyEntities()
-      },
-    }
 
-    let sendNearbyEntitiesTid: ReturnType<typeof setTimeout>
-    const scheduleSendNearbyEntities = () => {
-      if (sendNearbyEntitiesTid) return
-      const send = async () => {
-        const nearby = await settings.getNearbyPlayers(sessions[thisConnId])
-        if (!nearby) {
-          throw new Error(`Could not fetch nearby players`)
-        }
-
-        console.log({ nearby })
-        const [packed] = transport.pack<NearbyEntities>(
-          MessageTypes.NearbyEntities,
-          {
-            nearby,
+      message: (ws, message, isBinary) => {
+        console.log({ message, isBinary })
+        const wrapper = netcode.unpack(Buffer.from(message).toString())
+        try {
+          if (
+            wrapper.type != MessageTypes.Login &&
+            !sessions[ws._rini.connId]
+          ) {
+            console.error(`unestablished session`, { wrapper })
+            ws.close()
+            return // Silently ignore unauthenticated
           }
-        )
-        sock.write(packed)
-      }
-      setTimeout(send, 500)
-    }
-
-    onRawMessage((e) => {
-      console.log(`received`, { e })
-      try {
-        if (e.type != MessageTypes.Login && !sessions[thisConnId]) {
-          console.error(`unestablished session`, { e })
-          sock.destroy()
-          return // Silently ignore unauthenticated
+          const dispatchHandler = dispatch[wrapper.type] as DispatchHandler
+          if (!dispatchHandler) {
+            throw new Error(`Unhandled message type ${wrapper.type}`)
+          }
+          dispatchHandler(ws, wrapper)
+        } catch (e) {
+          console.error(e)
         }
-        const dispatchHandler = dispatch[e.type] as DispatchHandler
-        if (!dispatchHandler) {
-          throw new Error(`Unhandled message type ${e.type}`)
-        }
-        dispatchHandler(e)
-      } catch (e) {
-        console.error(e)
+        /* Here we echo the message back, using compression if available */
+        // let ok = ws.send(message, isBinary, true)
+      },
+
+      close: (ws, code, behavior) => {
+        const { connId } = ws
+        console.log(`C${connId}: close`, { code, behavior })
+        sessions[connId].cleanup()
+      },
+    })
+
+    .listen(3000, (listenSocket) => {
+      if (listenSocket) {
+        console.log('Listening to port 3000')
       }
     })
-
-    sock.on('close', (hadError) => {
-      console.log(`C${thisConnId}: close`, { hadError })
-      cleanup()
-    })
-
-    sock.on('data', handleSocketDataEvent)
-    sock.on('drain', () => console.log(`C${thisConnId}: drain`))
-    sock.on('end', () => {
-      console.log(`C${thisConnId}: end`)
-      cleanup()
-    })
-    sock.on('error', (err) => {
-      console.error(`C${thisConnId}: error`, err)
-      cleanup()
-    })
-    sock.on('lookup', (err, address, family, host) =>
-      console.log(`C${thisConnId}: lookup`, { err, address, family, host })
-    )
-    sock.on('timeout', () => {
-      console.log(`C${thisConnId}: timeout`)
-      cleanup()
-    })
-  })
-  server.listen(41234, () => {
-    console.log(`Server is now listening`)
-  })
-  server.on('close', () => console.log('main:close'))
-  server.on('error', (err: Error) => console.error(`main:`, err))
-  server.on('listening', () => console.log('main:listening'))
 
   return {}
 }
