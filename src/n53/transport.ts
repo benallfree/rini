@@ -42,12 +42,14 @@ export const createTransportPacker = (
     const wrapper = (() => {
       try {
         const data = JSON.parse(packed)
-        if (!data.id) {
-          throw new Error(`Parse failed for ${packed}`)
+        if (!('id' in data)) {
+          throw new Error(
+            `Invalid parsed packet format ${JSON.stringify(data)} (${packed})`
+          )
         }
         return data as ThisMessageWrapper
       } catch (e) {
-        throw new Error(`Parse failed for ${packed}`)
+        throw new Error(`Parse failed for ${packed}, ${e}`)
       }
     })()
 

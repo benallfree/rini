@@ -95,7 +95,7 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       ws.send(packed, false)
     },
     [MessageTypes.PositionUpdate]: async (ws, e) => {
-      const thisConnId = ws._rini.connId
+      const thisConnId = ws.connId
       const wrapper = e as MessageWrapper<PositionUpdate>
       const msg = wrapper.message
       pingCount++
@@ -106,15 +106,17 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
 
   let sendNearbyEntitiesTid: ReturnType<typeof setTimeout>
   const scheduleSendNearbyEntities = (ws: WebSocket) => {
-    const thisConnId = ws._rini.connId
+    const thisConnId = ws.connId
     if (sendNearbyEntitiesTid) return
+    if (!sessions[thisConnId]) return // Session has vanished
     const send = async () => {
-      const nearby = await settings.getNearbyPlayers(sessions[thisConnId])
+      const session = sessions[thisConnId]
+      if (!session) return // Session has vanished
+      const nearby = await settings.getNearbyPlayers(session)
       if (!nearby) {
         throw new Error(`Could not fetch nearby players`)
       }
 
-      console.log({ nearby })
       const [packed] = netcode.pack<NearbyEntities>(
         MessageTypes.NearbyEntities,
         {
@@ -155,13 +157,9 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       },
 
       message: (ws, message, isBinary) => {
-        console.log({ message, isBinary })
         const wrapper = netcode.unpack(Buffer.from(message).toString())
         try {
-          if (
-            wrapper.type != MessageTypes.Login &&
-            !sessions[ws._rini.connId]
-          ) {
+          if (wrapper.type != MessageTypes.Login && !sessions[ws.connId]) {
             console.error(`unestablished session`, { wrapper })
             ws.close()
             return // Silently ignore unauthenticated

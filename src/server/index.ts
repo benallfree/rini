@@ -61,11 +61,19 @@ const geo = initialize(client)
       }
     },
     async updatePosition(session, msg) {
-      positionExpirations[session.uid] = +new Date() + 1000
-      await geo.addLocation(session.uid, msg)
+      const { uid } = session
+      if (!uid) {
+        throw new Error(`Session UID is not available`)
+      }
+      positionExpirations[uid] = +new Date() + 1000
+      await geo.addLocation(uid, msg)
     },
     async getNearbyPlayers(session) {
-      const nearby = await geo.nearby<NearbyDC>(session.uid, 500, {
+      const { uid } = session
+      if (!uid) {
+        throw new Error(`Session UID is not available`)
+      }
+      const nearby = await geo.nearby<NearbyDC>(uid, 500, {
         withCoordinates: true,
         withDistances: true,
       })
