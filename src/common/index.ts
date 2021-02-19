@@ -1,8 +1,8 @@
-import { createNetcode, SchemaLookup } from '../n53'
-import { LoginRequest, LoginRequestSchema } from './LoginRequest'
-import { NearbyEntities, NearbyEntitiesSchema } from './NearbyEntities'
-import { PositionUpdate, PositionUpdateSchema } from './PositionUpdate'
-import { Session, SessionSchema } from './Session'
+import { createNetcode } from '../n53'
+import { LoginRequest } from './LoginRequest'
+import { NearbyEntities } from './NearbyEntities'
+import { PositionUpdate } from './PositionUpdate'
+import { Session } from './Session'
 
 export type AnyMessage =
   | LoginRequest
@@ -18,12 +18,4 @@ export enum MessageTypes {
   NearbyEntities = 3,
   PositionUpdate = 4,
 }
-
-export const schemas: SchemaLookup = {
-  [MessageTypes.Login]: LoginRequestSchema,
-  [MessageTypes.Session]: SessionSchema,
-  [MessageTypes.NearbyEntities]: NearbyEntitiesSchema,
-  [MessageTypes.PositionUpdate]: PositionUpdateSchema,
-}
-
-export const netcode = createNetcode(schemas)
+export const netcode = createNetcode()

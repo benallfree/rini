@@ -8,7 +8,7 @@ export type BotCollection = {
 }
 
 export const createBotFileProvider = () => {
-  const bots: Bot[] = require('../../../.secrets/bots.json')
+  const bots: Bot[] = require('../../.secrets/bots.json')
 
   const botsByIdToken: BotCollection = bots.reduce(
     (c: BotCollection, bot: Bot) => {

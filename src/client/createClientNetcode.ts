@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-//@ts-ignore
-import net, { Socket } from 'net'
-import { callem, CallemEmitter } from '../callem'
+import WebSocket from 'isomorphic-ws'
+import { callem, CallemEmitter, CallemSubscriber } from '../callem'
 import {
   AnyMessage,
   LoginRequest,
@@ -10,6 +8,7 @@ import {
   netcode,
   PositionUpdate,
 } from '../common'
+import { MessageWrapper } from '../n53'
 
 export type ClientMessageSender = (msg: Buffer) => Promise<void>
 
@@ -25,8 +24,17 @@ export function randomPort() {
   return (Math.random() * 60536) | (0 + 5000) // 60536-65536
 }
 
-export type ConnectEvent = { address: string; port: number; attempt: number }
-export type DisconnectEvent = { address: string; port: number; attempt: number }
+export type ConnectEvent = { attempt: number }
+export type DisconnectEvent = { attempt: number }
+
+export type SocketConnection = {
+  onOpen: CallemSubscriber
+  onData: CallemSubscriber<{ buffer: Buffer }>
+  onError: CallemSubscriber<{ error: Error }>
+  onClose: CallemSubscriber
+  destroy: () => void
+  write: (buffer: Buffer) => Promise<void>
+}
 
 export const createClientNetcode = (
   idToken: string,
@@ -51,25 +59,32 @@ export const createClientNetcode = (
     awaitReplyTimeoutMs,
   } = _settings
 
+  const [onMessage, emitMessage] = callem<MessageWrapper>()
   const [onConnect, emitConnect] = callem<ConnectEvent>()
   const [onDisconnect, emitDisconnect] = callem<DisconnectEvent>()
 
-  let socket: Socket
+  let conn: WebSocket
   const connect = () => {
     retryTid = undefined
-    socket = net.createConnection({ port, host })
-    socket.on('connect', () => {
+    conn = new WebSocket(`ws://${host}:${port}`)
+    conn.onmessage = (e) => {
+      const { data } = e
+      if (typeof data !== 'string') {
+        throw new Error(`Unsupported data type ${data}`)
+      }
+      const msg = netcode.unpack(data)
+      emitMessage(msg)
+    }
+
+    conn.onopen = () => {
       retryCount = 0
       console.log('connected')
-      socket.on('data', netcode.handleSocketDataEvent)
       console.log('listening for data')
 
       login({ idToken })
         .then(() => {
           isConnected = true
           emitConnect({
-            address: socket.remoteAddress || 'unknown',
-            port: socket.remotePort || 0,
             attempt: retryCount,
           })
         })
@@ -78,36 +93,25 @@ export const createClientNetcode = (
           cleanup()
           reconnect()
         })
-    })
-    socket.on('close', () => {
+    }
+
+    conn.onclose = () => {
       console.log('close')
       cleanup()
       reconnect()
-    })
-    socket.on('end', () => {
-      console.log('end')
-      cleanup()
-      reconnect()
-    })
-    socket.on('error', (e) => {
+    }
+
+    conn.onerror = (e) => {
       console.error(e)
       cleanup()
       reconnect()
-    })
-    socket.on('drain', () => console.log('drain'))
-    socket.on('lookup', () => console.log('lookup'))
-    socket.on('timeout', () => {
-      console.log('timeout')
-      cleanup()
-    })
+    }
 
     const cleanup = () => {
       console.log('Cleaning up')
-      socket.destroy()
+      conn.close()
       isConnected = false
       emitDisconnect({
-        address: socket.remoteAddress || 'unknown',
-        port: socket.remotePort || 0,
         attempt: retryCount,
       })
     }
@@ -145,7 +149,7 @@ export const createClientNetcode = (
         unsub()
         reject(`Timed out awaiting reply to ${certified.id}`)
       }, awaitReplyTimeoutMs)
-      const unsub = netcode.onRawMessage((m) => {
+      const unsub = onMessage((m) => {
         if (m.refId !== certified.id) return // Skip, it's not our message
         unsub()
         clearTimeout(tid)
@@ -176,24 +180,14 @@ export const createClientNetcode = (
     sendMessage(MessageTypes.PositionUpdate, message)
   }
 
-  const send = (buf: Buffer) =>
-    new Promise<void>((resolve) => {
-      // console.log(`Sending msg to`, buf, { address, port })
-      socket.write(buf, (err) => {
-        if (err) {
-          console.error(err, err.name)
-          throw err
-        }
-        resolve()
-      })
-    })
+  const send = async (data: string) => conn.send(data)
 
   // Listen for important messages
   const [onNearbyEntities, emitNearbyEntities] = callem<NearbyEntities>()
   const dispatchHandlers: { [_ in MessageTypes]?: CallemEmitter<any> } = {
     [MessageTypes.NearbyEntities]: emitNearbyEntities,
   }
-  netcode.onRawMessage((m) => {
+  onMessage((m) => {
     // console.log(`got raw message incoming`, m)
     const dispatchHandler = dispatchHandlers[m.type as MessageTypes]
     if (!dispatchHandler) return // Not handled
@@ -201,7 +195,7 @@ export const createClientNetcode = (
   })
 
   const api = {
-    close: () => socket.destroy(),
+    close: () => conn.close(),
     login,
     updatePosition,
     onConnect,

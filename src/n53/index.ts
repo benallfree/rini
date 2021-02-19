@@ -1,17 +1,8 @@
-import { BinpackStruct, Schema } from './binpack'
 import { createTransportPacker } from './transport'
 
-export { BinpackStruct, NetcodeTypes, Schema } from './binpack'
-export * from './transport'
-
-export type SchemaLookup = {
-  [_ in number]: Schema<BinpackStruct>
-}
-
-export const createNetcode = <TSchemaLookups extends SchemaLookup>(
-  schemas: TSchemaLookups
-) => {
-  const transport = createTransportPacker(schemas)
+export { MessageWrapper } from './transport'
+export const createNetcode = () => {
+  const transport = createTransportPacker()
 
   return transport
 }
