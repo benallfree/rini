@@ -1,57 +1,38 @@
 {
-  "name": "ayo",
-  "version": "0.0.1",
-  "description": "Say hi to others",
-  "main": "dist/index.js",
-  "author": "Ben Allfree",
-  "license": "MIT",
+  "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "clean": "concurrently --raw 'pnpm:clean:*'",
-    "clean:common": "pnpm common clean",
-    "clean:bot": "pnpm bot clean",
-    "clean:server": "pnpm run server clean",
-    "clean:client": "pnpm client clean",
-    "clean:georedis-promised": "pnpm georedis clean",
-    "build": "pnpm common build && pnpm client build && pnpm bot build && pnpm georedis build && pnpm run server build ",
-    "watch": "pnpm clean && pnpm build && concurrently --raw 'pnpm:watch:*'",
-    "watch:common": "pnpm common watch",
-    "watch:bot": "pnpm bot watch",
-    "watch:server": "pnpm run server watch",
-    "watch:client": "pnpm client watch",
-    "watch:georedis-promised": "pnpm georedis watch",
-    "georedis": "cd packages/georedis-promised && pnpm",
-    "common": "cd packages/common && pnpm",
-    "admin": "cd packages/admin && pnpm",
-    "bot": "cd packages/bot && pnpm",
-    "client": "cd packages/client && pnpm",
-    "server": "cd packages/server && pnpm"
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject",
+    "watch:worker": "chokidar './src/app/src/worker.ts' './src/app/src/WebWorker/bootstrap.ts' -c 'yarn build:worker'",
+    "build:worker": "yarn build:worker:app && yarn build:worker:bootstrap",
+    "build:worker:app": "esbuild  ./src/app/src/worker.ts --bundle | node ./src/app/bin/stringify.js > ./src/app/src/worker.inlined.js",
+    "build:worker:bootstrap": "esbuild  ./src/app/src/WebWorker/bootstrap.ts --bundle | node ./src/app/bin/stringify.js > ./src/app/src/WebWorker/bootstrap.inlined.js"
   },
-  "private": true,
+  "dependencies": {
+    "callem": "../callem",
+    "expo": "~40.0.0",
+    "expo-asset": "~8.2.1",
+    "expo-status-bar": "~1.0.3",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-40.0.1.tar.gz",
+    "react-native-maps": "0.27.1",
+    "react-native-web": "~0.13.12",
+    "react-native-webview": "11.0.0"
+  },
   "devDependencies": {
-    "concurrently": "^5.3.0",
-    "eslint-plugin-react": "^7.22.0",
-    "eslint-plugin-react-hooks": "^4.2.0",
-    "eslint-plugin-react-native": "^3.10.0",
-    "nodemon": "^2.0.7",
+    "esbuild": "^0.8.48",
+    "@babel/core": "~7.9.0",
+    "@types/react": "~16.9.35",
+    "@types/react-dom": "~16.9.8",
+    "@types/react-native": "~0.63.2",
+    "chokidar-cli": "^2.1.0",
     "prettier": "^2.2.1",
     "prettier-plugin-organize-imports": "^1.1.1",
-    "rimraf": "^3.0.2",
-    "source-map-support": "^0.5.19",
-    "typescript": "^4.1.3",
-    "@typescript-eslint/eslint-plugin": "^4.14.0",
-    "@typescript-eslint/parser": "^4.14.0",
-    "eslint": "^7.18.0"
+    "typescript": "~4.0.0"
   },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "plugins": [
-      "./node_modules/prettier-plugin-organize-imports"
-    ]
-  },
-  "workspaces": {
-    "packages": [
-      "packages/*"
-    ]
-  }
+  "private": true
 }

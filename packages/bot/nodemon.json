@@ -1,6 +1,0 @@
-{
-  "execMap": {
-    "js": "node --enable-source-maps"
-  },
-  "watch": ["../client/dist", "../common/dist", "dist"]
-}
