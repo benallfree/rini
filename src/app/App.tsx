@@ -12,6 +12,7 @@ import { store } from './Store'
 import { Worker } from './Worker'
 
 const App: FC = () => {
+  console.log('render')
   return (
     <View style={styles.container}>
       <Provider store={store}>

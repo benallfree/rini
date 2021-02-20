@@ -1,30 +1,26 @@
-export interface MessageBase {
-  type: string
+export interface MessageBase<TType extends string = string> {
+  type: TType
 }
 
-export interface LogMessage extends MessageBase {
-  type: 'log'
-  data: any
+export interface LogMessage extends MessageBase<'log'> {
+  data: any[]
 }
 
-export interface PingMessage extends MessageBase {
-  type: 'ping'
+export interface PingMessage extends MessageBase<'ping'> {
   message: string
 }
 
-export interface PongMessage extends MessageBase {
-  type: 'pong'
+export interface PongMessage extends MessageBase<'pong'> {
   message: string
 }
 
-export interface ErrorMessage extends MessageBase {
-  type: 'error'
+export interface ErrorMessage extends MessageBase<'error'> {
   message: string
+  url?: string
+  lineNumber?: number
 }
 
-export interface ReadyMessage extends MessageBase {
-  type: 'ready'
-}
+export interface ReadyMessage extends MessageBase<'ready'> {}
 
 export type WorkerMessageTypes =
   | LogMessage

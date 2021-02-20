@@ -1,24 +1,53 @@
 /// <reference lib="dom"/>
 
 import { createClientNetcode } from '../client'
-import { MessageBase, WorkerMessageTypes } from '../rn-webworker'
+import {
+  ErrorMessage,
+  LogMessage,
+  MessageBase,
+  PingMessage,
+  PongMessage,
+  ReadyMessage,
+  WorkerMessageTypes,
+} from '../rn-webworker'
 
 const { log } = window
 
-interface LoginMessage extends MessageBase {
-  type: 'login'
+export interface LoginMessage extends MessageBase<'login'> {
   idToken: string
 }
 
-type AnyMessage = WorkerMessageTypes | LoginMessage
+export interface HeartbeatMessage extends MessageBase<'heartbeat'> {}
+
+export type AnyMessage = WorkerMessageTypes | LoginMessage | HeartbeatMessage
+
+const heartbeat = () => {
+  window.send({ type: 'heartbeat' })
+  setTimeout(heartbeat, 500)
+}
+heartbeat()
+
+export type DispatchHandler<TMessage> = (msg: TMessage) => void
+export type DispatchLookup = {
+  log?: DispatchHandler<LogMessage>
+  login?: DispatchHandler<LoginMessage>
+  heartbeat?: DispatchHandler<HeartbeatMessage>
+  ping?: DispatchHandler<PingMessage>
+  pong?: DispatchHandler<PongMessage>
+  error?: DispatchHandler<ErrorMessage>
+  ready?: DispatchHandler<ReadyMessage>
+}
 
 window.onMessage((msg) => {
   const _msg = msg as AnyMessage
-  const dispatch: { [_ in AnyMessage['type']]?: () => void } = {}
-  const _d = dispatch[_msg.type]
+  const dispatch: DispatchLookup = {}
+  const _d = dispatch[
+    _msg.type as AnyMessage['type']
+  ] as DispatchHandler<AnyMessage>
   if (!_d) {
     throw new Error(`Message type ${_msg.type} is not implemented`)
   }
+  _d(_msg)
   log('Rx main->worker', { _msg })
 })
 
