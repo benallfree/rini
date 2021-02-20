@@ -9,6 +9,7 @@ import { Authenticated } from './Authenticated'
 import { Located } from './Located'
 import { Map } from './Map'
 import { store } from './Store'
+import { Worker } from './Worker'
 
 const App: FC = () => {
   return (
@@ -22,6 +23,7 @@ const App: FC = () => {
             </Authenticated>
           </Located>
         </ThemeProvider>
+        <Worker />
       </Provider>
     </View>
   )

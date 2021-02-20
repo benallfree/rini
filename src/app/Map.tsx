@@ -22,10 +22,6 @@ export const Map: FC = () => {
   const dispatch = useAppDispatch()
   if (!location) return null
   const { latitude, longitude } = location
-  console.log({
-    window: Dimensions.get('window'),
-    screen: Dimensions.get('screen'),
-  })
 
   return (
     <MapView

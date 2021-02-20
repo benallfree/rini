@@ -28,8 +28,6 @@ export const Located: FC = ({ children }) => {
   const location = useAppSelector((state) => state.session.location)
   const dispatch = useAppDispatch()
 
-  console.log({ canLocate, location })
-
   useEffect(() => {
     Location.getPermissionsAsync().then(({ status }) => {
       setFirstTime(false)
@@ -39,7 +37,6 @@ export const Located: FC = ({ children }) => {
 
   useEffect(() => {
     if (!canLocate) return
-    console.log('deining task')
 
     Location.startLocationUpdatesAsync(TASK_NAME, {
       accuracy: Location.Accuracy.BestForNavigation,

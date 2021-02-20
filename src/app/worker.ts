@@ -3,7 +3,7 @@
 const { log } = window
 
 window.onMessage((msg) => {
-  window.log('Rx main->worker', { msg })
+  log('Rx main->worker', { msg })
 })
 
 var exampleSocket = new WebSocket('ws://localhost:3000')
@@ -14,11 +14,15 @@ exampleSocket.onopen = (event) => {
 }
 
 exampleSocket.onerror = (e) => {
-  log('got an error', e)
+  log('onerror', e)
 }
 
 exampleSocket.onmessage = (m) => {
-  log('got a message', m)
+  log('onmessage', m)
+}
+
+exampleSocket.onclose = () => {
+  log('onclose')
 }
 
 window.ready()
