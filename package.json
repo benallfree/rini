@@ -1,6 +1,7 @@
 {
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
+    "app:start:prod": "expo start --no-dev --minify",
     "app:start": "expo start",
     "app:android": "expo start --android",
     "app:ios": "expo start --ios",

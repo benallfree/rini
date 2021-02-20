@@ -6,9 +6,9 @@
     "slug": "rini",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/generated/icon.png",
+    "icon": "./src/app/assets/generated/icon.png",
     "splash": {
-      "image": "./assets/generated/splash.png",
+      "image": "./src/app/assets/generated/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -26,12 +26,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/generated/adaptive-icon.png",
+        "foregroundImage": "./src/app/assets/generated/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       }
     },
     "web": {
-      "favicon": "./assets/generated/favicon.png"
+      "favicon": "./src/app/assets/generated/favicon.png"
     }
   }
 }
