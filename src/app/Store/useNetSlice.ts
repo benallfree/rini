@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { ClientNetcode, createClientNetcode } from '../../client'
 import { NearbyEntities, PositionUpdate } from '../../common'
+import { useWebWorker } from '../../rn-webworker'
+import workerJs from '../worker.inlined'
 import { useAuthSlice } from './useAuthSlice'
 
 export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
@@ -9,6 +11,7 @@ export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [client, setClient] = useState<ClientNetcode>()
   const [nearbyEntities, setNearbyEntities] = useState<NearbyEntities>()
+  const { WebWorker } = useWebWorker(workerJs)
 
   useEffect(() => {
     if (!idToken) return

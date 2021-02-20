@@ -2,25 +2,28 @@ import { registerRootComponent } from 'expo'
 import { StatusBar } from 'expo-status-bar'
 import 'firebase/auth'
 import React, { FC } from 'react'
-import { Dimensions, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { ThemeProvider } from 'react-native-elements'
-import MapView from 'react-native-maps'
+import { Provider } from 'react-redux'
 import { Authenticated } from './Authenticated'
-import { Store } from './Store'
+import { Located } from './Located'
+import { Map } from './Map'
+import { store } from './Store'
 
 const App: FC = () => {
   return (
-    <Store.Provider>
-      <ThemeProvider>
-        <View style={styles.container}>
-          <Authenticated>
-            <StatusBar style="auto" />
-
-            <MapView style={styles.map} />
-          </Authenticated>
-        </View>
-      </ThemeProvider>
-    </Store.Provider>
+    <View style={styles.container}>
+      <Provider store={store}>
+        <ThemeProvider>
+          <Located>
+            <Authenticated>
+              <StatusBar style="auto" />
+              <Map />
+            </Authenticated>
+          </Located>
+        </ThemeProvider>
+      </Provider>
+    </View>
   )
 }
 
@@ -30,10 +33,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
   },
 })
 
