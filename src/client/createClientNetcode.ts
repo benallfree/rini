@@ -41,9 +41,7 @@ export type SocketConnection = {
   write: (buffer: Buffer) => Promise<void>
 }
 
-export const createClientNetcode = (
-  settings?: Partial<ClientNetcodeConfig>
-) => {
+export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => {
   let retryCount = 0
   let isConnected = false
 
@@ -63,15 +61,7 @@ export const createClientNetcode = (
       ...settings?.logger,
     },
   }
-  const {
-    idToken,
-    host,
-    port,
-    maxRetries,
-    retryDelayMs,
-    awaitReplyTimeoutMs,
-    logger,
-  } = _settings
+  const { idToken, host, port, maxRetries, retryDelayMs, awaitReplyTimeoutMs, logger } = _settings
 
   const [onMessage, emitMessage] = callem<MessageWrapper>()
   const [onConnect, emitConnect] = callem<ConnectEvent>()
@@ -155,10 +145,7 @@ export const createClientNetcode = (
 
   connect()
 
-  const sendMessageAndAwaitReply = async <
-    TMessage extends AnyMessage,
-    TReply extends AnyMessage
-  >(
+  const sendMessageAndAwaitReply = async <TMessage extends AnyMessage, TReply extends AnyMessage>(
     type: MessageTypes,
     msg: TMessage
   ): Promise<TReply> => {
@@ -167,7 +154,7 @@ export const createClientNetcode = (
     return new Promise<TReply>((resolve, reject) => {
       const tid = setTimeout(() => {
         unsub()
-        reject(`Timed out awaiting reply to ${certified.id}`)
+        reject(new Error(`Timed out awaiting reply to ${certified.id}`))
       }, awaitReplyTimeoutMs)
       const unsub = onMessage((m) => {
         if (m.refId !== certified.id) return // Skip, it's not our message
@@ -178,23 +165,19 @@ export const createClientNetcode = (
       send(packed).catch((e) => {
         unsub()
         clearTimeout(tid)
-        reject(`Error sending. Trigger reconnect`)
+        reject(new Error(`Error sending. Trigger reconnect`))
       })
     })
   }
 
-  const sendMessage = <TMessage extends AnyMessage>(
-    type: MessageTypes,
-    msg: TMessage
-  ): void => {
+  const sendMessage = <TMessage extends AnyMessage>(type: MessageTypes, msg: TMessage): void => {
     const [packed] = netcode.pack(type, msg)
     send(packed).catch((e) => {
       logger.error(`Error sending message`, e)
     })
   }
 
-  const login = (message: LoginRequest) =>
-    sendMessageAndAwaitReply(MessageTypes.Login, message)
+  const login = (message: LoginRequest) => sendMessageAndAwaitReply(MessageTypes.Login, message)
 
   const updatePosition = async (message: PositionUpdate) => {
     sendMessage(MessageTypes.PositionUpdate, message)

@@ -8,10 +8,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "strict": true,
-    "baseUrl": ".",
-    "paths": {
-      "*": ["./src/@types/*"]
-    },
     "typeRoots": ["./src/@types", "./node_modules/@types"]
   },
   "include": ["./src/**/*"]

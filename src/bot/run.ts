@@ -1,7 +1,7 @@
+import * as prompts from 'prompts'
 import { createBotFileProvider } from './BotFileProvider'
 import { createBotRunner } from './BotRunner'
 import { createRouteService } from './RouteService'
-import * as prompts from 'prompts'
 
 const rs = createRouteService()
 const bd = createBotFileProvider()

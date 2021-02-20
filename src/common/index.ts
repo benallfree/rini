@@ -4,11 +4,7 @@ import { NearbyEntities } from './NearbyEntities'
 import { PositionUpdate } from './PositionUpdate'
 import { Session } from './Session'
 
-export type AnyMessage =
-  | LoginRequest
-  | Session
-  | PositionUpdate
-  | NearbyEntities
+export type AnyMessage = LoginRequest | Session | PositionUpdate | NearbyEntities
 
 export { NearbyEntities, LoginRequest, PositionUpdate, Session }
 

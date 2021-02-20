@@ -1,6 +1,6 @@
 import { AnyMessage, MessageTypes } from '../common'
 
-export type TransportPackerConfig = {}
+export type TransportPackerConfig = object
 
 export type MessageHeader = {
   id: number
@@ -8,15 +8,11 @@ export type MessageHeader = {
   type: MessageTypes
 }
 
-export type MessageWrapper<
-  TMessage extends AnyMessage = AnyMessage
-> = MessageHeader & {
+export type MessageWrapper<TMessage extends AnyMessage = AnyMessage> = MessageHeader & {
   message: TMessage
 }
 
-export const createTransportPacker = (
-  config?: Partial<TransportPackerConfig>
-) => {
+export const createTransportPacker = (config?: Partial<TransportPackerConfig>) => {
   let messageId = 0
 
   const pack = <TMessage extends AnyMessage>(
@@ -43,9 +39,7 @@ export const createTransportPacker = (
       try {
         const data = JSON.parse(packed)
         if (!('id' in data)) {
-          throw new Error(
-            `Invalid parsed packet format ${JSON.stringify(data)} (${packed})`
-          )
+          throw new Error(`Invalid parsed packet format ${JSON.stringify(data)} (${packed})`)
         }
         return data as ThisMessageWrapper
       } catch (e) {

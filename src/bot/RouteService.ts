@@ -4,11 +4,7 @@ import { dirname, resolve } from 'path'
 
 export const createRouteService = () => {
   const parser = new gpxParser()
-  parser.parse(
-    readFileSync(
-      resolve(dirname(__filename), 'gpx', 'Freeway Drive.gpx')
-    ).toString()
-  )
+  parser.parse(readFileSync(resolve(dirname(__filename), 'gpx', 'Freeway Drive.gpx')).toString())
 
   const points: gpxParser.Point[] = []
   parser.tracks.forEach((track) => {

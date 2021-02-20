@@ -12,7 +12,6 @@ import { Worker } from './components/Worker'
 import { store } from './store'
 
 const App: FC = () => {
-  console.log('render')
   return (
     <View style={styles.container}>
       <Provider store={store}>
