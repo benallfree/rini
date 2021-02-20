@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { WebView, WebViewMessageEvent } from 'react-native-webview'
 import { callem } from '../callem'
 import bootstrapJs from './bootstrap.inlined'
@@ -23,20 +23,17 @@ export const useWebWorker = <TMessageTypes extends MessageBase>(
     fireMessage(message as TMessageTypes)
   }
 
-  const WebWorker = useMemo(
-    () => () =>
-      React.createElement(WebView, {
-        originWhitelist: ['*'],
-        ref: webviewRef,
-        injectedJavaScript: `
+  const WebWorker = () =>
+    React.createElement(WebView, {
+      originWhitelist: ['*'],
+      ref: webviewRef,
+      injectedJavaScript: `
       ${bootstrapJs};
       ${code};
       `,
-        source: { html: '<html><body></body></html>' },
-        onMessage: handleMessage,
-      }),
-    [code]
-  )
+      source: { html: '<html><body></body></html>' },
+      onMessage: handleMessage,
+    })
 
   const injectJs = (code: string) => {
     if (!isReady) {
