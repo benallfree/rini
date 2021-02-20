@@ -3,7 +3,8 @@ import * as TaskManager from 'expo-task-manager'
 import React, { FC, useEffect, useState } from 'react'
 import { Button, Text } from 'react-native-elements'
 import { callem } from '../../callem'
-import { locationChanged, useAppDispatch, useAppSelector } from '../store'
+import { useAppDispatch, useAppSelector } from '../store'
+import { locationChanged } from '../store/sessionSlice'
 const TASK_NAME = 'position'
 
 const [onLocationChanged, emitLocationChanged] = callem<{
