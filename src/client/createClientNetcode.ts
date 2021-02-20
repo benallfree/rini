@@ -12,12 +12,21 @@ import { MessageWrapper } from '../n53'
 
 export type ClientMessageSender = (msg: Buffer) => Promise<void>
 
+export interface Logger {
+  info(...args: any[]): void
+  warn(...args: any[]): void
+  debug(...args: any[]): void
+  error(...args: any[]): void
+}
+
 export type ClientNetcodeConfig = {
+  idToken: string
   host: string
   port: number
   maxRetries: number
   retryDelayMs: number
   awaitReplyTimeoutMs: number
+  logger: Logger
 }
 
 export type ConnectEvent = { attempt: number }
@@ -33,26 +42,35 @@ export type SocketConnection = {
 }
 
 export const createClientNetcode = (
-  idToken: string,
   settings?: Partial<ClientNetcodeConfig>
 ) => {
   let retryCount = 0
   let isConnected = false
 
   const _settings: ClientNetcodeConfig = {
+    idToken: '',
     host: '192.168.1.2',
     port: 3000,
     maxRetries: 0,
     retryDelayMs: 5000,
     awaitReplyTimeoutMs: 1000,
     ...settings,
+    logger: {
+      info: console.log,
+      warn: console.warn,
+      error: console.error,
+      debug: console.log,
+      ...settings?.logger,
+    },
   }
   const {
+    idToken,
     host,
     port,
     maxRetries,
     retryDelayMs,
     awaitReplyTimeoutMs,
+    logger,
   } = _settings
 
   const [onMessage, emitMessage] = callem<MessageWrapper>()
@@ -78,37 +96,39 @@ export const createClientNetcode = (
 
     conn.onopen = () => {
       retryCount = 0
-      console.log('connected')
-      console.log('listening for data')
+      logger.debug('connected')
+      logger.debug('listening for data')
 
-      login({ idToken })
-        .then(() => {
-          isConnected = true
-          emitConnect({
-            attempt: retryCount,
+      if (idToken) {
+        login({ idToken })
+          .then(() => {
+            isConnected = true
+            emitConnect({
+              attempt: retryCount,
+            })
           })
-        })
-        .catch((e) => {
-          console.error(`Error logging in`, e)
-          cleanup()
-          reconnect()
-        })
+          .catch((e) => {
+            logger.error(`Error logging in`, e)
+            cleanup()
+            reconnect()
+          })
+      }
     }
 
     conn.onclose = () => {
-      console.log('close')
+      logger.debug('close')
       cleanup()
       reconnect()
     }
 
     conn.onerror = (e) => {
-      console.error(e)
+      logger.error(e)
       cleanup()
       reconnect()
     }
 
     const cleanup = () => {
-      console.log('Cleaning up')
+      logger.debug('Cleaning up')
       conn.close()
       isConnected = false
       emitDisconnect({
@@ -121,14 +141,14 @@ export const createClientNetcode = (
 
   const reconnect = () => {
     if (retryTid) return
-    console.log('scheduling reconnect')
+    logger.debug('scheduling reconnect')
     if (maxRetries && retryCount >= maxRetries) {
-      console.log(`Max retries exceeded`)
+      logger.debug(`Max retries exceeded`)
       return
     }
     retryCount++
     retryTid = setTimeout(() => {
-      console.log('attempting reconnect now')
+      logger.debug('attempting reconnect now')
       connect()
     }, retryDelayMs)
   }
@@ -143,7 +163,7 @@ export const createClientNetcode = (
     msg: TMessage
   ): Promise<TReply> => {
     const [packed, certified] = netcode.pack(type, msg)
-    console.log({ certified })
+    logger.debug({ certified })
     return new Promise<TReply>((resolve, reject) => {
       const tid = setTimeout(() => {
         unsub()
@@ -169,7 +189,7 @@ export const createClientNetcode = (
   ): void => {
     const [packed] = netcode.pack(type, msg)
     send(packed).catch((e) => {
-      console.error(`Error sending message`, e)
+      logger.error(`Error sending message`, e)
     })
   }
 
@@ -188,7 +208,7 @@ export const createClientNetcode = (
     [MessageTypes.NearbyEntities]: emitNearbyEntities,
   }
   onMessage((m) => {
-    // console.log(`got raw message incoming`, m)
+    // logger.log(`got raw message incoming`, m)
     const dispatchHandler = dispatchHandlers[m.type as MessageTypes]
     if (!dispatchHandler) return // Not handled
     dispatchHandler(m.message)

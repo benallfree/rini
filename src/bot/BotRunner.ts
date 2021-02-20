@@ -19,7 +19,7 @@ export const createBotRunner = (
   })()
 
   ;(async () => {
-    const client = createClientNetcode(bot.idToken)
+    const client = createClientNetcode({ idToken: bot.idToken })
 
     const { onConnect, onDisconnect, isConnected, onNearbyEntities } = client
 

@@ -1,28 +1,54 @@
 /// <reference lib="dom"/>
 
+import { createClientNetcode } from '../client'
+import { MessageBase, WorkerMessageTypes } from '../rn-webworker'
+
 const { log } = window
 
+interface LoginMessage extends MessageBase {
+  type: 'login'
+  idToken: string
+}
+
+type AnyMessage = WorkerMessageTypes | LoginMessage
+
 window.onMessage((msg) => {
-  log('Rx main->worker', { msg })
+  const _msg = msg as AnyMessage
+  const dispatch: { [_ in AnyMessage['type']]?: () => void } = {}
+  const _d = dispatch[_msg.type]
+  if (!_d) {
+    throw new Error(`Message type ${_msg.type} is not implemented`)
+  }
+  log('Rx main->worker', { _msg })
 })
 
-var exampleSocket = new WebSocket('ws://localhost:3000')
-log('got that socket')
+const client = createClientNetcode({
+  logger: {
+    info: log,
+    debug: log,
+    error: log,
+    warn: log,
+  },
+})
 
-exampleSocket.onopen = (event) => {
-  log('onopen')
-}
+// var exampleSocket = new WebSocket('ws://localhost:3000')
+// log('got that socket')
 
-exampleSocket.onerror = (e) => {
-  log('onerror', e)
-}
+// exampleSocket.onopen = (event) => {
+//   log('onopen')
+//   exampleSocket.send('hello world')
+// }
 
-exampleSocket.onmessage = (m) => {
-  log('onmessage', m)
-}
+// exampleSocket.onerror = (e) => {
+//   log('onerror', e)
+// }
 
-exampleSocket.onclose = () => {
-  log('onclose')
-}
+// exampleSocket.onmessage = (m) => {
+//   log('onmessage', m)
+// }
+
+// exampleSocket.onclose = () => {
+//   log('onclose')
+// }
 
 window.ready()
