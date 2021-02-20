@@ -41,9 +41,7 @@ export type DispatchLookup = {
 window.onMessage((msg) => {
   const _msg = msg as AnyMessage
   const dispatch: DispatchLookup = {}
-  const _d = dispatch[
-    _msg.type as AnyMessage['type']
-  ] as DispatchHandler<AnyMessage>
+  const _d = dispatch[_msg.type as AnyMessage['type']] as DispatchHandler<AnyMessage>
   if (!_d) {
     throw new Error(`Message type ${_msg.type} is not implemented`)
   }

@@ -1,22 +1,20 @@
 module.exports = {
-  root: true,
-  parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'react', 'react-native'],
   extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
+    'universe',
+    'universe/shared/typescript-analysis',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
   ],
-  parserOptions: {
-    ecmaFeatures: {
-      jsx: true,
+  overrides: [
+    {
+      files: ['*.ts', '*.tsx', '*.d.ts'],
+      parserOptions: {
+        project: './tsconfig.json',
+      },
     },
-  },
+  ],
   rules: {
     'react/prop-types': 0,
-    '@typescript-eslint/explicit-module-boundary-types': 1,
-    '@typescript-eslint/no-var-requires': 1,
-    '@typescript-eslint/ban-types': 1,
+    'import/order': 0,
   },
 }

@@ -4,9 +4,7 @@ import { callem } from '../callem'
 import bootstrapJs from './bootstrap.inlined'
 import { MessageBase } from './types'
 
-export const useWebWorker = <TMessageTypes extends MessageBase>(
-  code?: string
-) => {
+export const useWebWorker = <TMessageTypes extends MessageBase>(code?: string) => {
   const webviewRef = useRef<WebView>(null)
   const [isReady, setIsReady] = useState(false)
 
@@ -40,9 +38,7 @@ export const useWebWorker = <TMessageTypes extends MessageBase>(
       throw new Error(`Attempt to call injectJs before isReady===true`)
     }
     if (!webviewRef.current) {
-      throw new Error(
-        `Attempt to call injectJs before <WebWorker/> ref is available`
-      )
+      throw new Error(`Attempt to call injectJs before <WebWorker/> ref is available`)
     }
     webviewRef.current.injectJavaScript(code)
   }

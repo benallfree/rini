@@ -1,11 +1,6 @@
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useEffect } from 'react'
 import { useWebWorker } from '../rn-webworker'
-import {
-  AnyMessage,
-  DispatchHandler,
-  DispatchLookup,
-  HeartbeatMessage,
-} from './worker'
+import { AnyMessage, DispatchHandler, DispatchLookup, HeartbeatMessage } from './worker'
 import workerJs from './worker.inlined'
 
 const makeHeartbeatMonitor = (): DispatchHandler<HeartbeatMessage> => {
@@ -34,19 +29,12 @@ const makeHeartbeatMonitor = (): DispatchHandler<HeartbeatMessage> => {
     state.tid = setTimeout(timeoutHeartbeat, TIMEOUT_MS)
     // console.log('setting tid', tid)
   }
-  state.tid = setTimeout(timeoutHeartbeat, TIMEOUT_MS)
+  // state.tid = setTimeout(timeoutHeartbeat, TIMEOUT_MS)
   return gotHeartbeat
 }
 
-let renderCount = 0
 export const Worker: FC = ({ children }) => {
   const { WebWorker, send, onMessage, isReady } = useWebWorker(workerJs)
-
-  const [tmp, setTmp] = useState('')
-
-  useEffect(() => {
-    console.log(tmp)
-  }, [])
 
   useEffect(() => {
     const dispatch: DispatchLookup = {
@@ -61,18 +49,14 @@ export const Worker: FC = ({ children }) => {
 
     return onMessage((msg) => {
       const _msg = msg as AnyMessage
-      const _d = dispatch[
-        _msg.type as AnyMessage['type']
-      ] as DispatchHandler<AnyMessage>
+      const _d = dispatch[_msg.type as AnyMessage['type']] as DispatchHandler<AnyMessage>
       if (!_d) {
-        console.warn(
-          `Warning: unhandled message type from worker: ${JSON.stringify(_msg)}`
-        )
+        console.warn(`Warning: unhandled message type from worker: ${JSON.stringify(_msg)}`)
         return
       }
       _d(_msg)
     })
-  }, [])
+  }, [onMessage])
 
   if (!isReady) return null // Worker is loading
 
