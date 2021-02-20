@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
+import * as gpxParser from 'gpxparser'
 import { dirname, resolve } from 'path'
-import gpxParser = require('gpxparser')
 
 export const createRouteService = () => {
   const parser = new gpxParser()

@@ -1,4 +1,4 @@
-import WebSocket = require('isomorphic-ws')
+import * as WebSocket from 'isomorphic-ws'
 import { callem, CallemEmitter, CallemSubscriber } from '../callem'
 import {
   AnyMessage,
@@ -40,7 +40,7 @@ export const createClientNetcode = (
   let isConnected = false
 
   const _settings: ClientNetcodeConfig = {
-    host: 'localhost',
+    host: '192.168.1.2',
     port: 3000,
     maxRetries: 0,
     retryDelayMs: 5000,
@@ -62,7 +62,11 @@ export const createClientNetcode = (
   let conn: WebSocket
   const connect = () => {
     retryTid = undefined
-    conn = new WebSocket(`ws://${host}:${port}`)
+    //@ts-ignore
+    const Ws = WebSocket.default || WebSocket
+    console.log({ Ws })
+    //@ts-ignore
+    conn = new Ws(`ws://${host}:${port}`)
     conn.onmessage = (e) => {
       const { data } = e
       if (typeof data !== 'string') {

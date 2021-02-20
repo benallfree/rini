@@ -1,14 +1,14 @@
 import WebView from 'react-native-webview'
-import { Message } from '.'
+import { MessageBase } from '.'
 import { CallemEmitter, CallemSubscriber } from '../callem'
 
 declare global {
   interface Window {
     ready: () => void
     log: (...args: any[]) => void
-    send: (msg: Message) => void
+    send: (msg: MessageBase) => void
     ReactNativeWebView: WebView
-    onMessage: CallemSubscriber<Message>
-    emitMessage: CallemEmitter<Message>
+    onMessage: CallemSubscriber<MessageBase>
+    emitMessage: CallemEmitter<MessageBase>
   }
 }

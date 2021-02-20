@@ -1,15 +1,15 @@
 /// <reference path="index.d.ts"/>
 
 import { callem } from '../callem'
-import { Message, MessageTypes } from './types'
+import { MessageBase } from './types'
 
-const [onMessage, emitMessage] = callem<Message>()
+const [onMessage, emitMessage] = callem<MessageBase>()
 
 window.onerror = function (message, url, lineNumber) {
   const msg = {
-    type: MessageTypes.Error,
+    type: 'error',
     data: { message, url, lineNumber },
-  } as Message
+  } as MessageBase
   window.ReactNativeWebView.postMessage(JSON.stringify(msg))
   //save error and send to server for example.
   return true
@@ -17,13 +17,13 @@ window.onerror = function (message, url, lineNumber) {
 
 window.addEventListener('unhandledrejection', (event) => {
   const msg = {
-    type: MessageTypes.Error,
+    type: 'error',
     data: event.reason,
-  } as Message
+  } as MessageBase
   window.ReactNativeWebView.postMessage(JSON.stringify(msg))
 })
 
-const _send = (msg: Message) => {
+const _send = (msg: MessageBase) => {
   const payload = JSON.stringify(msg)
   window.ReactNativeWebView.postMessage(payload)
   return payload
@@ -36,7 +36,7 @@ window.send = (msg) => {
 window.ready = () => {
   const msg = {
     type: 'ready',
-  } as Message
+  } as MessageBase
   return window.send(msg)
 }
 
@@ -44,7 +44,7 @@ window.log = (...args) => {
   const msg = {
     type: 'log',
     data: args,
-  } as Message
+  } as MessageBase
   return _send(msg)
 }
 

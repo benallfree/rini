@@ -157,6 +157,7 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       },
 
       message: (ws, message, isBinary) => {
+        console.log('got a message')
         const wrapper = netcode.unpack(Buffer.from(message).toString())
         try {
           if (wrapper.type != MessageTypes.Login && !sessions[ws.connId]) {
@@ -178,7 +179,10 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
 
       close: (ws, code, behavior) => {
         const { connId } = ws
-        console.log(`C${connId}: close`, { code, behavior })
+        console.log(`C${connId}: close`, {
+          code,
+          behavior: Buffer.from(behavior).toString(),
+        })
         sessions[connId].cleanup()
       },
     })

@@ -1,10 +1,8 @@
 /// <reference lib="dom"/>
 
-import { Message } from './rn-webworker'
 const { log } = window
 
-window.onMessage((e) => {
-  const msg = e.data as Message
+window.onMessage((msg) => {
   window.log('Rx main->worker', { msg })
 })
 

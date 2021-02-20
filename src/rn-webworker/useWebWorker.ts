@@ -2,15 +2,15 @@ import React, { useMemo, useRef, useState } from 'react'
 import { WebView, WebViewMessageEvent } from 'react-native-webview'
 import { callem } from '../callem'
 import bootstrapJs from './bootstrap.inlined'
-import { Message, MessageTypes } from './types'
+import { MessageBase } from './types'
 
-export const useWebWorker = <TMessageTypes extends MessageTypes = MessageTypes>(
+export const useWebWorker = <TMessageTypes extends MessageBase>(
   code?: string
 ) => {
   const webviewRef = useRef<WebView>(null)
   const [isReady, setIsReady] = useState(false)
 
-  const [onMessage, fireMessage] = callem<Message<TMessageTypes>>()
+  const [onMessage, fireMessage] = callem<TMessageTypes>()
 
   const handleMessage = (e: WebViewMessageEvent) => {
     const { data } = e.nativeEvent
@@ -19,24 +19,23 @@ export const useWebWorker = <TMessageTypes extends MessageTypes = MessageTypes>(
       return
     }
 
-    const message = JSON.parse(data) as Message<TMessageTypes>
-    fireMessage(message)
+    const message = JSON.parse(data) as MessageBase
+    fireMessage(message as TMessageTypes)
   }
 
   const WebWorker = useMemo(
-    () => () => (
-      <WebView
-        originWhitelist={['*']}
-        ref={webviewRef}
-        injectedJavaScript={`
-        ${bootstrapJs};
-        ${code};
-        `}
-        source={{ html: '<html><body></body></html>' }}
-        onMessage={handleMessage}
-      />
-    ),
-    []
+    () => () =>
+      React.createElement(WebView, {
+        originWhitelist: ['*'],
+        ref: webviewRef,
+        injectedJavaScript: `
+      ${bootstrapJs};
+      ${code};
+      `,
+        source: { html: '<html><body></body></html>' },
+        onMessage: handleMessage,
+      }),
+    [code]
   )
 
   const injectJs = (code: string) => {
@@ -51,7 +50,7 @@ export const useWebWorker = <TMessageTypes extends MessageTypes = MessageTypes>(
     webviewRef.current.injectJavaScript(code)
   }
 
-  const send = (msg: Message<TMessageTypes>) => {
+  const send = (msg: TMessageTypes) => {
     const payload = JSON.stringify(msg)
     const exec = `
       window.emitMessage(${payload});
