@@ -56,7 +56,7 @@ export const createBotRunner = (
       clearTimeout(ptid)
     })
     onNearbyEntities((e) => {
-      console.log(`Nearby entities`, e.nearby)
+      console.log(`Nearby entities for ${bot.uid}`, e.nearby)
     })
   })()
 

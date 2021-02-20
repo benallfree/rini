@@ -1,5 +1,5 @@
 import React, { FC, useEffect } from 'react'
-import { useWebWorker } from '../rn-webworker'
+import { useWebWorker } from '../../rn-webworker'
 import { AnyMessage, DispatchHandler, DispatchLookup, HeartbeatMessage } from './worker'
 import workerJs from './worker.inlined'
 

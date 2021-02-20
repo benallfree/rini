@@ -49,9 +49,7 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
     const pingsExpectedPerSec = openConnectionCount * 2
     const missedPingsPerSec = Math.max(0, pingsExpectedPerSec - pingsPerSec)
 
-    const pressure = pingsExpectedPerSec
-      ? missedPingsPerSec / pingsExpectedPerSec
-      : 0
+    const pressure = pingsExpectedPerSec ? missedPingsPerSec / pingsExpectedPerSec : 0
     console.log({
       openConnectionCount,
       startTimeMs,
@@ -117,12 +115,9 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
         throw new Error(`Could not fetch nearby players`)
       }
 
-      const [packed] = netcode.pack<NearbyEntities>(
-        MessageTypes.NearbyEntities,
-        {
-          nearby,
-        }
-      )
+      const [packed] = netcode.pack<NearbyEntities>(MessageTypes.NearbyEntities, {
+        nearby,
+      })
       ws.send(packed, false)
     }
     setTimeout(send, 500)
@@ -157,10 +152,9 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       },
 
       message: (ws, message, isBinary) => {
-        console.log('got a message')
         const wrapper = netcode.unpack(Buffer.from(message).toString())
         try {
-          if (wrapper.type != MessageTypes.Login && !sessions[ws.connId]) {
+          if (wrapper.type !== MessageTypes.Login && !sessions[ws.connId]) {
             console.error(`unestablished session`, { wrapper })
             ws.close()
             return // Silently ignore unauthenticated

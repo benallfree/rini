@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { ClientNetcode, createClientNetcode } from '../../client'
 import { NearbyEntities, PositionUpdate } from '../../common'
 import { useWebWorker } from '../../rn-webworker'
-import workerJs from '../worker.inlined'
+import workerJs from '../Worker/worker.inlined'
 import { useAuthSlice } from './useAuthSlice'
 
 export const useNetSlice = (auth: ReturnType<typeof useAuthSlice>) => {

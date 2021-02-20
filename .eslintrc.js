@@ -16,5 +16,6 @@ module.exports = {
   rules: {
     'react/prop-types': 0,
     'import/order': 0,
+    'react/display-name': 0,
   },
 }

@@ -1,6 +1,7 @@
 /// <reference lib="dom"/>
+/// <reference path="../../rn-webworker/index.d.ts"/>
 
-import { createClientNetcode } from '../client'
+import { createClientNetcode } from '../../client'
 import {
   ErrorMessage,
   LogMessage,
@@ -9,7 +10,7 @@ import {
   PongMessage,
   ReadyMessage,
   WorkerMessageTypes,
-} from '../rn-webworker'
+} from '../../rn-webworker'
 
 const { log } = window
 
