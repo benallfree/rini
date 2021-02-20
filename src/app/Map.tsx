@@ -22,6 +22,10 @@ export const Map: FC = () => {
   const dispatch = useAppDispatch()
   if (!location) return null
   const { latitude, longitude } = location
+  console.log({
+    window: Dimensions.get('window'),
+    screen: Dimensions.get('screen'),
+  })
 
   return (
     <MapView
@@ -40,7 +44,7 @@ export const Map: FC = () => {
 
 const styles = StyleSheet.create({
   map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
+    width: Dimensions.get('screen').width,
+    height: Dimensions.get('screen').height,
   },
 })

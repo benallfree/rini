@@ -2,9 +2,25 @@ import * as Location from 'expo-location'
 import * as TaskManager from 'expo-task-manager'
 import React, { FC, useEffect, useState } from 'react'
 import { Button, Text } from 'react-native-elements'
+import { callem } from '../callem'
 import { useAppDispatch, useAppSelector } from './Store/hooks'
 import { locationChanged } from './Store/sessionSlice'
 const TASK_NAME = 'position'
+
+const [onLocationChanged, emitLocationChanged] = callem<{
+  location: Location.LocationObject | undefined
+}>()
+
+TaskManager.defineTask(TASK_NAME, ({ data, error }) => {
+  if (error) {
+    console.error(error)
+    return
+  }
+  const location = (data as {
+    locations: Location.LocationObject[]
+  }).locations.pop()
+  emitLocationChanged({ location })
+})
 
 export const Located: FC = ({ children }) => {
   const [firstTime, setFirstTime] = useState(true)
@@ -23,31 +39,26 @@ export const Located: FC = ({ children }) => {
 
   useEffect(() => {
     if (!canLocate) return
-
-    TaskManager.defineTask(TASK_NAME, ({ data, error }) => {
-      if (error) {
-        console.error(error)
-        return
-      }
-      const location = (data as {
-        locations: Location.LocationObject[]
-      }).locations.pop()
-      dispatch(locationChanged(location?.coords))
-    })
+    console.log('deining task')
 
     Location.startLocationUpdatesAsync(TASK_NAME, {
       accuracy: Location.Accuracy.BestForNavigation,
       showsBackgroundLocationIndicator: true,
       pausesUpdatesAutomatically: true,
       activityType: Location.ActivityType.AutomotiveNavigation,
+    }).catch((e) => {
+      console.error(e)
+    })
+
+    const unsub = onLocationChanged((e) => {
+      dispatch(locationChanged(e.location?.coords))
     })
 
     return () => {
-      Location.stopLocationUpdatesAsync(TASK_NAME)
-        .finally(() => TaskManager.unregisterTaskAsync(TASK_NAME))
-        .catch((e) => {
-          console.error(e)
-        })
+      unsub()
+      Location.stopLocationUpdatesAsync(TASK_NAME).catch((e) => {
+        console.error(e)
+      })
     }
   }, [canLocate])
 
