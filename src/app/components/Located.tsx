@@ -2,9 +2,8 @@ import * as Location from 'expo-location'
 import * as TaskManager from 'expo-task-manager'
 import React, { FC, useEffect, useState } from 'react'
 import { Button, Text } from 'react-native-elements'
-import { callem } from '../callem'
-import { useAppDispatch, useAppSelector } from './Store/hooks'
-import { locationChanged } from './Store/sessionSlice'
+import { callem } from '../../callem'
+import { locationChanged, useAppDispatch, useAppSelector } from '../store'
 const TASK_NAME = 'position'
 
 const [onLocationChanged, emitLocationChanged] = callem<{
@@ -57,7 +56,7 @@ export const Located: FC = ({ children }) => {
         console.error(e)
       })
     }
-  }, [canLocate])
+  }, [canLocate, dispatch])
 
   const handleRequestPermission = () => {
     Location.requestPermissionsAsync().then((res) => {
@@ -71,10 +70,7 @@ export const Located: FC = ({ children }) => {
     return (
       <>
         <Text h1>Location Permission Needed</Text>
-        <Button
-          title="Grant Permission Now"
-          onPress={handleRequestPermission}
-        ></Button>
+        <Button title="Grant Permission Now" onPress={handleRequestPermission}></Button>
       </>
     )
   }

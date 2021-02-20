@@ -6,10 +6,10 @@
     "app:ios": "expo start --ios",
     "app:web": "expo start --web",
     "app:eject": "expo eject",
-    "app:watch:worker": "chokidar './src/app/worker.ts' './src/rn-webworker/bootstrap.ts' -c 'yarn app:build:worker'",
+    "app:watch:worker": "chokidar './src/app/components/Worker/worker-app.ts' './src/rn-webworker/bootstrap.ts' -c 'yarn app:build:worker'",
     "app:build:worker": "yarn app:build:worker:app && yarn app:build:worker:bootstrap",
     "esbuild": "esbuild --bundle --minify --sourcemap=inline --tsconfig=./tsconfig.json",
-    "app:build:worker:app": "yarn run --silent esbuild ./src/app/Worker/worker.ts  | node ./bin/stringify.js 1> ./src/app/Worker/worker.inlined.ts",
+    "app:build:worker:app": "yarn run --silent esbuild ./src/app/components/Worker/worker-app.ts  | node ./bin/stringify.js 1> ./src/app/components/Worker/worker-app.inlined.ts",
     "app:build:worker:bootstrap": "yarn run --silent esbuild ./src/rn-webworker/bootstrap.ts | node ./bin/stringify.js 1> ./src/rn-webworker/bootstrap.inlined.ts",
     "bot:dev": "ts-node-dev --respawn --transpile-only src/bot/run.ts"
   },

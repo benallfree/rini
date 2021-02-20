@@ -1,7 +1,7 @@
 import React, { FC, useEffect } from 'react'
-import { useWebWorker } from '../../rn-webworker'
-import { AnyMessage, DispatchHandler, DispatchLookup, HeartbeatMessage } from './worker'
-import workerJs from './worker.inlined'
+import { useWebWorker } from '../../../rn-webworker'
+import { AnyMessage, DispatchHandler, DispatchLookup, HeartbeatMessage } from './worker-app'
+import workerJs from './worker-app.inlined'
 
 const makeHeartbeatMonitor = (): DispatchHandler<HeartbeatMessage> => {
   const state: {

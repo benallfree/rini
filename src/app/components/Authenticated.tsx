@@ -1,9 +1,9 @@
 import firebase from 'firebase'
 import React, { FC, useEffect, useState } from 'react'
 import { Text } from 'react-native-elements'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { idTkenChanged } from '../store/sessionSlice'
 import { PhoneSignIn } from './PhoneSignIn'
-import { useAppDispatch, useAppSelector } from './Store/hooks'
-import { idTkenChanged } from './Store/sessionSlice'
 
 export const Authenticated: FC = ({ children }) => {
   const [firstTime, setFirstTime] = useState(true)
@@ -11,12 +11,10 @@ export const Authenticated: FC = ({ children }) => {
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    const unsub = firebase
-      .auth()
-      .onAuthStateChanged((user: firebase.User | null) => {
-        console.log('auth state', { user })
-        setFirstTime(false)
-      })
+    const unsub = firebase.auth().onAuthStateChanged((user: firebase.User | null) => {
+      console.log('auth state', { user })
+      setFirstTime(false)
+    })
     return unsub // unsubscribe on unmount
   }, [])
 
@@ -37,7 +35,7 @@ export const Authenticated: FC = ({ children }) => {
           dispatch(idTkenChanged(undefined))
         })
     })
-  }, [])
+  }, [dispatch])
 
   if (firstTime) return <Text h1>Authenticating...</Text>
 

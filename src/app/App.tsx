@@ -5,11 +5,11 @@ import React, { FC } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { ThemeProvider } from 'react-native-elements'
 import { Provider } from 'react-redux'
-import { Authenticated } from './Authenticated'
-import { Located } from './Located'
-import { Map } from './Map'
-import { store } from './Store'
-import { Worker } from './Worker'
+import { Authenticated } from './components/Authenticated'
+import { Located } from './components/Located'
+import { Map } from './components/Map'
+import { Worker } from './components/Worker'
+import { store } from './store'
 
 const App: FC = () => {
   console.log('render')

@@ -4,7 +4,7 @@ import React, { useCallback, useRef, useState } from 'react'
 import { Button, Input } from 'react-native-elements'
 import PhoneInput from 'react-native-phone-number-input'
 import Icon from 'react-native-vector-icons/FontAwesome'
-import { firebaseConfig } from './firebase'
+import { firebaseConfig } from '../firebase'
 
 export function PhoneSignIn() {
   // If null, no SMS has been sent
@@ -16,32 +16,23 @@ export function PhoneSignIn() {
   const phoneInput = useRef<PhoneInput>(null)
 
   // Handle the button press
-  const signInWithPhoneNumber = useCallback(
-    async (phoneNumber: string) => {
-      if (!fbAuthRef.current) {
-        throw new Error('Firebase auth modal not ready')
-      }
-      const phoneProvider = new firebase.auth.PhoneAuthProvider()
-      const verificationId = await phoneProvider.verifyPhoneNumber(
-        phoneNumber,
-        fbAuthRef.current
-      )
+  const signInWithPhoneNumber = useCallback(async (phoneNumber: string) => {
+    if (!fbAuthRef.current) {
+      throw new Error('Firebase auth modal not ready')
+    }
+    const phoneProvider = new firebase.auth.PhoneAuthProvider()
+    const verificationId = await phoneProvider.verifyPhoneNumber(phoneNumber, fbAuthRef.current)
 
-      setVerificationId(verificationId)
-    },
-    [fbAuthRef.current]
-  )
+    setVerificationId(verificationId)
+  }, [])
 
   const confirmCode = useCallback(async () => {
     if (!verificationId) {
       throw new Error(`No verification ID`)
     }
-    const credential = firebase.auth.PhoneAuthProvider.credential(
-      verificationId,
-      code
-    )
+    const credential = firebase.auth.PhoneAuthProvider.credential(verificationId, code)
     firebase.auth().signInWithCredential(credential)
-  }, [code])
+  }, [code, verificationId])
 
   if (!verificationId) {
     return (
@@ -78,11 +69,7 @@ export function PhoneSignIn() {
 
   return (
     <>
-      <Input
-        placeholder="1234"
-        value={code}
-        onChangeText={(text) => setCode(text.trim())}
-      />
+      <Input placeholder="1234" value={code} onChangeText={(text) => setCode(text.trim())} />
       <Button
         icon={<Icon name="arrow-right" size={15} color="white" />}
         title="Confirm Code"
