@@ -47,7 +47,7 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
 
   const _settings: ClientNetcodeConfig = {
     idToken: '',
-    host: '192.168.1.2',
+    host: '192.168.1.114', // '192.168.1.2',
     port: 3000,
     maxRetries: 0,
     retryDelayMs: 5000,
@@ -89,19 +89,16 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
       logger.debug('connected')
       logger.debug('listening for data')
 
+      emitConnect({
+        attempt: retryCount,
+      })
+      isConnected = true
       if (idToken) {
-        login({ idToken })
-          .then(() => {
-            isConnected = true
-            emitConnect({
-              attempt: retryCount,
-            })
-          })
-          .catch((e) => {
-            logger.error(`Error logging in`, e)
-            cleanup()
-            reconnect()
-          })
+        login({ idToken }).catch((e) => {
+          logger.error(`Error logging in`, e)
+          cleanup()
+          reconnect()
+        })
       }
     }
 

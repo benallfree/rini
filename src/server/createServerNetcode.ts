@@ -1,5 +1,4 @@
 import { NearbyDC } from 'georedis'
-import { App, DEDICATED_COMPRESSOR_3KB, WebSocket } from 'uWebSockets.js'
 import {
   LoginRequest,
   MessageTypes,
@@ -9,6 +8,7 @@ import {
   Session,
 } from '../common'
 import { MessageWrapper } from '../n53'
+import { Connection, WebSocketProvider } from './providers'
 
 export type ServerMessageSender = (msg: Buffer) => Promise<number>
 
@@ -24,24 +24,19 @@ export type MessageHandler<TIn, TOut = undefined> = (
   msg: TIn
 ) => Promise<TOut | void>
 export type ServerNetcodeConfig = {
+  provider: WebSocketProvider
   getUidFromAuthToken: (idToken: string) => Promise<string | void>
   updatePosition: MessageHandler<PositionUpdate>
   getNearbyPlayers: MessageHandler<void, NearbyDC[]>
 }
 
-declare module 'uWebSockets.js' {
-  interface WebSocket {
-    connId: number
-  }
-}
-
 export const createServerNetcode = (settings: ServerNetcodeConfig) => {
-  let connId = 0
   const sessions: { [_: number]: SocketSession } = {}
 
   let openConnectionCount = 0
   let pingCount = 0
   let startTimeMs = +new Date()
+
   const heartbeat = () => {
     const endTimeMs = +new Date()
     const totalMs = endTimeMs - startTimeMs
@@ -67,13 +62,13 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   }
   setTimeout(heartbeat, 5000)
 
-  type DispatchHandler = (ws: WebSocket, e: MessageWrapper) => Promise<void>
+  type DispatchHandler = (conn: Connection, e: MessageWrapper) => Promise<void>
 
   const dispatch: {
     [_: number]: DispatchHandler
   } = {
-    [MessageTypes.Login]: async (ws, e) => {
-      const thisConnId = ws.connId
+    [MessageTypes.Login]: async (conn, e) => {
+      const thisConnId = conn.id
       const msg = e.message as LoginRequest
       console.log(`processing login request`, { msg })
       const uid = await settings.getUidFromAuthToken(msg.idToken)
@@ -90,21 +85,21 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
         e.id
       )
       console.log({ packed })
-      ws.send(packed, false)
+      conn.send(packed)
     },
-    [MessageTypes.PositionUpdate]: async (ws, e) => {
-      const thisConnId = ws.connId
+    [MessageTypes.PositionUpdate]: async (conn, e) => {
+      const thisConnId = conn.id
       const wrapper = e as MessageWrapper<PositionUpdate>
       const msg = wrapper.message
       pingCount++
       await settings.updatePosition(sessions[thisConnId], msg)
-      scheduleSendNearbyEntities(ws)
+      scheduleSendNearbyEntities(conn)
     },
   }
 
   let sendNearbyEntitiesTid: ReturnType<typeof setTimeout>
-  const scheduleSendNearbyEntities = (ws: WebSocket) => {
-    const thisConnId = ws.connId
+  const scheduleSendNearbyEntities = (conn: Connection) => {
+    const thisConnId = conn.id
     if (sendNearbyEntitiesTid) return
     if (!sessions[thisConnId]) return // Session has vanished
     const send = async () => {
@@ -118,74 +113,64 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       const [packed] = netcode.pack<NearbyEntities>(MessageTypes.NearbyEntities, {
         nearby,
       })
-      ws.send(packed, false)
+      conn.send(packed)
     }
     setTimeout(send, 500)
   }
 
-  App()
-    .ws('/*', {
-      /* There are many common helper features */
-      idleTimeout: 30,
-      maxBackpressure: 1024,
-      maxPayloadLength: 512,
-      compression: DEDICATED_COMPRESSOR_3KB,
+  const { provider } = settings
 
-      open: (ws) => {
-        const thisConnId = connId++
-        openConnectionCount++
-        console.log(`C${thisConnId} (${openConnectionCount} connections)`)
+  const { onOpen, onClose, onMessage, onError, start } = provider
 
-        let isCleanedUp = false
-        const cleanup = () => {
-          if (isCleanedUp) return
-          isCleanedUp = true
-          console.log(`C${thisConnId} cleanup`)
-          openConnectionCount--
-          delete sessions[thisConnId]
-        }
-        sessions[thisConnId] = {
-          connectionId: thisConnId,
-          cleanup,
-        }
-        ws.connId = thisConnId
-      },
+  onOpen(({ conn }) => {
+    openConnectionCount++
+    const thisConnId = conn.id
+    console.log(`C${thisConnId} (${openConnectionCount} connections)`)
 
-      message: (ws, message, isBinary) => {
-        const wrapper = netcode.unpack(Buffer.from(message).toString())
-        try {
-          if (wrapper.type !== MessageTypes.Login && !sessions[ws.connId]) {
-            console.error(`unestablished session`, { wrapper })
-            ws.close()
-            return // Silently ignore unauthenticated
-          }
-          const dispatchHandler = dispatch[wrapper.type] as DispatchHandler
-          if (!dispatchHandler) {
-            throw new Error(`Unhandled message type ${wrapper.type}`)
-          }
-          dispatchHandler(ws, wrapper)
-        } catch (e) {
-          console.error(e)
-        }
-        /* Here we echo the message back, using compression if available */
-        // let ok = ws.send(message, isBinary, true)
-      },
+    let isCleanedUp = false
+    const cleanup = () => {
+      if (isCleanedUp) return
+      isCleanedUp = true
+      console.log(`C${thisConnId} cleanup`)
+      openConnectionCount--
+      delete sessions[thisConnId]
+    }
+    sessions[thisConnId] = {
+      connectionId: thisConnId,
+      cleanup,
+    }
+  })
 
-      close: (ws, code, behavior) => {
-        const { connId } = ws
-        console.log(`C${connId}: close`, {
-          code,
-          behavior: Buffer.from(behavior).toString(),
-        })
-        sessions[connId].cleanup()
-      },
+  onClose(({ conn, code, reason }) => {
+    const connId = conn.id
+    console.log(`C${connId}: close`, {
+      code,
+      reason,
     })
+    sessions[connId].cleanup()
+  })
 
-    .listen(3000, (listenSocket) => {
-      if (listenSocket) {
-        console.log('Listening to port 3000')
+  onMessage(({ conn, data }) => {
+    const wrapper = netcode.unpack(data)
+    try {
+      if (wrapper.type !== MessageTypes.Login && !sessions[conn.id]) {
+        console.error(`unestablished session`, { wrapper })
+        conn.close()
+        return // Silently ignore unauthenticated
       }
-    })
+      const dispatchHandler = dispatch[wrapper.type] as DispatchHandler
+      if (!dispatchHandler) {
+        throw new Error(`Unhandled message type ${wrapper.type}`)
+      }
+      dispatchHandler(conn, wrapper)
+    } catch (e) {
+      console.error(e)
+    }
+    /* Here we echo the message back, using compression if available */
+    // let ok = ws.send(message, isBinary, true)
+  })
+
+  start(3000)
 
   return {}
 }

@@ -8,22 +8,28 @@ import { Provider } from 'react-redux'
 import { Authenticated } from './components/Authenticated'
 import { Located } from './components/Located'
 import { Map } from './components/Map'
-import { Worker } from './components/Worker'
+import { useNetClient } from './components/Worker/useNetClient'
 import { store } from './store'
+
+const AppRoot: FC = () => {
+  useNetClient()
+  return (
+    <ThemeProvider>
+      <Located>
+        <Authenticated>
+          <StatusBar style="auto" />
+          <Map />
+        </Authenticated>
+      </Located>
+    </ThemeProvider>
+  )
+}
 
 const App: FC = () => {
   return (
     <View style={styles.container}>
       <Provider store={store}>
-        <ThemeProvider>
-          <Located>
-            <Authenticated>
-              <StatusBar style="auto" />
-              <Map />
-            </Authenticated>
-          </Located>
-        </ThemeProvider>
-        <Worker />
+        <AppRoot />
       </Provider>
     </View>
   )

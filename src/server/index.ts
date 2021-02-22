@@ -8,11 +8,9 @@ import { createClient } from 'redis'
 import { createBotFileProvider } from '../bot'
 import { initialize } from '../georedis-promised'
 import { createServerNetcode } from './createServerNetcode'
+import { createWsProvider } from './providers/ws'
 
-const serviceAccount = require(resolve(
-  dirname(__filename),
-  '../../.secrets/firebase-admin.json'
-))
+const serviceAccount = require(resolve(dirname(__filename), '../../.secrets/firebase-admin.json'))
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -48,6 +46,7 @@ const geo = initialize(client)
   setTimeout(purgePositions, 1000)
 
   const api = createServerNetcode({
+    provider: createWsProvider(),
     async getUidFromAuthToken(idToken) {
       try {
         const bot = bd.authenticate(idToken)

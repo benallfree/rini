@@ -1,7 +1,6 @@
 /// <reference lib="dom"/>
 /// <reference path="../../../rn-webworker/index.d.ts"/>
 
-import { createClientNetcode } from '../../../client'
 import { AnyMessage, DispatchHandler, DispatchLookup, heartbeatMessage } from './types'
 
 const { log } = window
@@ -22,15 +21,6 @@ window.onMessage((msg) => {
     throw new Error(`Message type ${_msg.type} is not implemented`)
   }
   _d(_msg)
-})
-
-const client = createClientNetcode({
-  logger: {
-    info: log,
-    debug: log,
-    error: log,
-    warn: log,
-  },
 })
 
 // var exampleSocket = new WebSocket('ws://localhost:3000')
