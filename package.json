@@ -22,6 +22,7 @@
     "@types/prompts": "^2.0.9",
     "@types/react-redux": "^7.1.16",
     "@types/redis": "^2.8.28",
+    "@types/serialize-error": "^4.0.1",
     "@types/ws": "^7.4.0",
     "expo": "~40.0.0",
     "expo-asset": "~8.2.1",
@@ -50,6 +51,7 @@
     "react-native-webview": "11.0.0",
     "react-redux": "^7.2.2",
     "redis": "^3.0.2",
+    "serialize-error": "^8.0.1",
     "smart-buffer": "^4.1.0",
     "uWebSockets.js": "uNetworking/uWebSockets.js#v18.14.0",
     "unstated-next": "^1.1.0"

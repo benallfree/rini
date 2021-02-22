@@ -18,6 +18,8 @@ export interface ErrorMessage extends MessageBase<'error'> {
   message: string
   url?: string
   lineNumber?: number
+  colNumber?: number
+  error?: Error
 }
 
 export interface ReadyMessage extends MessageBase<'ready'> {}

@@ -1,6 +1,13 @@
 import React, { FC, useEffect } from 'react'
 import { useWebWorker } from '../../../rn-webworker'
-import { AnyMessage, DispatchHandler, DispatchLookup, HeartbeatMessage } from './worker-app'
+import { useAppSelector } from '../../store'
+import {
+  AnyMessage,
+  DispatchHandler,
+  DispatchLookup,
+  HeartbeatMessage,
+  loginMessage,
+} from './types'
 import workerJs from './worker-app.inlined'
 
 const makeHeartbeatMonitor = (): DispatchHandler<HeartbeatMessage> => {
@@ -33,20 +40,21 @@ const makeHeartbeatMonitor = (): DispatchHandler<HeartbeatMessage> => {
   return gotHeartbeat
 }
 
+const dispatch: DispatchLookup = {
+  heartbeat: makeHeartbeatMonitor(),
+  log: (msg) => {
+    msg.data.forEach((line) => {
+      console.log(`[Worker] ${JSON.stringify(line)}`)
+    })
+  },
+  ready: (msg) => {},
+}
+
 export const Worker: FC = ({ children }) => {
+  const idToken = useAppSelector((state) => state.session.idToken)
   const { WebWorker, send, onMessage, isReady } = useWebWorker(workerJs)
 
   useEffect(() => {
-    const dispatch: DispatchLookup = {
-      heartbeat: makeHeartbeatMonitor(),
-      log: (msg) => {
-        msg.data.forEach((line) => {
-          console.log(`[Worker] ${line}`)
-        })
-      },
-      ready: (msg) => {},
-    }
-
     return onMessage((msg) => {
       const _msg = msg as AnyMessage
       const _d = dispatch[_msg.type as AnyMessage['type']] as DispatchHandler<AnyMessage>
@@ -58,9 +66,10 @@ export const Worker: FC = ({ children }) => {
     })
   }, [onMessage])
 
-  if (!isReady) return null // Worker is loading
-
-  console.log('rendering real webworker')
+  useEffect(() => {
+    if (!idToken || !isReady) return
+    send(loginMessage({ idToken }))
+  }, [idToken, send, isReady])
 
   return <WebWorker />
 }

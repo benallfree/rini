@@ -1,21 +1,22 @@
 /// <reference path="index.d.ts"/>
 
+import { serializeError } from 'serialize-error'
 import { callem } from '../callem'
 import { ErrorMessage, MessageBase } from './types'
 
 const [onMessage, emitMessage] = callem<MessageBase>()
 
-window.onerror = function (message, url, lineNumber) {
+window.addEventListener('error', (e) => {
   const msg: ErrorMessage = {
     type: 'error',
-    message: message.toString(),
-    url: url?.toString(),
-    lineNumber,
+    message: e.message,
+    url: e.filename,
+    lineNumber: e.lineno,
+    colNumber: e.colno,
+    error: JSON.parse(serializeError(e.error)),
   }
   window.ReactNativeWebView.postMessage(JSON.stringify(msg))
-  //save error and send to server for example.
-  return true
-}
+})
 
 window.addEventListener('unhandledrejection', (event) => {
   const msg: ErrorMessage = {

@@ -27,9 +27,10 @@ export const useWebWorker = <TMessageTypes extends MessageBase>(code?: string) =
         ref: webviewRef,
         injectedJavaScript: `
       ${bootstrapJs};
+      window.ready();
       ${code};
       `,
-        source: { html: '<html><body></body></html>' },
+        source: { html: '<html><body></body></html>', baseUrl: 'http://localhost/' },
         onMessage: handleMessage,
       })
     },
