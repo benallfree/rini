@@ -4,7 +4,7 @@ import { callem } from '../../callem'
 
 export const LOCATION_TASK_NAME = 'position'
 
-export const [onLocationChanged, emitLocationChanged] = callem<{
+export const [onBackgroundLocationChanged, emitBackgroundLocationChanged] = callem<{
   location: Location.LocationObject | undefined
 }>()
 
@@ -16,5 +16,5 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   const location = (data as {
     locations: Location.LocationObject[]
   }).locations.pop()
-  emitLocationChanged({ location })
+  emitBackgroundLocationChanged({ location })
 })
