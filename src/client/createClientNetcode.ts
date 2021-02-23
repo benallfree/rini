@@ -68,7 +68,7 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
   const [onDisconnect, emitDisconnect] = callem<DisconnectEvent>()
 
   let conn: WebSocket
-  const connect = () => {
+  const connect = (maybeIdToken?: string) => {
     retryTid = undefined
     //@ts-ignore
     const Ws = WebSocket.default || WebSocket
@@ -92,7 +92,7 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
       emitConnect({
         attempt: retryCount,
       })
-      const _idToken = lastIdToken || idToken
+      const _idToken = maybeIdToken ?? lastIdToken ?? idToken
       if (_idToken) {
         login({ idToken: _idToken }).catch((e) => {
           logger.error(`Error logging in`, e)
@@ -139,8 +139,6 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
       connect()
     }, retryDelayMs)
   }
-
-  connect()
 
   const sendMessageAndAwaitReply = async <TMessage extends AnyMessage, TReply extends AnyMessage>(
     type: MessageTypes,
@@ -199,6 +197,7 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
   })
 
   const api = {
+    connect,
     close: () => conn.close(),
     login,
     updatePosition,

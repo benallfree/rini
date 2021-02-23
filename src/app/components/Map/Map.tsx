@@ -1,14 +1,9 @@
 import React, { FC } from 'react'
 import { Dimensions, StyleSheet } from 'react-native'
-import MapView, { Marker } from 'react-native-maps'
-import { useAppSelector } from '../store'
-
-const Me: FC = () => {
-  const location = useAppSelector((state) => state.session.location)
-  if (!location) return null
-
-  return <Marker coordinate={location} title={'Me'} description={'My Location'} zIndex={1000} />
-}
+import MapView from 'react-native-maps'
+import { useAppSelector } from '../../store'
+import { Me } from './Me'
+import { Others } from './Others'
 
 export const Map: FC = () => {
   const location = useAppSelector((state) => state.session.location)
@@ -25,6 +20,7 @@ export const Map: FC = () => {
         longitudeDelta: 0.0421,
       }}>
       <Me />
+      <Others />
     </MapView>
   )
 }

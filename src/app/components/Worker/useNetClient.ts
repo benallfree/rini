@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { createClientNetcode } from '../../../client'
+import { client } from '../../bootstrap'
 import { useAppSelector } from '../../store'
 
 export const useNetClient = () => {
@@ -7,12 +7,17 @@ export const useNetClient = () => {
   console.log('using net client', { idToken })
   useEffect(() => {
     if (!idToken) return
-    const client = createClientNetcode()
-    const { onConnect, login } = client
 
-    const unsub = onConnect(() => {
+    const { connect, login, onNearbyEntities } = client
+
+    if (client.isConnected()) {
       login({ idToken })
-      console.log('connected')
+    } else {
+      connect(idToken)
+    }
+
+    const unsub = onNearbyEntities((e) => {
+      console.log('got nearby entities')
     })
     return () => {
       unsub()

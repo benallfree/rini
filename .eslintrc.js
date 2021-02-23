@@ -17,5 +17,6 @@ module.exports = {
     'react/prop-types': 0,
     'import/order': 0,
     'react/display-name': 0,
+    'handle-callback-err': 0,
   },
 }

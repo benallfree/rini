@@ -3,33 +3,16 @@ import { StatusBar } from 'expo-status-bar'
 import 'firebase/auth'
 import React, { FC } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { ThemeProvider } from 'react-native-elements'
 import { Provider } from 'react-redux'
-import { Authenticated } from './components/Authenticated'
-import { Located } from './components/Located'
-import { Map } from './components/Map'
-import { useNetClient } from './components/Worker/useNetClient'
+import { Root } from './components/Root'
 import { store } from './store'
-
-const AppRoot: FC = () => {
-  useNetClient()
-  return (
-    <ThemeProvider>
-      <Located>
-        <Authenticated>
-          <StatusBar style="auto" />
-          <Map />
-        </Authenticated>
-      </Located>
-    </ThemeProvider>
-  )
-}
 
 const App: FC = () => {
   return (
     <View style={styles.container}>
+      <StatusBar style="auto" />
       <Provider store={store}>
-        <AppRoot />
+        <Root />
       </Provider>
     </View>
   )

@@ -1,0 +1,48 @@
+import { useEffect } from 'react'
+import { client } from '../bootstrap'
+import { useAppDispatch, useAppSelector } from '../store'
+import { nearbyEntitiesChanged } from '../store/entitiesSlice'
+
+export const useNetcode = () => {
+  const idToken = useAppSelector((state) => state.session.idToken)
+  const position = useAppSelector((state) => state.session.location)
+  const dispatch = useAppDispatch()
+
+  console.log({ idToken, position })
+
+  useEffect(() => {
+    if (!idToken) return
+
+    const { connect, login } = client
+
+    if (client.isConnected()) {
+      login({ idToken })
+    } else {
+      connect(idToken)
+    }
+  }, [idToken])
+
+  useEffect(() => {
+    const { onNearbyEntities } = client
+
+    const unsub = onNearbyEntities((e) => {
+      dispatch(nearbyEntitiesChanged(e.nearby))
+      console.log('got nearby entities', { e })
+    })
+
+    return () => {
+      unsub()
+    }
+  }, [dispatch])
+
+  useEffect(() => {
+    const { isConnected, updatePosition } = client
+
+    if (!isConnected()) return
+    if (!position) return
+
+    console.log('updating position')
+
+    updatePosition({ ...position })
+  }, [position])
+}

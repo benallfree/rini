@@ -21,9 +21,11 @@ export const createBotRunner = (
   ;(async () => {
     const client = createClientNetcode({ idToken: bot.idToken })
 
-    const { onConnect, onDisconnect, isConnected, onNearbyEntities } = client
+    const { onConnect, onDisconnect, isConnected, onNearbyEntities, connect } = client
 
     let idx = 0
+
+    connect()
 
     let mtid: ReturnType<typeof setTimeout>
     const move = () => {

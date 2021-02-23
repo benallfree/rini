@@ -1,26 +1,9 @@
 import * as Location from 'expo-location'
-import * as TaskManager from 'expo-task-manager'
 import React, { FC, useEffect, useState } from 'react'
 import { Button, Text } from 'react-native-elements'
-import { callem } from '../../callem'
+import { LOCATION_TASK_NAME, onLocationChanged } from '../bootstrap/location'
 import { useAppDispatch, useAppSelector } from '../store'
 import { locationChanged } from '../store/sessionSlice'
-const TASK_NAME = 'position'
-
-const [onLocationChanged, emitLocationChanged] = callem<{
-  location: Location.LocationObject | undefined
-}>()
-
-TaskManager.defineTask(TASK_NAME, ({ data, error }) => {
-  if (error) {
-    console.error(error)
-    return
-  }
-  const location = (data as {
-    locations: Location.LocationObject[]
-  }).locations.pop()
-  emitLocationChanged({ location })
-})
 
 export const Located: FC = ({ children }) => {
   const [firstTime, setFirstTime] = useState(true)
@@ -38,7 +21,7 @@ export const Located: FC = ({ children }) => {
   useEffect(() => {
     if (!canLocate) return
 
-    Location.startLocationUpdatesAsync(TASK_NAME, {
+    Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
       accuracy: Location.Accuracy.BestForNavigation,
       showsBackgroundLocationIndicator: true,
       pausesUpdatesAutomatically: true,
@@ -53,7 +36,7 @@ export const Located: FC = ({ children }) => {
 
     return () => {
       unsub()
-      Location.stopLocationUpdatesAsync(TASK_NAME).catch((e) => {
+      Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME).catch((e) => {
         console.error(e)
       })
     }
