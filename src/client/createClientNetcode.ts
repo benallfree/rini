@@ -47,7 +47,7 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
 
   const _settings: ClientNetcodeConfig = {
     idToken: '',
-    host: '192.168.1.114', // '192.168.1.2',
+    host: '192.168.1.2',
     port: 3000,
     maxRetries: 0,
     retryDelayMs: 5000,
@@ -88,13 +88,13 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
       retryCount = 0
       logger.debug('connected')
       logger.debug('listening for data')
-
+      isConnected = true
       emitConnect({
         attempt: retryCount,
       })
-      isConnected = true
-      if (idToken) {
-        login({ idToken }).catch((e) => {
+      const _idToken = lastIdToken || idToken
+      if (_idToken) {
+        login({ idToken: _idToken }).catch((e) => {
           logger.error(`Error logging in`, e)
           cleanup()
           reconnect()
@@ -174,7 +174,11 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
     })
   }
 
-  const login = (message: LoginRequest) => sendMessageAndAwaitReply(MessageTypes.Login, message)
+  let lastIdToken: string
+  const login = (message: LoginRequest) => {
+    lastIdToken = message.idToken
+    return sendMessageAndAwaitReply(MessageTypes.Login, message)
+  }
 
   const updatePosition = async (message: PositionUpdate) => {
     sendMessage(MessageTypes.PositionUpdate, message)
