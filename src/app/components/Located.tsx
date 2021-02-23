@@ -32,7 +32,7 @@ export const Located: FC = ({ children }) => {
         const isRegistered = await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME)
         if (isRegistered) {
           await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-            accuracy: Location.Accuracy.Highest,
+            accuracy: Location.Accuracy.BestForNavigation,
             showsBackgroundLocationIndicator: true,
             pausesUpdatesAutomatically: true,
             activityType: Location.ActivityType.AutomotiveNavigation,
@@ -54,7 +54,7 @@ export const Located: FC = ({ children }) => {
         (
           await Location.watchPositionAsync(
             {
-              accuracy: LocationAccuracy.Highest,
+              accuracy: LocationAccuracy.BestForNavigation,
             },
             (e) => {
               dispatch(locationChanged(e.coords))
