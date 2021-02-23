@@ -6,6 +6,7 @@ import { NearbyDC } from 'georedis'
 import { dirname, resolve } from 'path'
 import { createClient } from 'redis'
 import { createBotFileProvider } from '../bot'
+import { NearbyEntity } from '../common/NearbyEntities'
 import { initialize } from '../georedis-promised'
 import { createServerNetcode } from './createServerNetcode'
 import { createWsProvider } from './providers/ws'
@@ -45,6 +46,8 @@ const geo = initialize(client)
   }
   setTimeout(purgePositions, 1000)
 
+  const AWARD_DISTANCE = 50
+
   const api = createServerNetcode({
     provider: createWsProvider(),
     async getUidFromAuthToken(idToken) {
@@ -76,7 +79,19 @@ const geo = initialize(client)
         withCoordinates: true,
         withDistances: true,
       })
-      const final = nearby.filter((rec) => rec.key !== session.uid)
+      const final = nearby
+        .filter((rec) => rec.key !== session.uid)
+        .map((rec) => {
+          const final: NearbyEntity = {
+            ...rec,
+          }
+          if (rec.distance <= AWARD_DISTANCE && !session.awards[rec.key]) {
+            session.awards[rec.key] = +new Date()
+          }
+          final.awardedAt = session.awards[rec.key]
+          return final
+        })
+
       // if (!session.uid.startsWith('bot')) console.log({ session, final })
       return final
       // console.log(connId, msg)

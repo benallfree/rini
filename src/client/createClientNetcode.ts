@@ -69,59 +69,68 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
 
   let conn: WebSocket
   const connect = (maybeIdToken?: string) => {
-    retryTid = undefined
-    //@ts-ignore
-    const Ws = WebSocket.default || WebSocket
-    console.log({ Ws })
-    //@ts-ignore
-    conn = new Ws(`ws://${host}:${port}`)
-    conn.onmessage = (e) => {
-      const { data } = e
-      if (typeof data !== 'string') {
-        throw new Error(`Unsupported data type ${data}`)
+    return new Promise<void>((resolve, reject) => {
+      retryTid = undefined
+      //@ts-ignore
+      const Ws = WebSocket.default || WebSocket
+      console.log({ Ws })
+      //@ts-ignore
+      conn = new Ws(`ws://${host}:${port}`)
+      conn.onmessage = (e) => {
+        const { data } = e
+        if (typeof data !== 'string') {
+          throw new Error(`Unsupported data type ${data}`)
+        }
+        const msg = netcode.unpack(data)
+        emitMessage(msg)
       }
-      const msg = netcode.unpack(data)
-      emitMessage(msg)
-    }
 
-    conn.onopen = () => {
-      retryCount = 0
-      logger.debug('connected')
-      logger.debug('listening for data')
-      isConnected = true
-      emitConnect({
-        attempt: retryCount,
-      })
-      const _idToken = maybeIdToken ?? lastIdToken ?? idToken
-      if (_idToken) {
-        login({ idToken: _idToken }).catch((e) => {
-          logger.error(`Error logging in`, e)
-          cleanup()
-          reconnect()
+      conn.onopen = async () => {
+        retryCount = 0
+        logger.debug('connected')
+        logger.debug('listening for data')
+        isConnected = true
+        const finish = () => {
+          emitConnect({
+            attempt: retryCount,
+          })
+          resolve()
+        }
+        const _idToken = maybeIdToken ?? lastIdToken ?? idToken
+        console.log({ _idToken })
+        if (_idToken) {
+          try {
+            await login({ idToken: _idToken })
+          } catch (e) {
+            logger.error(`Error logging in`, e)
+            cleanup()
+            reconnect()
+          }
+        }
+        finish()
+      }
+
+      conn.onclose = () => {
+        logger.debug('close')
+        cleanup()
+        reconnect()
+      }
+
+      conn.onerror = (e) => {
+        logger.error(e)
+        cleanup()
+        reconnect()
+      }
+
+      const cleanup = () => {
+        logger.debug('Cleaning up')
+        conn.close()
+        isConnected = false
+        emitDisconnect({
+          attempt: retryCount,
         })
       }
-    }
-
-    conn.onclose = () => {
-      logger.debug('close')
-      cleanup()
-      reconnect()
-    }
-
-    conn.onerror = (e) => {
-      logger.error(e)
-      cleanup()
-      reconnect()
-    }
-
-    const cleanup = () => {
-      logger.debug('Cleaning up')
-      conn.close()
-      isConnected = false
-      emitDisconnect({
-        attempt: retryCount,
-      })
-    }
+    })
   }
 
   let retryTid: ReturnType<typeof setTimeout> | undefined

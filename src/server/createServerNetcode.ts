@@ -1,4 +1,3 @@
-import { NearbyDC } from 'georedis'
 import {
   LoginRequest,
   MessageTypes,
@@ -7,6 +6,7 @@ import {
   PositionUpdate,
   Session,
 } from '../common'
+import { NearbyEntity } from '../common/NearbyEntities'
 import { MessageWrapper } from '../n53'
 import { Connection, WebSocketProvider } from './providers'
 
@@ -16,6 +16,7 @@ export type SocketSession = {
   connectionId: number
   idToken?: string
   uid?: string
+  awards: { [_: string]: number }
   cleanup: () => void
 }
 
@@ -27,7 +28,7 @@ export type ServerNetcodeConfig = {
   provider: WebSocketProvider
   getUidFromAuthToken: (idToken: string) => Promise<string | void>
   updatePosition: MessageHandler<PositionUpdate>
-  getNearbyPlayers: MessageHandler<void, NearbyDC[]>
+  getNearbyPlayers: MessageHandler<void, NearbyEntity[]>
 }
 
 export const createServerNetcode = (settings: ServerNetcodeConfig) => {
@@ -137,6 +138,7 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
     }
     sessions[thisConnId] = {
       connectionId: thisConnId,
+      awards: {},
       cleanup,
     }
   })
@@ -153,7 +155,7 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   onMessage(({ conn, data }) => {
     const wrapper = netcode.unpack(data)
     try {
-      if (wrapper.type !== MessageTypes.Login && !sessions[conn.id]) {
+      if (wrapper.type !== MessageTypes.Login && !sessions[conn.id].idToken) {
         console.error(`unestablished session`, { wrapper })
         conn.close()
         return // Silently ignore unauthenticated

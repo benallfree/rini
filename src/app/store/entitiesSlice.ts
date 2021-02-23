@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { NearbyDC } from 'georedis'
+import { NearbyEntity } from '../../common/NearbyEntities'
 
 interface EntitiesState {
-  nearby?: NearbyDC[]
+  nearby?: NearbyEntity[]
 }
 
 // Define the initial state using that type
@@ -12,7 +12,7 @@ export const entitiesSlice = createSlice({
   name: 'location',
   initialState,
   reducers: {
-    nearbyEntitiesChanged: (state, action: PayloadAction<NearbyDC[]>) => {
+    nearbyEntitiesChanged: (state, action: PayloadAction<NearbyEntity[]>) => {
       state.nearby = [...action.payload]
     },
   },

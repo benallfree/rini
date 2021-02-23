@@ -8,8 +8,6 @@ export const useNetcode = () => {
   const position = useAppSelector((state) => state.session.location)
   const dispatch = useAppDispatch()
 
-  console.log({ idToken, position })
-
   useEffect(() => {
     if (!idToken) return
 
@@ -27,7 +25,6 @@ export const useNetcode = () => {
 
     const unsub = onNearbyEntities((e) => {
       dispatch(nearbyEntitiesChanged(e.nearby))
-      console.log('got nearby entities', { e })
     })
 
     return () => {
@@ -40,8 +37,6 @@ export const useNetcode = () => {
 
     if (!isConnected()) return
     if (!position) return
-
-    console.log('updating position')
 
     updatePosition({ ...position })
   }, [position])

@@ -21,11 +21,9 @@ export const createBotRunner = (
   ;(async () => {
     const client = createClientNetcode({ idToken: bot.idToken })
 
-    const { onConnect, onDisconnect, isConnected, onNearbyEntities, connect } = client
+    const { onDisconnect, isConnected, onNearbyEntities, connect } = client
 
     let idx = 0
-
-    connect()
 
     let mtid: ReturnType<typeof setTimeout>
     const move = () => {
@@ -48,17 +46,17 @@ export const createBotRunner = (
       }
     }
 
-    onConnect(() => {
-      move()
-      ping()
-    })
+    await connect()
+    move()
+    ping()
+
     onDisconnect(() => {
       console.log('disconnected')
       clearTimeout(mtid)
       clearTimeout(ptid)
     })
     onNearbyEntities((e) => {
-      console.log(`Nearby entities for ${bot.uid}`, e.nearby)
+      // console.log(`Nearby entities for ${bot.uid}`, e.nearby)
     })
   })()
 
