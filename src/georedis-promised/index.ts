@@ -1,8 +1,8 @@
 import type { NearbyOptions, NearbyReturnTypes, Point } from 'georedis'
 import { initialize as _init } from 'georedis'
-import { RedisClient } from 'redis'
+import { RedisClient as _RedisClient } from 'redis'
 
-export const initialize = (client: RedisClient) => {
+export const initialize = (client: _RedisClient) => {
   const _geo = _init(client)
 
   const exec = <TRet>(fn: any, args: any[] = []) =>
@@ -33,3 +33,5 @@ export const initialize = (client: RedisClient) => {
     ) => exec<TRet[]>(_geo.nearby.bind(_geo), [locationName, radius, options]),
   }
 }
+
+export type RedisClient = ReturnType<typeof initialize>

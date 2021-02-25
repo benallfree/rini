@@ -1,9 +1,10 @@
-import * as prompts from 'prompts'
+import prompts from 'prompts'
 import { createBotFileProvider } from './BotFileProvider'
 import { createBotRunner } from './BotRunner'
+import BrightonLoop from './gpx/parsed/BrightonLoop'
 import { createRouteService } from './RouteService'
 
-const rs = createRouteService()
+const rs = createRouteService(BrightonLoop)
 const bd = createBotFileProvider()
 
 ;(async () => {

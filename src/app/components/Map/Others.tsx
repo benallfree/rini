@@ -24,9 +24,7 @@ export const Others: FC = () => {
   useEffect(() => {
     if (!nearby) return
     nearby.forEach((n) => {
-      console.log(n, awardHandled[n.key])
       const entityId = n.key
-      console.log(`${entityId}, ${n.distance}`)
       const refreshDeleteIfIdle = (oldTid?: Timeout) => {
         clearTimeout(oldTid)
         const tid = setTimeout(() => {
@@ -38,7 +36,6 @@ export const Others: FC = () => {
         limiter.schedule(() => fx.chime.play())
       }
       if (n.awardedAt && awardHandled[n.key] !== n.awardedAt) {
-        console.log(`slurrrp`, { n })
         awardHandled[n.key] = n.awardedAt
         limiter.schedule(() => fx.suck.play().then(fx.point.play))
       }

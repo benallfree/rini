@@ -75,7 +75,7 @@ const geo = initialize(client)
       if (!uid) {
         throw new Error(`Session UID is not available`)
       }
-      const nearby = await geo.nearby<NearbyDC>(uid, 500, {
+      const nearby = await geo.nearby<NearbyDC>(uid, 1000, {
         withCoordinates: true,
         withDistances: true,
       })

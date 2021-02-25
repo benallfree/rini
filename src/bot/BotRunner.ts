@@ -2,58 +2,32 @@ import { createClientNetcode } from '../client'
 import { Bot } from './BotFileProvider'
 import { RouteService } from './RouteService'
 
-export const createBotRunner = (
-  bot: Bot,
-  routeService: RouteService,
-  speedMs = 1000,
-  updateMs = 500
-) => {
-  const { points } = routeService
-  const splitIdx = Math.floor(Math.random() * points.length - 1)
-  const a = points.slice(0, splitIdx)
-  const b = points.slice(splitIdx)
-  const final = (() => {
-    const final = [...b, ...a]
-    if (Math.random() > 0.5) return final
-    return final.reverse()
-  })()
-
+export const createBotRunner = (bot: Bot, routeService: RouteService, mph = 30, updateMs = 500) => {
   ;(async () => {
     const client = createClientNetcode({ idToken: bot.idToken })
 
     const { onDisconnect, isConnected, onNearbyEntities, connect } = client
 
-    let idx = 0
+    const next = routeService.makeRoute(Math.random() * 30 + 15, 500)
 
-    let mtid: ReturnType<typeof setTimeout>
+    let tid: ReturnType<typeof setTimeout>
     const move = () => {
-      if (!isConnected()) return
-      idx++
-      if (idx >= final.length) idx = 0
-      // console.log(`Moved to `, final[idx])
-      mtid = setTimeout(move, speedMs)
-    }
-
-    let ptid: ReturnType<typeof setTimeout>
-    const ping = () => {
-      // console.log(`Ping from `, final[idx])
       if (isConnected()) {
+        const { lat, lng, distanceFromLast } = next()
+        console.log({ lat, lng, distanceFromLast })
         client.updatePosition({
-          latitude: final[idx].lat,
-          longitude: final[idx].lon,
+          latitude: lat,
+          longitude: lng,
         })
-        ptid = setTimeout(ping, updateMs)
       }
+      tid = setTimeout(move, updateMs)
     }
 
     await connect()
     move()
-    ping()
 
     onDisconnect(() => {
       console.log('disconnected')
-      clearTimeout(mtid)
-      clearTimeout(ptid)
     })
     onNearbyEntities((e) => {
       // console.log(`Nearby entities for ${bot.uid}`, e.nearby)
