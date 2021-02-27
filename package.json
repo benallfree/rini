@@ -16,6 +16,7 @@
     "serve:dev": "ts-node-dev --respawn --transpile-only src/server/index.ts"
   },
   "dependencies": {
+    "@expo/metro-config": "^0.1.56",
     "@reduxjs/toolkit": "^1.5.0",
     "@s-libs/micro-dash": "^11.2.1",
     "@types/jest": "^26.0.20",
@@ -62,6 +63,7 @@
     "react-redux": "^7.2.2",
     "redis": "^3.0.2",
     "serialize-error": "^8.0.1",
+    "serve": "^11.3.2",
     "sharp": "^0.27.2",
     "smart-buffer": "^4.1.0",
     "uWebSockets.js": "uNetworking/uWebSockets.js#v18.14.0",

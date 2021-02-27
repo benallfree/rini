@@ -1,3 +1,4 @@
+import { NearbyDC } from 'georedis'
 import {
   LoginRequest,
   MessageTypes,
@@ -28,8 +29,10 @@ export type ServerNetcodeConfig = {
   provider: WebSocketProvider
   getUidFromAuthToken: (idToken: string) => Promise<string | void>
   updatePosition: MessageHandler<PositionUpdate>
-  getNearbyPlayers: MessageHandler<void, NearbyEntity[]>
+  getNearbyPlayers: MessageHandler<void, NearbyDC[]>
 }
+
+const AWARD_DISTANCE = 50
 
 export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   const sessions: { [_: number]: SocketSession } = {}
@@ -111,8 +114,24 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
         throw new Error(`Could not fetch nearby players`)
       }
 
+      const final = await Promise.all(
+        nearby
+          .filter((rec) => rec.key !== session.uid)
+          .map(async (rec) => {
+            if (rec.distance <= AWARD_DISTANCE && !session.awards[rec.key]) {
+              session.awards[rec.key] = +new Date()
+            }
+
+            const final: NearbyEntity = {
+              ...rec,
+              awardedAt: session.awards[rec.key],
+            }
+            return final
+          })
+      )
+
       const [packed] = netcode.pack<NearbyEntities>(MessageTypes.NearbyEntities, {
-        nearby,
+        nearby: final,
       })
       conn.send(packed)
     }

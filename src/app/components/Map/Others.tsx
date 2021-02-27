@@ -1,15 +1,41 @@
 import { forEach } from '@s-libs/micro-dash'
 import Bottleneck from 'bottleneck'
 import React, { FC, useEffect, useRef } from 'react'
+import { Image } from 'react-native'
 import { Marker } from 'react-native-maps'
+import { NearbyEntity } from '../../../common/NearbyEntities'
 import { fx } from '../../assets/fx'
+import { BundledImages } from '../../assets/images'
 import { useAppSelector } from '../../store'
 
 type Timeout = ReturnType<typeof setTimeout>
 
 const awardHandled: { [_: string]: number } = {}
 
-const limiter = new Bottleneck({ maxConcurrent: 1, minTime: 100 })
+const playScore = (() => {
+  const limiter = new Bottleneck({ maxConcurrent: 1, minTime: 100 })
+  return () => limiter.schedule(() => fx.suck.play().then(fx.point.play))
+})()
+
+const playEnter = (() => {
+  const limiter = new Bottleneck({ maxConcurrent: 1, minTime: 50 })
+  return () => limiter.schedule(() => fx.chime.play())
+})()
+
+const Entity: FC<{ entity: NearbyEntity }> = (props) => {
+  const { entity } = props
+
+  return (
+    <Marker
+      pinColor={awardHandled[entity.key] ? 'green' : 'blue'}
+      key={entity.key}
+      coordinate={entity}
+      title={entity.key}
+      description={entity.distance.toString()}>
+      <Image source={BundledImages.Tesla} style={{ width: 16, height: 16 }} resizeMode="contain" />
+    </Marker>
+  )
+}
 
 export const Others: FC = () => {
   const seen = useRef<{ [_: string]: Timeout }>({})
@@ -33,11 +59,11 @@ export const Others: FC = () => {
         return tid
       }
       if (!seen.current[entityId]) {
-        limiter.schedule(() => fx.chime.play())
+        playEnter()
       }
       if (n.awardedAt && awardHandled[n.key] !== n.awardedAt) {
         awardHandled[n.key] = n.awardedAt
-        limiter.schedule(() => fx.suck.play().then(fx.point.play))
+        playScore()
       }
 
       seen.current[entityId] = refreshDeleteIfIdle(seen.current[entityId])
@@ -49,13 +75,7 @@ export const Others: FC = () => {
   return (
     <>
       {nearby.map((player) => (
-        <Marker
-          pinColor={awardHandled[player.key] ? 'green' : 'blue'}
-          key={player.key}
-          coordinate={player}
-          title={player.key}
-          description={player.distance.toString()}
-        />
+        <Entity key={player.key} entity={player} />
       ))}
     </>
   )
