@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@expo/metro-config": "^0.1.56",
+    "@react-native-community/masked-view": "0.1.10",
+    "@react-native-masked-view/masked-view": "^0.2.2",
     "@reduxjs/toolkit": "^1.5.0",
     "@s-libs/micro-dash": "^11.2.1",
     "@types/jest": "^26.0.20",

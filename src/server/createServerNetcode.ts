@@ -1,4 +1,6 @@
+import getDistance from 'geolib/es/getPreciseDistance'
 import { NearbyDC } from 'georedis'
+import { callem } from '../callem'
 import {
   LoginRequest,
   MessageTypes,
@@ -7,22 +9,32 @@ import {
   PositionUpdate,
   Session,
 } from '../common'
-import { NearbyEntity } from '../common/NearbyEntities'
+import { NearbyEntity, XpUpdate } from '../common/messageTypes'
 import { MessageWrapper } from '../n53'
 import { Connection, WebSocketProvider } from './providers'
 
 export type ServerMessageSender = (msg: Buffer) => Promise<number>
 
+export type UserSession = {
+  uid: string
+  idToken: string
+  position?: PositionUpdate
+  xp: XpUpdate
+  awards: { [_: string]: number }
+}
+
+const sessions: {
+  [uid: string]: UserSession
+} = {}
+
 export type SocketSession = {
   connectionId: number
-  idToken?: string
   uid?: string
-  awards: { [_: string]: number }
   cleanup: () => void
 }
 
 export type MessageHandler<TIn, TOut = undefined> = (
-  session: SocketSession,
+  session: UserSession,
   msg: TIn
 ) => Promise<TOut | void>
 export type ServerNetcodeConfig = {
@@ -35,7 +47,7 @@ export type ServerNetcodeConfig = {
 const AWARD_DISTANCE = 50
 
 export const createServerNetcode = (settings: ServerNetcodeConfig) => {
-  const sessions: { [_: number]: SocketSession } = {}
+  const socketSessions: { [_: number]: SocketSession } = {}
 
   let openConnectionCount = 0
   let pingCount = 0
@@ -66,77 +78,148 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
   }
   setTimeout(heartbeat, 5000)
 
+  const [onLoginRx, emitLoginRx] = callem<{
+    conn: Connection
+    e: MessageWrapper<LoginRequest>
+    uid: string
+  }>()
+  const [onPositionUpdateRx, emitPositionUpdateRx] = callem<{
+    conn: Connection
+    e: MessageWrapper<PositionUpdate>
+  }>()
+
   type DispatchHandler = (conn: Connection, e: MessageWrapper) => Promise<void>
 
   const dispatch: {
     [_: number]: DispatchHandler
   } = {
     [MessageTypes.Login]: async (conn, e) => {
-      const thisConnId = conn.id
       const msg = e.message as LoginRequest
       console.log(`processing login request`, { msg })
       const uid = await settings.getUidFromAuthToken(msg.idToken)
       console.log(`uid resolved to `, { uid })
       if (!uid) return // don't send reply
-      sessions[thisConnId].uid = uid
-      sessions[thisConnId].idToken = msg.idToken
-
-      const [packed] = netcode.pack<Session>(
-        MessageTypes.Session,
-        {
-          uid,
-        },
-        e.id
-      )
-      console.log({ packed })
-      conn.send(packed)
+      emitLoginRx({ e: e as MessageWrapper<LoginRequest>, conn, uid })
     },
     [MessageTypes.PositionUpdate]: async (conn, e) => {
-      const thisConnId = conn.id
-      const wrapper = e as MessageWrapper<PositionUpdate>
-      const msg = wrapper.message
-      pingCount++
-      await settings.updatePosition(sessions[thisConnId], msg)
-      scheduleSendNearbyEntities(conn)
+      emitPositionUpdateRx({ e: e as MessageWrapper<PositionUpdate>, conn })
     },
   }
 
-  let sendNearbyEntitiesTid: ReturnType<typeof setTimeout>
-  const scheduleSendNearbyEntities = (conn: Connection) => {
-    const thisConnId = conn.id
-    if (sendNearbyEntitiesTid) return
-    if (!sessions[thisConnId]) return // Session has vanished
-    const send = async () => {
-      const session = sessions[thisConnId]
-      if (!session) return // Session has vanished
-      const nearby = await settings.getNearbyPlayers(session)
-      if (!nearby) {
-        throw new Error(`Could not fetch nearby players`)
+  onLoginRx(
+    ({
+      conn,
+      e: {
+        message: { idToken },
+      },
+      uid,
+    }) => {
+      const thisConnId = conn.id
+      socketSessions[thisConnId].uid = uid
+      if (!sessions[uid]) {
+        sessions[uid] = {
+          uid,
+          idToken,
+          xp: {
+            current: 0,
+            start: 0,
+            goal: calcLevelGoal(2),
+            level: 1,
+          },
+          awards: {},
+        }
       }
-
-      const final = await Promise.all(
-        nearby
-          .filter((rec) => rec.key !== session.uid)
-          .map(async (rec) => {
-            if (rec.distance <= AWARD_DISTANCE && !session.awards[rec.key]) {
-              session.awards[rec.key] = +new Date()
-            }
-
-            const final: NearbyEntity = {
-              ...rec,
-              awardedAt: session.awards[rec.key],
-            }
-            return final
-          })
-      )
-
-      const [packed] = netcode.pack<NearbyEntities>(MessageTypes.NearbyEntities, {
-        nearby: final,
-      })
-      conn.send(packed)
     }
-    setTimeout(send, 500)
+  )
+
+  onLoginRx(({ conn, uid, e: { id } }) => {
+    const [packed] = netcode.pack<Session>(
+      MessageTypes.Session,
+      {
+        uid,
+      },
+      id
+    )
+    conn.send(packed)
+  })
+
+  const calcLevelGoal = (level: number) => {
+    return 500 * Math.pow(level, 2) - 500 * level
   }
+
+  const getSession = (conn: Connection) => {
+    const { id } = conn
+    const socketSession = socketSessions[id]
+    if (!socketSession) {
+      throw new Error(`Bad session ${id}`)
+    }
+    const { uid } = socketSession
+    if (!uid) {
+      return
+    }
+    const session = sessions[uid]
+    return session
+  }
+
+  onPositionUpdateRx(() => {
+    pingCount++
+  })
+  onPositionUpdateRx(({ conn, e: { message } }) => {
+    const session = getSession(conn)
+    if (!session) return
+    const { send } = conn
+    const { position } = session
+    if (!position) return
+    const points = getDistance(position, message, 0.1)
+    const xp = session.xp
+    const { level, current, goal } = xp
+    if (current + points > goal) {
+      session.xp = {
+        ...xp,
+        level: level + 1,
+        start: calcLevelGoal(level + 1),
+        goal: calcLevelGoal(level + 2),
+      }
+    }
+    session.xp.current = session.xp.current + points
+    const [packed] = netcode.pack<XpUpdate>(MessageTypes.XpUpdate, session.xp)
+    send(packed)
+  })
+  onPositionUpdateRx(({ conn, e: { message } }) => {
+    const session = getSession(conn)
+    if (!session) return
+    session.position = message
+    settings.updatePosition(session, message)
+  })
+  onPositionUpdateRx(async ({ conn }) => {
+    const session = getSession(conn)
+    if (!session) return
+    const { id, send } = conn
+    const nearby = await settings.getNearbyPlayers(session)
+    if (!nearby) {
+      throw new Error(`Could not fetch nearby players`)
+    }
+
+    const final = nearby
+      .filter((rec) => rec.key !== session.uid)
+      .map((rec) => {
+        if (rec.distance <= AWARD_DISTANCE && !session.awards[rec.key]) {
+          session.awards[rec.key] = +new Date()
+        }
+
+        const final: NearbyEntity = {
+          ...rec,
+          awardedAt: session.awards[rec.key],
+        }
+        return final
+      })
+
+    const [packed] = netcode.pack<NearbyEntities>(MessageTypes.NearbyEntities, {
+      nearby: final,
+    })
+    if (!socketSessions[id]) return // Session has vanished
+    send(packed)
+  })
 
   const { provider } = settings
 
@@ -153,11 +236,10 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       isCleanedUp = true
       console.log(`C${thisConnId} cleanup`)
       openConnectionCount--
-      delete sessions[thisConnId]
+      delete socketSessions[thisConnId]
     }
-    sessions[thisConnId] = {
+    socketSessions[thisConnId] = {
       connectionId: thisConnId,
-      awards: {},
       cleanup,
     }
   })
@@ -168,13 +250,16 @@ export const createServerNetcode = (settings: ServerNetcodeConfig) => {
       code,
       reason,
     })
-    sessions[connId].cleanup()
+    const session = getSession(conn)
+    delete session?.position
+    socketSessions[connId].cleanup()
   })
 
   onMessage(({ conn, data }) => {
     const wrapper = netcode.unpack(data)
+    const session = getSession(conn)
     try {
-      if (wrapper.type !== MessageTypes.Login && !sessions[conn.id].idToken) {
+      if (wrapper.type !== MessageTypes.Login && !session) {
         console.error(`unestablished session`, { wrapper })
         conn.close()
         return // Silently ignore unauthenticated

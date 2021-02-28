@@ -68,11 +68,12 @@ const geo = initialize(client)
       await geo.addLocation(uid, msg)
     },
     async getNearbyPlayers(session) {
-      const { uid } = session
+      const { uid, position } = session
       if (!uid) {
         throw new Error(`Session UID is not available`)
       }
-      const nearby = await geo.nearby<NearbyDC>(uid, 1000, {
+
+      const nearby = await geo.nearby<NearbyDC>(position ?? uid, 1000, {
         withCoordinates: true,
         withDistances: true,
       })

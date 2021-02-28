@@ -8,6 +8,7 @@ import {
   netcode,
   PositionUpdate,
 } from '../common'
+import { XpUpdate } from '../common/messageTypes'
 import { MessageWrapper } from '../n53'
 
 export type ClientMessageSender = (msg: Buffer) => Promise<void>
@@ -195,9 +196,12 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
 
   // Listen for important messages
   const [onNearbyEntities, emitNearbyEntities] = callem<NearbyEntities>()
+  const [onXpUpdated, emitXpUpdated] = callem<XpUpdate>()
   const dispatchHandlers: { [_ in MessageTypes]?: CallemEmitter<any> } = {
     [MessageTypes.NearbyEntities]: emitNearbyEntities,
+    [MessageTypes.XpUpdate]: emitXpUpdated,
   }
+
   onMessage((m) => {
     // logger.log(`got raw message incoming`, m)
     const dispatchHandler = dispatchHandlers[m.type as MessageTypes]
@@ -214,6 +218,7 @@ export const createClientNetcode = (settings?: Partial<ClientNetcodeConfig>) => 
     onDisconnect,
     isConnected: () => isConnected,
     onNearbyEntities,
+    onXpUpdated,
   }
   return api
 }

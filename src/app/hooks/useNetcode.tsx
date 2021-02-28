@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { client } from '../bootstrap'
 import { useAppDispatch, useAppSelector } from '../store'
 import { nearbyEntitiesChanged } from '../store/entitiesSlice'
+import { xpUpdated } from '../store/sessionSlice'
 
 export const useNetcode = () => {
   const idToken = useAppSelector((state) => state.session.idToken)
@@ -40,4 +41,16 @@ export const useNetcode = () => {
 
     updatePosition({ ...position })
   }, [position])
+
+  useEffect(() => {
+    const { onXpUpdated } = client
+
+    const unsub = onXpUpdated((e) => {
+      dispatch(xpUpdated(e))
+    })
+
+    return () => {
+      unsub()
+    }
+  })
 }

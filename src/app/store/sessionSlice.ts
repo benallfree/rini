@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { XpUpdate } from '../../common'
 
 type Coords = { latitude: number; longitude: number }
 
 interface SessionState {
   idToken?: string
   location?: Coords
+  xp?: XpUpdate
 }
 
 // Define the initial state using that type
@@ -20,10 +22,13 @@ export const sesionSlice = createSlice({
     locationChanged: (state, action: PayloadAction<Coords | undefined>) => {
       state.location = action.payload
     },
+    xpUpdated: (state, action: PayloadAction<XpUpdate>) => {
+      state.xp = action.payload
+    },
   },
 })
 
 // Action creators are generated for eache case reducer function
-export const { idTkenChanged, locationChanged } = sesionSlice.actions
+export const { idTkenChanged, locationChanged, xpUpdated } = sesionSlice.actions
 
 export default sesionSlice.reducer

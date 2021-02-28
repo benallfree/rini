@@ -27,7 +27,7 @@ export const initialize = (client: _RedisClient) => {
     addLocation: (locationName: string, position: Point) =>
       exec<boolean>(_geo.addLocation.bind(_geo), [locationName, position]),
     nearby: <TRet extends NearbyReturnTypes>(
-      locationName: string,
+      locationName: string | Point,
       radius: number,
       options?: Partial<NearbyOptions>
     ) => exec<TRet[]>(_geo.nearby.bind(_geo), [locationName, radius, options]),

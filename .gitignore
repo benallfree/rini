@@ -87,3 +87,5 @@ web-build/
 *.log
 
 .data
+.cache
+.build
