@@ -3,12 +3,12 @@ import React, { FC, useEffect, useState } from 'react'
 import { Button, Text } from 'react-native-elements'
 import { locationService } from '../bootstrap'
 import { useAppDispatch, useAppSelector } from '../store'
-import { locationChanged } from '../store/slices/sessionSlice'
+import { locationChanged } from '../store/slices/profileSlice'
 
 export const Located: FC = ({ children }) => {
   const [firstTime, setFirstTime] = useState(true)
   const [canLocate, setCanLocate] = useState(false)
-  const location = useAppSelector((state) => state.session.location)
+  const location = useAppSelector((state) => state.profile.location)
   const dispatch = useAppDispatch()
 
   useEffect(() => {

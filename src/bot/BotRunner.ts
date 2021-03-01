@@ -1,7 +1,8 @@
 import * as admin from 'firebase-admin'
 import { dirname, resolve } from 'path'
 import { makeStore } from '../app/store'
-import { locationChanged, login } from '../app/store/slices/sessionSlice'
+import { locationChanged } from '../app/store/slices/profileSlice'
+import { login } from '../app/store/slices/sessionSlice'
 import { Bot } from './BotFileProvider'
 import { RouteService } from './RouteService'
 
@@ -21,7 +22,7 @@ export const createBotRunner = (bot: Bot, routeService: RouteService, mph = 30, 
     let tid: ReturnType<typeof setTimeout>
     const move = () => {
       const { lat, lng, distanceFromLast } = next()
-      console.log({ lat, lng, distanceFromLast })
+      // console.log({ lat, lng, distanceFromLast })
       store.dispatch(
         locationChanged({
           latitude: lat,

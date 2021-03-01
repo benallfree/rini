@@ -2,12 +2,12 @@ import firebase from 'firebase'
 import React, { FC, useEffect, useState } from 'react'
 import { Text } from 'react-native-elements'
 import { useAppDispatch, useAppSelector } from '../store'
-import { idTokenChanged } from '../store/slices/sessionSlice'
+import { login, logout } from '../store/slices/sessionSlice'
 import { PhoneSignIn } from './PhoneSignIn'
 
 export const Authenticated: FC = ({ children }) => {
   const [firstTime, setFirstTime] = useState(true)
-  const idToken = useAppSelector((state) => state.session.idToken)
+  const idToken = useAppSelector((state) => state.session.tokens.idToken)
   const dispatch = useAppDispatch()
 
   useEffect(() => {
@@ -21,18 +21,18 @@ export const Authenticated: FC = ({ children }) => {
   useEffect(() => {
     firebase.auth().onIdTokenChanged((user) => {
       if (!user) {
-        dispatch(idTokenChanged(undefined))
+        dispatch(logout())
         return
       }
       user
         .getIdToken()
         .then((idToken) => {
           console.log('id token', { idToken })
-          dispatch(idTokenChanged(idToken))
+          dispatch(login({ uid: user.uid, idToken }))
         })
         .catch((e) => {
           console.error(e)
-          dispatch(idTokenChanged(undefined))
+          dispatch(logout())
         })
     })
   }, [dispatch])

@@ -1,16 +1,13 @@
-import { forEach } from '@s-libs/micro-dash'
+import { forEach, map } from '@s-libs/micro-dash'
 import Bottleneck from 'bottleneck'
 import React, { FC, useEffect, useRef } from 'react'
 import { Image } from 'react-native'
+import { Text } from 'react-native-elements'
 import { Marker } from 'react-native-maps'
-import { NearbyEntity } from '../../../common/NearbyEntities'
 import { fx } from '../../assets/fx'
 import { BundledImages } from '../../assets/images'
 import { useAppSelector } from '../../store'
-
-type Timeout = ReturnType<typeof setTimeout>
-
-const awardHandled: { [_: string]: number } = {}
+import { NearbyEntity } from '../../store/slices/entitiesSlice'
 
 const playScore = (() => {
   const limiter = new Bottleneck({ maxConcurrent: 1, minTime: 100 })
@@ -27,19 +24,22 @@ const Entity: FC<{ entity: NearbyEntity }> = (props) => {
 
   return (
     <Marker
-      pinColor={awardHandled[entity.key] ? 'green' : 'blue'}
-      key={entity.key}
+      key={entity.id}
       coordinate={entity}
-      title={entity.key}
+      title={entity.id}
       description={entity.distance.toString()}>
       <Image source={BundledImages.Tesla} style={{ width: 16, height: 16 }} resizeMode="contain" />
+      <Text>{entity.distance}</Text>
     </Marker>
   )
 }
 
 export const Others: FC = () => {
-  const seen = useRef<{ [_: string]: Timeout }>({})
+  const seen = useRef<{ [_: string]: number }>({})
+  const awardHandled = useRef<{ [_: string]: number }>({})
+
   const nearby = useAppSelector((state) => state.entities.nearby)
+  const collisions = useAppSelector((state) => state.profile.collisionEventsByEntityId)
 
   useEffect(() => {
     forEach(seen.current, (tid) => {
@@ -49,33 +49,26 @@ export const Others: FC = () => {
 
   useEffect(() => {
     if (!nearby) return
-    nearby.forEach((n) => {
-      const entityId = n.key
-      const refreshDeleteIfIdle = (oldTid?: Timeout) => {
-        clearTimeout(oldTid)
-        const tid = setTimeout(() => {
-          delete seen.current[entityId]
-        }, 5000)
-        return tid
-      }
-      if (!seen.current[entityId]) {
+    forEach(nearby, (n, entityId) => {
+      const now = +new Date()
+      if (!seen.current[entityId] || now - seen.current[entityId] > 5000) {
         playEnter()
       }
-      if (n.awardedAt && awardHandled[n.key] !== n.awardedAt) {
-        awardHandled[n.key] = n.awardedAt
+      seen.current[entityId] = now
+      if (collisions[n.id] && !awardHandled.current[n.id]) {
+        awardHandled.current[n.id] = collisions[n.id].time
+        console.log(collisions[n.id])
         playScore()
       }
-
-      seen.current[entityId] = refreshDeleteIfIdle(seen.current[entityId])
     })
-  }, [nearby])
+  }, [nearby, collisions])
 
   if (!nearby) return null
 
   return (
     <>
-      {nearby.map((player) => (
-        <Entity key={player.key} entity={player} />
+      {map(nearby, (entity, entityId) => (
+        <Entity key={entityId} entity={entity} />
       ))}
     </>
   )

@@ -8,7 +8,7 @@ import { Others } from './Others'
 
 export const Map: FC = () => {
   const [isAutoTracking, setIsAutoTracking] = useState(true)
-  const location = useAppSelector((state) => state.session.location)
+  const location = useAppSelector((state) => state.profile.location)
   const mapRef = useRef<MapView>(null)
   const { latitude, longitude } = location ?? {}
 

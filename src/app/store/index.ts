@@ -1,8 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
+import {
+  detectCollisionFromChangedEntity,
+  recalcNearbyEntityDistancesOnChangedLocation,
+} from './middleware/detectCollisions'
 import { entityUpdateWatcher } from './middleware/entityUpdateWatcher'
 import { remoteUpdatePosition } from './middleware/remoteUpdatePosition'
 import entitiesReducer, { dropOldEntities } from './slices/entitiesSlice'
+import profileReducer from './slices/profileSlice'
 import sessionReducer from './slices/sessionSlice'
 
 export const makeStore = () => {
@@ -10,9 +15,15 @@ export const makeStore = () => {
     reducer: {
       session: sessionReducer,
       entities: entitiesReducer,
+      profile: profileReducer,
     },
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat([remoteUpdatePosition, entityUpdateWatcher]),
+      getDefaultMiddleware().concat([
+        remoteUpdatePosition,
+        entityUpdateWatcher,
+        detectCollisionFromChangedEntity,
+        recalcNearbyEntityDistancesOnChangedLocation,
+      ]),
   })
   const gc = () => {
     store.dispatch(dropOldEntities())
