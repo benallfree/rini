@@ -35,6 +35,8 @@ export const createDeviceLocationService = () => {
         const isRegistered = await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME)
         if (isRegistered) {
           await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+            distanceInterval: 0,
+            timeInterval: 100,
             accuracy: Location.Accuracy.Highest,
             showsBackgroundLocationIndicator: true,
             pausesUpdatesAutomatically: true,
@@ -54,6 +56,8 @@ export const createDeviceLocationService = () => {
           await Location.watchPositionAsync(
             {
               accuracy: LocationAccuracy.Highest,
+              distanceInterval: 0,
+              timeInterval: 100,
             },
             (e) => {
               handleLocationChanged({ location: e })

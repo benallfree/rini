@@ -2,35 +2,49 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import Geohash from 'latlon-geohash'
 import { XpUpdate } from '../../../common'
 
-export interface Coords {
+export interface Point {
   latitude: number
   longitude: number
 }
 
+export interface PointInTime extends Point {
+  time: number
+}
+
+export interface HashedPointInTime extends PointInTime {
+  hash: string
+}
+
+interface SessionTokens {
+  idToken: string
+  uid: string
+}
 interface SessionState {
-  idToken?: string
-  location?: Coords & { hash: string }
+  tokens: Partial<SessionTokens>
+  location?: HashedPointInTime
   xp?: XpUpdate
 }
 
 const HASH_PRECISION = 5
 
 // Define the initial state using that type
-const initialState: SessionState = {}
+const initialState: SessionState = {
+  tokens: {},
+}
 
 export const sesionSlice = createSlice({
   name: 'session',
   initialState,
   reducers: {
-    idTkenChanged: (state, action: PayloadAction<string | undefined>) => {
-      console.log('updating idToken', { action })
-      state.idToken = action.payload
+    login: (state, action: PayloadAction<SessionTokens>) => {
+      console.log('updating session tokens', { action })
+      state.tokens = action.payload
     },
-    locationChanged: (state, action: PayloadAction<Coords>) => {
+    locationChanged: (state, action: PayloadAction<Point>) => {
       console.log('updating location', { action })
       const { latitude, longitude } = action.payload
       const hash = Geohash.encode(latitude, longitude, HASH_PRECISION)
-      state.location = { ...action.payload, hash }
+      state.location = { ...action.payload, hash, time: +new Date() }
     },
     xpUpdated: (state, action: PayloadAction<XpUpdate>) => {
       state.xp = action.payload
@@ -39,6 +53,6 @@ export const sesionSlice = createSlice({
 })
 
 // Action creators are generated for eache case reducer function
-export const { idTkenChanged, locationChanged, xpUpdated } = sesionSlice.actions
+export const { login, locationChanged, xpUpdated } = sesionSlice.actions
 
 export default sesionSlice.reducer

@@ -5,7 +5,9 @@ import React, { FC } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Provider } from 'react-redux'
 import { Root } from './components/Root'
-import { store } from './store'
+import { makeStore } from './store'
+
+const store = makeStore()
 
 const App: FC = () => {
   return (

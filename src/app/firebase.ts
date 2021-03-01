@@ -18,3 +18,7 @@ export const firebaseConfig = {
   trackingId: 'foo',
 }
 firebase.initializeApp(firebaseConfig)
+
+const db = firebase.database()
+const auth = firebase.auth()
+export { db, auth }
