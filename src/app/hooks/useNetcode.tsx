@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { client } from '../bootstrap'
 import { useAppDispatch, useAppSelector } from '../store'
-import { nearbyEntitiesChanged } from '../store/entitiesSlice'
-import { xpUpdated } from '../store/sessionSlice'
+import { nearbyEntitiesChanged } from '../store/slices/entitiesSlice'
+import { xpUpdated } from '../store/slices/sessionSlice'
 
 export const useNetcode = () => {
   const idToken = useAppSelector((state) => state.session.idToken)

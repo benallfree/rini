@@ -2,7 +2,7 @@ import firebase from 'firebase'
 import React, { FC, useEffect, useState } from 'react'
 import { Text } from 'react-native-elements'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { idTkenChanged } from '../store/sessionSlice'
+import { idTkenChanged } from '../store/slices/sessionSlice'
 import { PhoneSignIn } from './PhoneSignIn'
 
 export const Authenticated: FC = ({ children }) => {
