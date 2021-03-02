@@ -4,6 +4,7 @@ import { Map } from './Map/Map'
 import { MyXp } from './MyXp'
 
 export const AuthenticatedRoot: FC = () => {
+  console.log('AuthenticatedRoot')
   return (
     <>
       <Map />

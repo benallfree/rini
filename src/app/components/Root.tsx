@@ -5,6 +5,7 @@ import { AuthenticatedRoot } from './AuthenticatedRoot'
 import { Located } from './Located'
 
 export const Root: FC = () => {
+  console.log('Render root')
   return (
     <ThemeProvider>
       <Located>

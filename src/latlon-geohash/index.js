@@ -238,4 +238,4 @@ class Geohash {
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-export default Geohash;
+module.exports = Geohash;

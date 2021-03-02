@@ -54,6 +54,7 @@
     "isomorphic-ws": "^4.0.1",
     "latlon-geohash": "^2.0.0",
     "line-interpolate-points": "^1.0.5",
+    "memoize-one": "^5.1.1",
     "nanoevents": "^5.1.11",
     "prompts": "^2.4.0",
     "react": "16.13.1",

@@ -3,7 +3,7 @@ import React, { FC, useEffect, useState } from 'react'
 import { Button, Text } from 'react-native-elements'
 import { locationService } from '../bootstrap'
 import { useAppDispatch, useAppSelector } from '../store'
-import { locationChanged } from '../store/slices/profileSlice'
+import { locationChanged } from '../store/thunks/locationChanged'
 
 export const Located: FC = ({ children }) => {
   const [firstTime, setFirstTime] = useState(true)

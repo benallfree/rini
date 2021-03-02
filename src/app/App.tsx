@@ -7,7 +7,7 @@ import { Provider } from 'react-redux'
 import { Root } from './components/Root'
 import { makeStore } from './store'
 
-const store = makeStore()
+export const store = makeStore()
 
 const App: FC = () => {
   return (

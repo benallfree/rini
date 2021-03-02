@@ -1,8 +1,8 @@
 import * as admin from 'firebase-admin'
 import { dirname, resolve } from 'path'
 import { makeStore } from '../app/store'
-import { locationChanged } from '../app/store/slices/profileSlice'
 import { login } from '../app/store/slices/sessionSlice'
+import { locationChanged } from '../app/store/thunks/locationChanged'
 import { Bot } from './BotFileProvider'
 import { RouteService } from './RouteService'
 
