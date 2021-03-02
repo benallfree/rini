@@ -4,6 +4,8 @@ import { collision } from '../slices/profileSlice'
 import { getState } from '../thunks/util'
 import { Entity } from '../types'
 
+const COLLISION_METERS = 20
+
 export const nearbyEntityChanged = createAsyncThunk(
   'nearbyEntityChanged',
   (entity: Entity, thunkApi) => {
@@ -18,7 +20,7 @@ export const nearbyEntityChanged = createAsyncThunk(
 
     const distance = getDistance(location, entity)
     // console.log('Recalculating distance from current', location, entity, distance)
-    if (distance < 5) {
+    if (distance < COLLISION_METERS) {
       // console.log('collision detected', entity)
       thunkApi.dispatch(collision(entity))
     }
