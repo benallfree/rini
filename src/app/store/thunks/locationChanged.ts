@@ -106,12 +106,25 @@ const broadcastLocation = (thunkApi: any, oldLocation?: HashedPointInTime) => {
   const mkpath = (hash: string) => `grid/${hash}/${uid}`
   const path = mkpath(hash)
   // console.log('broadcastLocation', { location, oldLocation, hash, uid, path })
-  db.ref(path).set(location)
-  // gc old loc
+  const p = db.ref(path).set(location)
+  // gc old loc - wait for the new loc to arrive. If it never does, gc after 5 seconds
   if (oldLocation && oldLocation.hash !== hash) {
-    const oldPath = mkpath(oldLocation.hash)
-    // console.log(`removing ${oldPath}`)
-    db.ref(oldPath).remove()
+    const gc = () => {
+      clearTimeout(tid)
+      unsub()
+      const oldPath = mkpath(oldLocation.hash)
+      console.log(`removing ${oldPath}`)
+      db.ref(oldPath).remove()
+    }
+    const tid = setTimeout(gc, 5000)
+    const handleUpdate = (e: firebase.database.DataSnapshot) => {
+      const newEntity = e.val() as HashedPointInTime
+      if (newEntity.time !== location.time) return // It's the wrong one
+      console.log('got a callback!')
+      gc()
+    }
+    const unsub = () => db.ref(path).off('value', handleUpdate)
+    db.ref(path).on('value', handleUpdate)
   }
 }
 
