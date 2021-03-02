@@ -6,6 +6,7 @@ export interface Entity extends PointInTime {
 
 export interface NearbyEntity extends Entity {
   distance: number
+  tid: ReturnType<typeof setTimeout>
 }
 
 export interface NearbyEntitiesById {

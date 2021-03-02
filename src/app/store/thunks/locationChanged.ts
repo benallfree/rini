@@ -1,5 +1,5 @@
 import { createAsyncThunk, Middleware } from '@reduxjs/toolkit'
-import { forEach } from '@s-libs/micro-dash'
+import { forEach, pick } from '@s-libs/micro-dash'
 import firebase from 'firebase'
 import getHashesNear from 'geohashes-near'
 import Geohash from '../../../latlon-geohash'
@@ -63,7 +63,7 @@ function recalcWatchers(thunkApi: any) {
       } else {
         thunkApi.dispatch(nearbyEntityChanged({ ...data, id: snap.key }))
       }
-      // console.log('added', path, { data, snap })
+      console.log('added', path, { data, snap })
     }
     const handleChildChanged = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val() as PointInTime
@@ -106,7 +106,8 @@ const broadcastLocation = (thunkApi: any, oldLocation?: HashedPointInTime) => {
   const mkpath = (hash: string) => `grid/${hash}/${uid}`
   const path = mkpath(hash)
   // console.log('broadcastLocation', { location, oldLocation, hash, uid, path })
-  const p = db.ref(path).set(location)
+  const update: PointInTime = pick(location, 'latitude', 'longitude', 'time')
+  db.ref(path).set(update)
   // gc old loc - wait for the new loc to arrive. If it never does, gc after 5 seconds
   if (oldLocation && oldLocation.hash !== hash) {
     const gc = () => {

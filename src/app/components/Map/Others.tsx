@@ -47,10 +47,10 @@ const selectNearbyIds = createSelector<RootState, NearbyEntitiesById, string[]>(
 )
 
 export const Others: FC = () => {
-  const nearbyIds = useAppSelector(
-    (state) => map(state.entities.nearby, (e) => e.id).sort(),
-    shallowEqual
-  )
+  const nearbyIds = useAppSelector((state) => {
+    console.log('gathering', state.entities.nearby)
+    return map(state.entities.nearby, (e) => e.id).sort()
+  }, shallowEqual)
   console.log('Others', nearbyIds.length)
   return (
     <>

@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { TypedUseSelectorHook, useDispatch, useSelector, useStore } from 'react-redux'
-import entitiesReducer, { dropOldEntities } from './slices/entitiesSlice'
+import entitiesReducer from './slices/entitiesSlice'
 import profileReducer from './slices/profileSlice'
 import sessionReducer from './slices/sessionSlice'
 
@@ -12,11 +12,7 @@ export const makeStore = () => {
       profile: profileReducer,
     },
   })
-  const gc = () => {
-    store.dispatch(dropOldEntities())
-    setTimeout(gc, 500)
-  }
-  gc()
+
   return store
 }
 
