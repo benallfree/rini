@@ -7,13 +7,7 @@
     "app:ios": "expo start --ios",
     "app:web": "expo start --web",
     "app:eject": "expo eject",
-    "app:watch:worker": "chokidar './src/app/components/Worker/worker-app.ts' './src/rn-webworker/bootstrap.ts' -c 'yarn app:build:worker'",
-    "app:build:worker": "yarn app:build:worker:app && yarn app:build:worker:bootstrap",
-    "esbuild": "esbuild --bundle --minify --sourcemap=inline --tsconfig=./tsconfig.json",
-    "app:build:worker:app": "yarn run --silent esbuild ./src/app/components/Worker/worker-app.ts  | node ./bin/stringify.js 1> ./src/app/components/Worker/worker-app.inlined.ts",
-    "app:build:worker:bootstrap": "yarn run --silent esbuild ./src/rn-webworker/bootstrap.ts | node ./bin/stringify.js 1> ./src/rn-webworker/bootstrap.inlined.ts",
-    "bot:dev": "ts-node-dev --respawn --transpile-only src/bot/run.ts",
-    "serve:dev": "ts-node-dev --respawn --transpile-only src/server/index.ts"
+    "bot:dev": "ts-node-dev --respawn --transpile-only src/bot/run.ts"
   },
   "dependencies": {
     "@expo/metro-config": "^0.1.56",
@@ -32,7 +26,6 @@
     "avatar-builder": "^1.0.1",
     "bottleneck": "^2.19.5",
     "crypto": "^1.0.1",
-    "esm": "^3.2.25",
     "expo": "~40.0.0",
     "expo-asset": "~8.2.1",
     "expo-av": "~8.7.0",
@@ -49,12 +42,9 @@
     "firebase-functions": "^3.13.1",
     "geohashes-near": "^2.0.1",
     "geolib": "^3.3.1",
-    "georedis": "^3.1.3",
     "gpxparser": "^3.0.7",
     "grpc": "1.24.5",
     "install": "^0.13.0",
-    "isomorphic-ws": "^4.0.1",
-    "latlon-geohash": "^2.0.0",
     "line-interpolate-points": "^1.0.5",
     "memoize-one": "^5.1.1",
     "nanoevents": "^5.1.11",
@@ -85,17 +75,16 @@
     "@typescript-eslint/eslint-plugin": "^4.15.1",
     "@typescript-eslint/parser": "^4.15.1",
     "babel-plugin-replace-ts-export-assignment": "^0.0.2",
-    "chokidar-cli": "^2.1.0",
-    "esbuild": "^0.8.48",
     "eslint": "^7.20.0",
     "eslint-config-universe": "^7.0.1",
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-react-native": "^3.10.0",
+    "expo-cli": "^4.2.1",
     "prettier": "^2.2.1",
     "prettier-plugin-organize-imports": "^1.1.1",
     "ts-node-dev": "^1.1.1",
-    "typescript": "~4.0.0"
+    "typescript": "^4.2.2"
   },
   "private": true
 }

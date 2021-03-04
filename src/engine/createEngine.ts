@@ -1,5 +1,5 @@
-import { CallemUnsubscriber } from 'src/callem'
 import { auth } from '../app/firebase'
+import { CallemUnsubscriber } from '../callem'
 import { nanoid } from '../nanoid'
 import { createRealtimeStorageProvider } from './FirebaseRealtimeDatabaseProvider'
 import { createStore, Point } from './store'
