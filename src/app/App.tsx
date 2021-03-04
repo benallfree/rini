@@ -3,19 +3,13 @@ import { StatusBar } from 'expo-status-bar'
 import 'firebase/auth'
 import React, { FC } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { Provider } from 'react-redux'
 import { Root } from './components/Root'
-import { makeStore } from './store'
-
-export const store = makeStore()
 
 const App: FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      <Provider store={store}>
-        <Root />
-      </Provider>
+      <Root />
     </View>
   )
 }

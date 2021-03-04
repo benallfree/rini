@@ -8,6 +8,15 @@ const rs = createRouteService(BrightonLoop)
 const bd = createBotFileProvider()
 
 ;(async () => {
+  const heartbeat = () => {
+    const now = +new Date()
+    if (now - last > 15 * 2) {
+      // 60 fps
+      console.log('Heartbeat lost', now - last - 15)
+    }
+    last = now
+    setTimeout(heartbeat, 15)
+  }
   const response = await prompts({
     type: 'number',
     name: 'value',
@@ -18,4 +27,6 @@ const bd = createBotFileProvider()
   for (let i = 0; i < response.value; i++) {
     createBotRunner(bd.next(), rs)
   }
+  let last = +new Date()
+  heartbeat()
 })()

@@ -1,8 +1,7 @@
 import * as admin from 'firebase-admin'
 import { dirname, resolve } from 'path'
-import { makeStore } from '../app/store'
-import { login } from '../app/store/slices/sessionSlice'
-import { locationChanged } from '../app/store/thunks/locationChanged'
+import { createEngine } from '../engine/createEngine'
+import { nanoid } from '../nanoid'
 import { Bot } from './BotFileProvider'
 import { RouteService } from './RouteService'
 
@@ -15,24 +14,28 @@ admin.initializeApp({
 
 export const createBotRunner = (bot: Bot, routeService: RouteService, mph = 30, updateMs = 500) => {
   ;(async () => {
-    const store = makeStore()
+    const engine = createEngine({ uid: bot.uid, nanoid })
+    engine.setPlayerUid(bot.uid)
+    engine.onNearbyEntityHit((e) => {
+      // console.log('hit!', e)
+    })
+    engine.watchNearbyEntityIds((ids) => {
+      // console.log('Nearby', ids)
+    })
+    engine.start()
 
     const next = routeService.makeRoute(Math.random() * 30 + 15, 500)
 
-    let tid: ReturnType<typeof setTimeout>
     const move = () => {
       const { lat, lng, distanceFromLast } = next()
       // console.log({ lat, lng, distanceFromLast })
-      store.dispatch(
-        locationChanged({
-          latitude: lat,
-          longitude: lng,
-        })
-      )
-      tid = setTimeout(move, updateMs)
+      engine.updatePlayerPosition({
+        latitude: lat,
+        longitude: lng,
+      })
+      setTimeout(move, updateMs)
     }
 
-    store.dispatch(login(bot))
     move()
   })()
 

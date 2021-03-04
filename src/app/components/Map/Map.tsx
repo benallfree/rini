@@ -1,22 +1,20 @@
-import { pick } from '@s-libs/micro-dash'
 import memoizeOne from 'memoize-one'
 import React, { FC, useEffect, useMemo, useRef } from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import { Button } from 'react-native-elements'
 import MapView from 'react-native-maps'
-import { useAppSelector, useAppStore } from '../../store'
-import { HashedPointInTime } from '../../store/types'
+import { engine } from '../../engine'
+import { usePlayerPosition } from '../../hooks'
+import { Point } from '../../store/types'
 import { Me } from './Me'
 import { Others } from './Others'
 
 export const Map: FC = () => {
-  const store = useAppStore()
-  const mapState = useRef<{ isAutoTracking: boolean; location?: HashedPointInTime }>({
+  const mapState = useRef<{ isAutoTracking: boolean; location?: Point }>({
     isAutoTracking: true,
   })
   const mapRef = useRef<MapView>(null)
-  const location = useAppSelector((state) => pick(state.profile.location!, 'latitude', 'longitude'))
-  const { latitude, longitude } = location
+  const location = usePlayerPosition()
 
   useEffect(() => {
     const moveMap = memoizeOne((latitude: number, longitude: number) => {
@@ -24,18 +22,21 @@ export const Map: FC = () => {
         center: { latitude, longitude },
       })
     })
-    const unsub = store.subscribe(() => {
+    const unsub = engine.onPlayerPositionUpdated((currentLocation) => {
       if (!mapState.current.isAutoTracking) return
-      const currentLocation = store.getState().profile.location
       if (!currentLocation) return
       mapState.current.location = currentLocation
       const { latitude, longitude } = currentLocation
       moveMap(latitude, longitude)
     })
+
     return () => unsub()
   }, [])
 
+  const { latitude, longitude } = location ?? {}
+
   const render = useMemo(() => {
+    console.log({ latitude, longitude })
     if (!latitude || !longitude) return <></>
 
     const handleReset = () => {

@@ -2,14 +2,13 @@ import * as Location from 'expo-location'
 import React, { FC, useEffect, useState } from 'react'
 import { Button, Text } from 'react-native-elements'
 import { locationService } from '../bootstrap'
-import { useAppDispatch, useAppSelector } from '../store'
-import { locationChanged } from '../store/thunks/locationChanged'
+import { engine } from '../engine'
+import { auth } from '../firebase'
 
 export const Located: FC = ({ children }) => {
   const [firstTime, setFirstTime] = useState(true)
   const [canLocate, setCanLocate] = useState(false)
-  const location = useAppSelector((state) => state.profile.location)
-  const dispatch = useAppDispatch()
+  const [hasLocation, setHasLocation] = useState(false)
 
   useEffect(() => {
     Location.getPermissionsAsync().then(({ status }) => {
@@ -26,9 +25,15 @@ export const Located: FC = ({ children }) => {
       const { location } = e
       if (!location) return
       const { coords } = location
-      dispatch(locationChanged(coords))
+      setHasLocation(true)
+      const { uid } = auth.currentUser ?? {}
+      if (uid) {
+        engine.updatePlayerPosition(coords)
+      } else {
+        console.log('got location, awaiting uid', location)
+      }
     })
-  }, [canLocate, dispatch])
+  }, [canLocate])
 
   const handleRequestPermission = () => {
     Location.requestPermissionsAsync().then((res) => {
@@ -47,7 +52,7 @@ export const Located: FC = ({ children }) => {
     )
   }
 
-  if (!location) return <Text h1>Locating...</Text>
+  if (!hasLocation) return <Text h1>Locating...</Text>
 
   return <>{children}</>
 }

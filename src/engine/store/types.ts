@@ -1,22 +1,6 @@
 import { XpUpdate } from '../../common'
-
-export interface Entity extends PointInTime {
-  id: string
-}
-
-export interface NearbyEntity extends Entity {
-  distance: number
-  tid: ReturnType<typeof setTimeout>
-}
-
-export interface NearbyEntitiesById {
-  [_: string]: NearbyEntity
-}
-
-export interface EntitiesState {
-  nearby: NearbyEntitiesById
-}
-
+import { makeStore } from './makeStore'
+import { Entity } from './slices/entitiesSlice'
 export interface PointsByEntityId {
   [_: string]: PointInTime
 }
@@ -47,3 +31,10 @@ export interface ProfileState {
   location?: HashedPointInTime
   xp?: XpUpdate
 }
+
+export type Store = ReturnType<typeof makeStore>
+
+export type RootState = ReturnType<Store['store']['getState']>
+export type AppDispatch = Store['store']['dispatch']
+
+export type AppThunk<T> = (payload: T) => (dispatch: AppDispatch, getState: () => RootState) => void

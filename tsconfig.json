@@ -4,11 +4,13 @@
     "jsx": "react-native",
     "lib": [],
     "moduleResolution": "node",
+    "allowJs": true,
     "noEmit": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "strict": true,
+    "baseUrl": ".",
     "typeRoots": ["./src/@types", "./node_modules/@types"]
   },
   "include": ["./src/**/*", "./bin/**/*"]
