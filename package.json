@@ -55,6 +55,7 @@
     "react-native-elements": "^3.2.0",
     "react-native-maps": "0.27.1",
     "react-native-phone-number-input": "^2.0.0",
+    "react-native-pulse": "^1.0.7",
     "react-native-vector-icons": "^8.0.0",
     "react-native-web": "~0.13.12",
     "react-native-webview": "11.0.0",

@@ -1,7 +1,7 @@
 import { auth } from '../app/firebase'
 import { CallemUnsubscriber } from '../callem'
 import { nanoid } from '../nanoid'
-import { createRealtimeStorageProvider } from './FirebaseRealtimeDatabaseProvider'
+import { createRealtimeStorageProvider } from './FirebaseRealtimeDatabaseProvider/provider'
 import { createStore, Point } from './store'
 
 interface Config {
