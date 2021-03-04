@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "rini-1234a"
+  },
+  "targets": {
+    "rini-1234a": {
+      "hosting": {
+        "static": [
+          "riniapp.com"
+        ]
+      }
+    }
   }
 }

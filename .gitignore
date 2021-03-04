@@ -89,3 +89,5 @@ web-build/
 .data
 .cache
 .build
+
+.firebase
