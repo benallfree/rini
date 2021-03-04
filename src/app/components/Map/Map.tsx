@@ -1,14 +1,43 @@
 import memoizeOne from 'memoize-one'
 import React, { FC, useEffect, useMemo, useRef } from 'react'
-import { Dimensions, StyleSheet, View } from 'react-native'
-import { Button } from 'react-native-elements'
+import { Dimensions, GestureResponderEvent, StyleSheet, View } from 'react-native'
+import { Icon } from 'react-native-elements'
 import MapView from 'react-native-maps'
+import { Point } from '../../../engine/store/types'
 import { engine } from '../../engine'
 import { usePlayerPosition } from '../../hooks'
-import { Point } from '../../store/types'
 import { Me } from './Me'
 import { Others } from './Others'
 
+export const Reset: FC<{
+  size?: number
+  isActive?: boolean
+  onPress?: (event: GestureResponderEvent) => void
+}> = (props) => {
+  const { size, onPress, isActive } = {
+    onPress: () => {},
+    isActive: true,
+    size: 50,
+    ...props,
+  }
+  const iconSize = size * 0.8
+  const leftTop = (size - iconSize) / 2
+  return (
+    <View style={{ width: size, height: size }}>
+      <View
+        style={{
+          opacity: 0.4,
+          backgroundColor: isActive ? 'blue' : 'black',
+          borderRadius: size / 2,
+          width: size,
+          height: size,
+        }}></View>
+      <View style={{ position: 'absolute', top: leftTop, left: leftTop + 1 }}>
+        <Icon type="font-awesome-5" name="compass" onPress={onPress} size={iconSize} />
+      </View>
+    </View>
+  )
+}
 export const Map: FC = () => {
   const mapState = useRef<{ isAutoTracking: boolean; location?: Point }>({
     isAutoTracking: true,
@@ -70,8 +99,8 @@ export const Map: FC = () => {
           <Me />
           <Others />
         </MapView>
-        <View style={{ position: 'absolute', bottom: 15, right: 15 }}>
-          <Button title="reset" onPress={handleReset} />
+        <View style={{ position: 'absolute', right: 15, top: 50 }}>
+          <Reset onPress={handleReset} isActive={mapState.current.isAutoTracking} />
         </View>
       </View>
     )

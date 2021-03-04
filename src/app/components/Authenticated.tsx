@@ -7,22 +7,25 @@ import { PhoneSignIn } from './PhoneSignIn'
 
 export const Authenticated: FC = ({ children }) => {
   const [firstTime, setFirstTime] = useState(true)
+  const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
-    const unsub = firebase.auth().onAuthStateChanged((user: firebase.User | null) => {
+    // auth.signOut()
+    const unsub = auth.onAuthStateChanged((user: firebase.User | null) => {
       console.log('auth state', { user })
+      setFirstTime(false)
+
       if (!user) return
+      setIsReady(true)
       engine.setPlayerUid(user.uid)
       engine.start()
-      setFirstTime(false)
     })
     return unsub // unsubscribe on unmount
   }, [])
 
   if (firstTime) return <Text h1>Authenticating...</Text>
 
-  const { currentUser } = auth
-  if (!currentUser) {
+  if (!isReady) {
     return <PhoneSignIn />
   }
 

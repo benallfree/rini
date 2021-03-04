@@ -2,7 +2,6 @@ import { map } from '@s-libs/micro-dash'
 import Bottleneck from 'bottleneck'
 import React, { FC } from 'react'
 import { Image } from 'react-native'
-import { Text } from 'react-native-elements'
 import { Marker } from 'react-native-maps'
 import { fx } from '../../assets/fx'
 import { BundledImages } from '../../assets/images'
@@ -31,8 +30,8 @@ const Entity: FC<{ entityId: string }> = (props) => {
       coordinate={{ latitude, longitude }}
       title={id}
       description={distance.toString()}>
-      <Image source={BundledImages.Tesla} style={{ width: 16, height: 16 }} resizeMode="contain" />
-      <Text>{distance}</Text>
+      <Image source={BundledImages.Tesla} style={{ width: 32, height: 32 }} resizeMode="contain" />
+      {/* <Text>{distance}</Text> */}
     </Marker>
   )
 }

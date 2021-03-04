@@ -11,11 +11,13 @@ export const Located: FC = ({ children }) => {
   const [hasLocation, setHasLocation] = useState(false)
 
   useEffect(() => {
-    Location.getPermissionsAsync().then(({ status }) => {
-      setFirstTime(false)
-      console.log({ status })
-      setCanLocate(status === 'granted')
-    })
+    Location.getPermissionsAsync()
+      .then(({ status }) => {
+        setFirstTime(false)
+        // console.log({ status })
+        setCanLocate(status === 'granted')
+      })
+      .catch((e) => console.error(`Error querying locatin permission`, e))
   }, [])
 
   useEffect(() => {
@@ -30,15 +32,17 @@ export const Located: FC = ({ children }) => {
       if (uid) {
         engine.updatePlayerPosition(coords)
       } else {
-        console.log('got location, awaiting uid', location)
+        // console.log('got location, awaiting uid', location)
       }
     })
   }, [canLocate])
 
   const handleRequestPermission = () => {
-    Location.requestPermissionsAsync().then((res) => {
-      setCanLocate(res.granted)
-    })
+    Location.requestPermissionsAsync()
+      .then((res) => {
+        setCanLocate(res.granted)
+      })
+      .catch((e) => console.error(`Error requesting location permission`, e))
   }
 
   if (firstTime) return <Text h1>Determining location permission...</Text>
