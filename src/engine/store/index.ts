@@ -11,8 +11,8 @@ export interface Point {
 }
 
 export interface Bearing extends Point {
-  heading: number
-  speed: number
+  heading: number | null
+  speed: number | null
   time: number
 }
 
