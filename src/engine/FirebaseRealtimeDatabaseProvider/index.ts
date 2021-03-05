@@ -1,9 +1,9 @@
 import Bottleneck from 'bottleneck'
 import { nanoid } from '../../nanoid'
-import { PointInTime } from '../store'
+import { Bearing } from '../store'
 import { createRealtimeStorageProvider } from './provider'
 
-export interface NoncedPointInTime extends PointInTime {
+export interface NoncedPointInTime extends Bearing {
   nonce: string
 }
 

@@ -1,6 +1,9 @@
+import { Coord } from '@turf/helpers'
+import { bearing } from '@turf/turf'
 import { getDistance } from 'geolib'
 import gpxParser from 'gpxparser'
 import interpolateLineRange from 'line-interpolate-points'
+import { Bearing, Point } from 'src/engine/store'
 
 export type GpxPoint = gpxParser.Point
 export type GpxRoute = GpxPoint[]
@@ -15,10 +18,10 @@ export const createRouteService = (points: GpxRoute) => {
       return carry + getDistance(points[i], points[next])
     }, 0)
     const totalPoints = Math.ceil(totalDistance / metersPerUpdate)
-    const interpolated = interpolateLineRange(
+    const interpolated: Point[] = interpolateLineRange(
       points.map((p) => [p.lat, p.lon]),
       totalPoints
-    ).map(([lat, lng]) => ({ lat, lng }))
+    ).map(([lat, lng]) => ({ latitude: lat, longitude: lng }))
 
     const splitIdx = _splitIdx ?? Math.floor(Math.random() * interpolated.length - 1)
     const a = interpolated.slice(0, splitIdx)
@@ -30,11 +33,24 @@ export const createRouteService = (points: GpxRoute) => {
     })()
     let idx = 0
 
-    const next = () => {
+    const next = (): Bearing => {
       const oldIdx = idx
       idx++
       if (idx >= final.length) idx = 0
-      return { ...final[idx], distanceFromLast: getDistance(final[oldIdx], final[idx]) }
+      const ending: Coord = {
+        type: 'Point',
+        coordinates: [final[idx].latitude, final[idx].longitude],
+      }
+      const starting: Coord = {
+        type: 'Point',
+        coordinates: [final[oldIdx].latitude, final[oldIdx].longitude],
+      }
+      return {
+        ...final[idx],
+        time: +new Date(),
+        speed: mph,
+        heading: bearing(starting, ending),
+      }
     }
 
     return next

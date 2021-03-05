@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useMemo } from 'react'
 import { Image } from 'react-native-elements'
 import { Marker } from 'react-native-maps'
 import Pulse from 'react-native-pulse'
@@ -7,10 +7,9 @@ import { usePlayerPosition } from '../../hooks'
 
 export const Me: FC = () => {
   const location = usePlayerPosition()
-  if (!location) return null
   // console.log('Me', location)
-  return (
-    <Marker coordinate={location} title={'Me'} description={'My Location'} zIndex={1000}>
+  const P = useMemo(
+    () => (
       <Pulse
         color="red"
         numPulses={3}
@@ -19,6 +18,14 @@ export const Me: FC = () => {
         duration={2000}
         pulseStyle={{ opacity: 0.1 }}
       />
+    ),
+    []
+  )
+  if (!location) return null
+
+  return (
+    <Marker coordinate={location} title={'Me'} description={'My Location'} zIndex={1000}>
+      {P}
       <Image source={BundledImages.Tesla} style={{ width: 32, height: 32 }} resizeMode="contain" />
     </Marker>
   )

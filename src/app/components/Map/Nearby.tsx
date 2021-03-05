@@ -4,5 +4,9 @@ import { useNearbyEntityIds } from '../../hooks'
 
 export const Nearby: FC = () => {
   const nearbyIds = useNearbyEntityIds()
-  return <Text>Nearby: {nearbyIds.length}</Text>
+  return (
+    <Text h3 style={{ color: 'white', textAlign: 'center' }}>
+      {nearbyIds.length}
+    </Text>
+  )
 }

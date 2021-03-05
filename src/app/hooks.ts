@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { unstable_batchedUpdates } from 'react-native'
-import { NearbyEntity, Point, Setter } from '../engine/store'
+import { NearbyEntity, Setter } from '../engine/store'
 import { engine } from './engine'
 
 const batchCalls: (() => void)[] = []
@@ -35,10 +35,19 @@ export const useNearbyEntityPosition = (id: string) => {
 }
 
 export const usePlayerPosition = () => {
-  const [position, setPosition] = useState<Point>()
+  const [position, setPosition] = useState(engine.select((state) => state.position))
   useEffect(() => {
     return engine.watchPlayerPosition(defer(setPosition))
   }, [])
 
   return position
+}
+
+export const useHasPlayerPosition = () => {
+  const [hasPosition, setHasPosition] = useState(engine.select((state) => !!state.position))
+  useEffect(() => {
+    return engine.watchPlayerPosition((bearing) => defer(() => setHasPosition(!!bearing)))
+  }, [])
+
+  return hasPosition
 }

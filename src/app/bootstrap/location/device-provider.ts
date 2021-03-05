@@ -51,21 +51,18 @@ export const createDeviceLocationService = () => {
           return
         }
       }
-      unsubs.push(
-        (
-          await Location.watchPositionAsync(
-            {
-              accuracy: LocationAccuracy.Highest,
-              distanceInterval: 0,
-              timeInterval: 100,
-            },
-            (e) => {
-              handleLocationChanged({ location: e })
-            }
-          )
-        ).remove
+      const locInfo = await Location.watchPositionAsync(
+        {
+          accuracy: LocationAccuracy.Highest,
+          distanceInterval: 0,
+          timeInterval: 100,
+        },
+        (e) => {
+          handleLocationChanged({ location: e })
+        }
       )
-    })()
+      unsubs.push(() => locInfo.remove())
+    })().catch((e) => console.error(e))
 
     return () => {
       unsubs.forEach((u) => u())

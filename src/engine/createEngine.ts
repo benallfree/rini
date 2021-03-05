@@ -2,7 +2,7 @@ import { auth } from '../app/firebase'
 import { CallemUnsubscriber } from '../callem'
 import { nanoid } from '../nanoid'
 import { createRealtimeStorageProvider } from './FirebaseRealtimeDatabaseProvider/provider'
-import { createStore, Point } from './store'
+import { Bearing, createStore } from './store'
 
 interface Config {
   uid?: string
@@ -33,7 +33,7 @@ export const createEngine = (config: Config) => {
   return {
     ...store,
     onNearbyEntityHit: store.onNearbyEntityHit,
-    updatePlayerPosition: (position: Point) => {
+    updatePlayerPosition: (position: Bearing) => {
       const uid = config.uid ?? auth.currentUser?.uid
       if (!uid) {
         throw new Error(`Attempted to update player position before UID was known`)

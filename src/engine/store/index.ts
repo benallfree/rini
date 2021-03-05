@@ -10,11 +10,13 @@ export interface Point {
   longitude: number
 }
 
-export interface PointInTime extends Point {
+export interface Bearing extends Point {
+  heading: number
+  speed: number
   time: number
 }
 
-export interface Entity extends PointInTime {
+export interface Entity extends Bearing {
   id: string
 }
 
@@ -32,13 +34,15 @@ export interface NearbyEntitiesById {
 
 interface RootState {
   uid?: string
-  position?: Point
+  position?: Bearing
   nearbyEntitiesById: NearbyEntitiesById
 }
 
 export type Setter<T> = (e: T) => void
 type Unwatcher = () => void
 type Watcher<T> = (cb: Setter<T>) => Unwatcher
+
+export type Selector<T> = (state: RootState) => T
 
 export const ENTITY_TTL = 5000
 export const MAX_HIT_DISTAANCE = 20 // 20 meters
@@ -48,12 +52,12 @@ export const createStore = () => {
     nearbyEntitiesById: {},
   }
 
-  const [onPlayerPositionUpdated, emitPlayerPositionUpdated] = callem<Point>()
+  const [onPlayerPositionUpdated, emitPlayerPositionUpdated] = callem<Bearing>()
   const [onNearbyEntityAdded, emitNearbyEntityAdded] = callem<NearbyEntity>()
   const [onNearbyEntityHit, emitNearbyEntityHit] = callem<NearbyEntity>()
   const [onNearbyEntityRemoved, emitNearbyEntityRemoved] = callem<NearbyEntity>()
 
-  const watchPlayerPosition: Watcher<Point | undefined> = (setter) => {
+  const watchPlayerPosition: Watcher<Bearing | undefined> = (setter) => {
     const unsub = onPlayerPositionUpdated(setter)
     setTimeout(() => setter(state.position), 0)
     return unsub
@@ -161,9 +165,9 @@ export const createStore = () => {
     state.uid = uid
   }
 
-  const updatePlayerPosition = (_position: Point) => {
+  const updatePlayerPosition = (_position: Bearing) => {
     const oldPos = state.position
-    const newPos = pick(_position, 'longitude', 'latitude')
+    const newPos = pick(_position, 'longitude', 'latitude', 'heading', 'time', 'speed')
     if (isEqual(oldPos, newPos)) return
     state.position = newPos
     emitPlayerPositionUpdated(newPos)
@@ -171,7 +175,7 @@ export const createStore = () => {
 
   const api = {
     setPlayerUid,
-    select: <T>(cb: (state: RootState) => T) => cb(state),
+    select: <T>(cb: Selector<T>) => cb(state),
     onPlayerPositionUpdated,
     onNearbyEntityHit,
     updatePlayerPosition,

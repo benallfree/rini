@@ -11,18 +11,18 @@ export const createStaticRouteLocationService = (points: GpxRoute) => {
     const rs = createRouteService(points)
     const next = rs.makeRoute(15, 500)
     let tid: ReturnType<typeof setTimeout>
-    const update = async () => {
-      const { lat, lng, distanceFromLast } = next()
+    const update = () => {
+      const { latitude, longitude, heading, speed } = next()
       handleLocationChanged({
         location: {
           coords: {
-            latitude: lat,
-            longitude: lng,
+            latitude,
+            longitude,
             altitude: 0,
             accuracy: 0,
             altitudeAccuracy: 0,
-            speed: 15,
-            heading: 0,
+            speed,
+            heading,
           },
           timestamp: +new Date(),
         },

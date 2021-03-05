@@ -2,7 +2,7 @@ import { forEach } from '@s-libs/micro-dash'
 import firebase from 'firebase'
 import { limiter } from '.'
 import { callem } from '../../callem'
-import { Entity, ENTITY_TTL, Point, PointInTime } from '../store'
+import { Bearing, Entity, ENTITY_TTL, Point } from '../store'
 import { getHashesNear } from './getHashesNear'
 interface Watcher {
   count: number
@@ -21,7 +21,7 @@ export const createGridWatcher = () => {
   const [onEntityUpdated, fireEntityUpdated] = callem<Entity>()
 
   const handleChildAdded = (snap: firebase.database.DataSnapshot) => {
-    const data = snap.val() as PointInTime
+    const data = snap.val() as Bearing
     if (!snap.key) throw new Error(`Snapshot has no key on child added`)
     const id = snap.key
     const age = +new Date() - data.time
@@ -35,7 +35,7 @@ export const createGridWatcher = () => {
     // console.log('added', { data, snap })
   }
   const handleChildChanged = (snap: firebase.database.DataSnapshot) => {
-    const data = snap.val() as PointInTime
+    const data = snap.val() as Bearing
     if (!snap.key) throw new Error(`Snapshot has no key on child added`)
     fireEntityUpdated({ ...data, id: snap.key })
     // console.log('changed', { data }, snap.key)
