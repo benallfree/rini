@@ -7,6 +7,7 @@ import { Point } from '../../../engine/store/types'
 import { engine } from '../../engine'
 import { usePlayerPosition } from '../../hooks'
 import { Me } from './Me'
+import { Nearby } from './Nearby'
 import { Others } from './Others'
 
 export const Reset: FC<{
@@ -20,7 +21,7 @@ export const Reset: FC<{
     size: 50,
     ...props,
   }
-  const iconSize = size * 0.8
+  const iconSize = size * 0.5
   const leftTop = (size - iconSize) / 2
   return (
     <View style={{ width: size, height: size }}>
@@ -32,8 +33,8 @@ export const Reset: FC<{
           width: size,
           height: size,
         }}></View>
-      <View style={{ position: 'absolute', top: leftTop, left: leftTop + 1 }}>
-        <Icon type="font-awesome-5" name="compass" onPress={onPress} size={iconSize} />
+      <View style={{ position: 'absolute', top: leftTop, left: leftTop - 1 }}>
+        <Icon type="font-awesome-5" name="location-arrow" onPress={onPress} size={iconSize} />
       </View>
     </View>
   )
@@ -70,7 +71,15 @@ export const Map: FC = () => {
 
     const handleReset = () => {
       mapState.current.isAutoTracking = true
-      mapRef.current?.animateCamera({ center: mapState.current.location, zoom: 20, altitude: 5000 })
+      const { location } = mapState.current
+      if (!location) return
+      const { latitude, longitude } = location
+      mapRef.current?.animateToRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.0082,
+        longitudeDelta: 0.0081,
+      })
     }
 
     const handlePanDrag = () => {
@@ -99,8 +108,17 @@ export const Map: FC = () => {
           <Me />
           <Others />
         </MapView>
-        <View style={{ position: 'absolute', right: 15, top: 50 }}>
+        <View style={{ position: 'absolute', left: 15, bottom: 10 }}>
           <Reset onPress={handleReset} isActive={mapState.current.isAutoTracking} />
+        </View>
+        <View
+          style={{
+            position: 'absolute',
+            left: 70,
+            bottom: 25,
+            width: 200,
+          }}>
+          <Nearby />
         </View>
       </View>
     )
