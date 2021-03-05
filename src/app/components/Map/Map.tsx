@@ -35,13 +35,13 @@ export const Map: FC = () => {
       mapState.current.camera = {
         ...mapState.current.camera,
         center: { latitude, longitude },
-        heading,
+        heading: heading !== null ? heading : mapState.current.camera.heading,
       }
       // console.log('mapState', mapState.current)
       if (!mapState.current.isAutoTracking) return
-      mapRef.current?.animateCamera({
+      mapRef.current?.setCamera({
         ...mapState.current.camera,
-        heading: mapState.current.mode === 'overview' ? 0 : heading + 75,
+        heading: mapState.current.mode === 'overview' ? 0 : mapState.current.camera.heading + 70,
       })
     })
     return unsub

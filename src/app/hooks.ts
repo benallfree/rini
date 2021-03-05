@@ -46,7 +46,7 @@ export const usePlayerPosition = () => {
 export const useHasPlayerPosition = () => {
   const [hasPosition, setHasPosition] = useState(engine.select((state) => !!state.position))
   useEffect(() => {
-    return engine.watchPlayerPosition((bearing) => defer(() => setHasPosition(!!bearing)))
+    return engine.watchPlayerPosition(defer((bearing) => setHasPosition(!!bearing)))
   }, [])
 
   return hasPosition
