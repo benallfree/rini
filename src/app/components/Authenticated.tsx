@@ -1,5 +1,6 @@
 import firebase from 'firebase'
 import React, { FC, useEffect, useState } from 'react'
+import { unstable_batchedUpdates } from 'react-native'
 import { Text } from 'react-native-elements'
 import { engine } from '../engine'
 import { auth } from '../firebase'
@@ -12,15 +13,18 @@ export const Authenticated: FC = ({ children }) => {
   useEffect(() => {
     // auth.signOut()
     const unsub = auth.onAuthStateChanged((user: firebase.User | null) => {
-      console.log('auth state', { user })
-      setFirstTime(false)
+      unstable_batchedUpdates(() => {
+        setFirstTime(false)
 
-      if (!user) return
-      setIsReady(true)
-      engine.setPlayerUid(user.uid)
-      engine.start()
+        if (!user) return
+        setIsReady(true)
+        engine.setPlayerUid(user.uid)
+        engine.start()
+      })
     })
-    return unsub // unsubscribe on unmount
+    return () => {
+      unsub() // unsubscribe on unmount
+    }
   }, [])
 
   if (firstTime) return <Text h1>Authenticating...</Text>
@@ -29,6 +33,5 @@ export const Authenticated: FC = ({ children }) => {
     return <PhoneSignIn />
   }
 
-  console.log('Authenticated')
   return <>{children}</>
 }
