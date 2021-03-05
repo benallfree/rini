@@ -33,17 +33,20 @@ export const createRouteService = (points: GpxRoute) => {
     })()
     let idx = 0
 
+    const nextIdx = (idx: number) => {
+      return idx + 1 >= final.length ? 0 : idx + 1
+    }
+
     const next = (): Bearing => {
       const oldIdx = idx
-      idx++
-      if (idx >= final.length) idx = 0
-      const ending: Coord = {
-        type: 'Point',
-        coordinates: [final[idx].latitude, final[idx].longitude],
-      }
+      idx = nextIdx(idx)
       const starting: Coord = {
         type: 'Point',
-        coordinates: [final[oldIdx].latitude, final[oldIdx].longitude],
+        coordinates: [final[idx].longitude, final[idx].latitude],
+      }
+      const ending: Coord = {
+        type: 'Point',
+        coordinates: [final[nextIdx(idx)].longitude, final[nextIdx(idx)].latitude],
       }
       return {
         ...final[idx],

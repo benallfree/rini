@@ -5,7 +5,7 @@ import gpxParser from 'gpxparser'
 import { dirname, resolve } from 'path'
 
 const gpxData = readFileSync(
-  resolve(dirname(__filename), '../src/bot/gpx/BrightonLoop.gpx')
+  resolve(dirname(__filename), '../src/bot/gpx/AmbroseLoop.gpx')
 ).toString()
 
 const parser = new gpxParser()
@@ -22,4 +22,4 @@ const raw = ${JSON.stringify(points, null, 2)};
 const points = raw.map(p=>({...p, time: new Date(p.time)}));
 export default points;
 `
-writeFileSync(resolve(dirname(__filename), '../src/bot/gpx/parsed/BrightonLoop.ts'), ts)
+writeFileSync(resolve(dirname(__filename), '../src/bot/gpx/parsed/AmbroseLoop.ts'), ts)

@@ -1,10 +1,10 @@
 import prompts from 'prompts'
 import { createBotFileProvider } from './BotFileProvider'
 import { createBotRunner } from './BotRunner'
-import BrightonLoop from './gpx/parsed/BrightonLoop'
+import AmbroseLoop from './gpx/parsed/AmbroseLoop'
 import { createRouteService } from './RouteService'
 
-const rs = createRouteService(BrightonLoop)
+const rs = createRouteService(AmbroseLoop)
 const bd = createBotFileProvider()
 
 ;(async () => {
@@ -29,4 +29,4 @@ const bd = createBotFileProvider()
   }
   let last = +new Date()
   heartbeat()
-})()
+})().catch(console.error)

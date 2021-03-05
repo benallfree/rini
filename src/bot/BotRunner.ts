@@ -13,7 +13,7 @@ admin.initializeApp({
 })
 
 export const createBotRunner = (bot: Bot, routeService: RouteService, mph = 30, updateMs = 500) => {
-  ;(async () => {
+  ;(() => {
     const engine = createEngine({ uid: bot.uid, nanoid })
     engine.setPlayerUid(bot.uid)
     engine.onNearbyEntityHit((e) => {
@@ -27,11 +27,14 @@ export const createBotRunner = (bot: Bot, routeService: RouteService, mph = 30, 
     const next = routeService.makeRoute(Math.random() * 30 + 15, 500)
 
     const move = () => {
-      const { lat, lng, distanceFromLast } = next()
+      const { latitude, longitude, heading, speed } = next()
       // console.log({ lat, lng, distanceFromLast })
       engine.updatePlayerPosition({
-        latitude: lat,
-        longitude: lng,
+        latitude,
+        longitude,
+        heading,
+        speed,
+        time: +new Date(),
       })
       setTimeout(move, updateMs)
     }

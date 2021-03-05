@@ -41,7 +41,7 @@ export const Map: FC = () => {
       if (!mapState.current.isAutoTracking) return
       mapRef.current?.setCamera({
         ...mapState.current.camera,
-        heading: mapState.current.mode === 'overview' ? 0 : mapState.current.camera.heading + 70,
+        heading: mapState.current.mode === 'overview' ? 0 : mapState.current.camera.heading,
       })
     })
     return unsub
