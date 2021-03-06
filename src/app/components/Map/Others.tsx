@@ -18,8 +18,8 @@ const playEnter = (() => {
   return () => limiter.schedule(() => fx.chime.play())
 })()
 
-const LAST_SEEN_TTL = 5000
-const LAST_AWARDED_TTL = 5000
+const LAST_SEEN_TTL = 500000
+const LAST_AWARDED_TTL = 500000
 
 const api = (() => {
   const seen: { [_: string]: { lastAwarded: number; lastAppeared: number; lastSeen: number } } = {}

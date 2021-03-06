@@ -42,7 +42,7 @@ export type Setter<T> = (e: T) => void
 type Unwatcher = () => void
 type Watcher<T> = (cb: Setter<T>) => Unwatcher
 
-export type Selector<T> = (state: RootState) => T
+export type Selector<T, S> = (state: S) => T
 
 export const ENTITY_TTL = 5000
 export const MAX_HIT_DISTAANCE = 20 // 20 meters
@@ -175,7 +175,7 @@ export const createStore = () => {
 
   const api = {
     setPlayerUid,
-    select: <T>(cb: Selector<T>) => cb(state),
+    select: <T>(cb: Selector<T, RootState>) => cb(state),
     onPlayerPositionUpdated,
     onNearbyEntityHit,
     updatePlayerPosition,
