@@ -1,4 +1,5 @@
 import React, { FC, useMemo } from 'react'
+import { View } from 'react-native'
 import { Image, Text } from 'react-native-elements'
 import { Marker } from 'react-native-maps'
 import Pulse from 'react-native-pulse'
@@ -32,9 +33,17 @@ export const Me: FC = () => {
           style={{ width: 32, height: 32 }}
           resizeMode="contain"
         />
-        <Text>La{location.latitude}</Text>
-        <Text>Lo{location.longitude}</Text>
-        <Text>H{location.heading}</Text>
+        <View style={{ position: 'absolute', width: 300, height: 50, top: 40, left: -80 }}>
+          <Text style={{ fontFamily: 'Courier' }}>
+            La {location.latitude.toString().padEnd(20, '0')}
+          </Text>
+          <Text style={{ fontFamily: 'Courier' }}>
+            Lo {location.longitude.toString().padEnd(20, '0')}
+          </Text>
+          <Text style={{ fontFamily: 'Courier' }}>
+            He {location.heading?.toString().padEnd(20, '0')}
+          </Text>
+        </View>
       </Marker>
     </>
   )

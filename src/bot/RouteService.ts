@@ -23,33 +23,37 @@ export const createRouteService = (points: GpxRoute) => {
       totalPoints
     ).map(([lat, lng]) => ({ latitude: lat, longitude: lng }))
 
-    const splitIdx = _splitIdx ?? Math.floor(Math.random() * interpolated.length - 1)
-    const a = interpolated.slice(0, splitIdx)
-    const b = interpolated.slice(splitIdx)
-    const final = (() => {
-      const final = [...b, ...a]
-      if (Math.random() > 0.5) return final
-      return final.reverse()
-    })()
-    let idx = 0
+    let idx = Math.floor(Math.random() * interpolated.length)
+    let delta = Math.random() > 0.5 ? 1 : -1
 
-    const nextIdx = (idx: number) => {
-      return idx + 1 >= final.length ? 0 : idx + 1
+    const nextIdx = (idx: number, peek = false) => {
+      const newIdx = idx + delta
+      if (newIdx < 0) {
+        if (!peek) delta = delta * -1
+        return 0
+      }
+      if (newIdx >= interpolated.length) {
+        if (!peek) delta = delta * -1
+        return interpolated.length - 1
+      }
+      return idx + delta
     }
 
     const next = (): Bearing => {
-      const oldIdx = idx
       idx = nextIdx(idx)
       const starting: Coord = {
         type: 'Point',
-        coordinates: [final[idx].longitude, final[idx].latitude],
+        coordinates: [interpolated[idx].longitude, interpolated[idx].latitude],
       }
       const ending: Coord = {
         type: 'Point',
-        coordinates: [final[nextIdx(idx)].longitude, final[nextIdx(idx)].latitude],
+        coordinates: [
+          interpolated[nextIdx(idx, true)].longitude,
+          interpolated[nextIdx(idx, true)].latitude,
+        ],
       }
       return {
-        ...final[idx],
+        ...interpolated[idx],
         time: +new Date(),
         speed: mph,
         heading: bearing(starting, ending),
