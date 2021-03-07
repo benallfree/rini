@@ -1,6 +1,7 @@
+import { clone } from '@s-libs/micro-dash'
 import { useEffect, useState } from 'react'
 import { unstable_batchedUpdates } from 'react-native'
-import { NearbyEntity, Setter } from '../engine/store'
+import { NearbyEntity, Selector, Setter } from '../engine/store'
 import { engine } from './engine'
 
 const batchCalls: (() => void)[] = []
@@ -50,4 +51,17 @@ export const useHasPlayerPosition = () => {
   }, [])
 
   return hasPosition
+}
+
+export const useSelect = <TRet extends any>(cb: Selector<TRet>) => {
+  const [value, setValue] = useState(engine.select(cb))
+  useEffect(() => {
+    return engine.onStateChanged(defer((state) => setValue(clone(cb(state)))))
+  }, [cb])
+
+  return value
+}
+
+export const useUid = () => {
+  return useSelect((state) => state.uid)
 }

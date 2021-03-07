@@ -1,5 +1,6 @@
 import { isEqual, keys, pick } from '@s-libs/micro-dash'
 import { getDistance } from 'geolib'
+import { IdenticonKey } from '../../app/components/Map/Identicon'
 import { callem, CallemEmitter, CallemSubscriber, CallemUnsubscriber } from '../../callem'
 import { throttle } from './throttle'
 
@@ -32,7 +33,17 @@ export interface NearbyEntitiesById {
   [_: string]: NearbyEntityWithTtl
 }
 
-interface RootState {
+export interface Profile {
+  avatar: {
+    type: IdenticonKey
+    salts: {
+      [_ in IdenticonKey]: string
+    }
+  }
+}
+
+export interface RootState {
+  profile: Profile
   uid?: string
   position?: Bearing
   nearbyEntitiesById: NearbyEntitiesById
@@ -42,16 +53,33 @@ export type Setter<T> = (e: T) => void
 type Unwatcher = () => void
 type Watcher<T> = (cb: Setter<T>) => Unwatcher
 
-export type Selector<T, S> = (state: S) => T
+export type Selector<T, S = RootState> = (state: S) => T
 
 export const ENTITY_TTL = 5000
 export const MAX_HIT_DISTAANCE = 20 // 20 meters
 
+export const DEFAULT_PROFILE: Profile = {
+  avatar: {
+    type: 'bottts',
+    salts: {
+      avataaars: Math.random().toString(),
+      bottts: Math.random().toString(),
+      female: Math.random().toString(),
+      gridy: Math.random().toString(),
+      human: Math.random().toString(),
+      identicon: Math.random().toString(),
+      male: Math.random().toString(),
+    },
+  },
+}
+
 export const createStore = () => {
   const state: RootState = {
+    profile: DEFAULT_PROFILE,
     nearbyEntitiesById: {},
   }
 
+  const [onStateChanged, emitStateChanged] = callem<RootState>()
   const [onPlayerPositionUpdated, emitPlayerPositionUpdated] = callem<Bearing>()
   const [onNearbyEntityAdded, emitNearbyEntityAdded] = callem<NearbyEntity>()
   const [onNearbyEntityHit, emitNearbyEntityHit] = callem<NearbyEntity>()
@@ -142,7 +170,7 @@ export const createStore = () => {
       }, ENTITY_TTL),
       distance: getDistance(position, entity),
     }
-    state.nearbyEntitiesById[id] = newEntity
+    update((state) => (state.nearbyEntitiesById[id] = newEntity))
 
     // Send out notifications
     if (!oldEntity) {
@@ -169,11 +197,18 @@ export const createStore = () => {
     const oldPos = state.position
     const newPos = pick(_position, 'longitude', 'latitude', 'heading', 'time', 'speed')
     if (isEqual(oldPos, newPos)) return
-    state.position = newPos
+    update((state) => (state.position = newPos))
     emitPlayerPositionUpdated(newPos)
   }
 
+  const update = (cb: Selector<void, RootState>) => {
+    cb(state)
+    emitStateChanged(state)
+  }
+
   const api = {
+    update,
+    onStateChanged,
     setPlayerUid,
     select: <T>(cb: Selector<T, RootState>) => cb(state),
     onPlayerPositionUpdated,

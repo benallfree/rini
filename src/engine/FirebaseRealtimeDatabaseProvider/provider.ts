@@ -1,5 +1,6 @@
+import { IdenticonKey } from '../../app/components/Map/Identicon'
 import { db } from '../../app/firebase'
-import { ENTITY_TTL, Point, Timeout } from '../store'
+import { Bearing, ENTITY_TTL, Profile, Timeout } from '../store'
 import { Config, limiter, NoncedPointInTime } from './index'
 import { createGridWatcher } from './watchGrid'
 
@@ -19,8 +20,8 @@ export const createRealtimeStorageProvider = (config: Config) => {
   })()
 
   let oldCenter: string
-  const setPosition = async (uid: string, position: Point) => {
-    const { latitude, longitude } = position
+  const setPosition = async (uid: string, position: Bearing) => {
+    const { latitude, longitude, heading, speed } = position
     const nonce = await nanoid()
 
     const hash = updateWatchGrid(position, oldCenter)
@@ -35,16 +36,45 @@ export const createRealtimeStorageProvider = (config: Config) => {
       longitude,
       time: +new Date(),
       nonce,
+      heading,
+      speed,
     }
-    limiter
+    return limiter
       .schedule(() => {
         return db.ref(path).set(update)
       })
-      .catch((e) => console.error(`Error on setPosition()`, e))
-    setTtl(path)
+      .then(() => setTtl(path))
+  }
+
+  const setAvatarSalt = (uid: string, type: IdenticonKey, salt: string) => {
+    return limiter.schedule(() => {
+      return db.ref(`profiles/${uid}/avatar/salts/${type}`).set(salt)
+    })
+  }
+
+  const setAvatarType = (uid: string, type: IdenticonKey) => {
+    return limiter.schedule(() => {
+      return db.ref(`profiles/${uid}/avatar/type`).set(type)
+    })
+  }
+
+  const getProfile = (uid: string) => {
+    return limiter.schedule(() => {
+      return db.ref(`profiles`).child(uid).once('value')
+    })
+  }
+
+  const setProfile = (uid: string, profile: Profile) => {
+    return limiter.schedule(() => {
+      return db.ref(`profiles/${uid}`).set(profile)
+    })
   }
 
   return {
+    getProfile,
+    setProfile,
+    setAvatarType,
+    setAvatarSalt,
     setPosition,
     onEntityUpdated,
   }

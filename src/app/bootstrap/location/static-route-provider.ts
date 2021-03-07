@@ -8,7 +8,7 @@ export type LocationChangedEvent = {
 
 export const createStaticRouteLocationService = (points: GpxRoute) => {
   const startLocating = (handleLocationChanged: CallemHandler<LocationChangedEvent>) => {
-    const rs = createRouteService(points)
+    const rs = createRouteService([points])
     const next = rs.makeRoute(15, 500)
     let tid: ReturnType<typeof setTimeout>
     const update = () => {

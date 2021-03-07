@@ -1,3 +1,4 @@
+import { sample } from '@s-libs/micro-dash'
 import { Coord } from '@turf/helpers'
 import { bearing } from '@turf/turf'
 import { getDistance } from 'geolib'
@@ -8,8 +9,9 @@ import { Bearing, Point } from '../engine/store'
 export type GpxPoint = gpxParser.Point
 export type GpxRoute = GpxPoint[]
 
-export const createRouteService = (points: GpxRoute) => {
+export const createRouteService = (routes: GpxRoute[]) => {
   const makeRoute = (mph: number, updateMs: number, _splitIdx?: number) => {
+    const points = sample(routes)
     const metersPerSecond = mph / 2.237
     const metersPerUpdate = metersPerSecond / (1000 / updateMs)
 

@@ -1,14 +1,16 @@
 import React, { FC, useMemo } from 'react'
 import { View } from 'react-native'
-import { Image, Text } from 'react-native-elements'
+import { Text } from 'react-native-elements'
 import { Marker } from 'react-native-maps'
 import Pulse from 'react-native-pulse'
-import { BundledImages } from '../../assets/images'
-import { usePlayerPosition } from '../../hooks'
+import { usePlayerPosition, useUid } from '../../hooks'
+import { useAvatar } from './Settings/useAvatar'
 
 export const Me: FC = () => {
+  const uid = useUid()
+  const { Avatar } = useAvatar(32)
   const location = usePlayerPosition()
-  console.log('Me', location)
+  // console.log('Me', location)
   const P = useMemo(
     () => (
       <Pulse
@@ -22,17 +24,13 @@ export const Me: FC = () => {
     ),
     []
   )
-  if (!location) return null
+  if (!location || !uid) return null
 
   return (
     <>
       <Marker coordinate={location} title={'Me'} description={'My Location'} zIndex={1000}>
         {P}
-        <Image
-          source={BundledImages.Tesla}
-          style={{ width: 32, height: 32 }}
-          resizeMode="contain"
-        />
+        <Avatar />
         <View style={{ position: 'absolute', width: 300, height: 50, top: 40, left: -80 }}>
           <Text style={{ fontFamily: 'Courier' }}>
             La {location.latitude.toString().padEnd(20, '0')}
