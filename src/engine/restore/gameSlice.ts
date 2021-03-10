@@ -6,9 +6,11 @@ import { NearbyEntitiesById, NearbyEntity } from './types'
 
 export interface SliceState {
   isReady: boolean
-  uid?: string
-  profile: Profile
-  position?: Bearing
+  player: {
+    uid?: string
+    profile?: Profile
+    position?: Bearing
+  }
   nearbyEntitiesById: NearbyEntitiesById
 }
 
@@ -30,7 +32,7 @@ export const DEFAULT_PROFILE: Profile = {
 export const createGameSlice = () => {
   const initialState: SliceState = {
     isReady: false,
-    profile: DEFAULT_PROFILE,
+    player: {},
     nearbyEntitiesById: {},
   }
 
@@ -38,28 +40,36 @@ export const createGameSlice = () => {
     name: 'game',
     initialState,
     reducers: {
-      engineReady: (state) => {
-        state.isReady = true
+      engineReady: (state, action: PayloadAction<boolean>) => {
+        state.isReady = action.payload
       },
       uidKnown: (state, action: PayloadAction<EntityId>) => {
-        state.uid = action.payload
+        state.player.uid = action.payload
       },
       userProfileUpdated: (state, action: PayloadAction<Profile>) => {
-        state.profile = action.payload
+        state.player.profile = action.payload
       },
       avatarSaltUpdated: (
         state,
         action: PayloadAction<{ type: IdenticonKey; salt: AvatarSalt }>
       ) => {
         const { type, salt } = action.payload
-        state.profile.avatar.salts[type] = salt
+        const { profile } = state.player
+        if (!profile) {
+          throw new Error(`Profile must be valid to set avatar salt`)
+        }
+        profile.avatar.salts[type] = salt
       },
       avatarTypeUpdated: (state, action: PayloadAction<IdenticonKey>) => {
         const type = action.payload
-        state.profile.avatar.type = type
+        const { profile } = state.player
+        if (!profile) {
+          throw new Error(`Profile must be valid to set avatar type`)
+        }
+        profile.avatar.type = type
       },
       playerPositionUpdated: (state, action: PayloadAction<Bearing>) => {
-        state.position = action.payload
+        state.player.position = action.payload
         forEach(state.nearbyEntitiesById, (e) => {
           e.distance = getDistance(action.payload, e)
         })
