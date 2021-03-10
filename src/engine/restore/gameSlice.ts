@@ -5,8 +5,6 @@ import { AvatarSalt, Bearing, EntityId, IdenticonKey, Profile } from '../Databas
 import { NearbyEntitiesById, NearbyEntity } from './types'
 
 export interface SliceState {
-  hasErrors: boolean
-  errors: Error[]
   isReady: boolean
   uid?: string
   profile: Profile
@@ -31,8 +29,6 @@ export const DEFAULT_PROFILE: Profile = {
 
 export const createGameSlice = () => {
   const initialState: SliceState = {
-    hasErrors: false,
-    errors: [],
     isReady: false,
     profile: DEFAULT_PROFILE,
     nearbyEntitiesById: {},
@@ -42,10 +38,6 @@ export const createGameSlice = () => {
     name: 'game',
     initialState,
     reducers: {
-      errorOccurred: (state, action: PayloadAction<Error>) => {
-        state.hasErrors = true
-        state.errors.push(action.payload)
-      },
       engineReady: (state) => {
         state.isReady = true
       },

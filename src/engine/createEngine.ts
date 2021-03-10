@@ -24,7 +24,6 @@ export const createEngine = (config: Config) => {
   const { actions, dispatch, getState, subscribe } = store
 
   const {
-    errorOccurred,
     uidKnown,
     userProfileUpdated,
     engineReady,
