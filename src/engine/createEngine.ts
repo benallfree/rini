@@ -1,12 +1,11 @@
 import deepmerge from 'deepmerge'
-import firebase from 'firebase/app'
 import 'firebase/auth'
 import { getDistance } from 'geolib'
 import { callem } from '../callem'
 import { AvatarSalt, Bearing, EntityId, IdenticonKey, Profile } from './Database'
 import { EntityUpdatedEvent, StorageProvider } from './FirebaseRealtimeDatabaseProvider'
-import { DeferredDispatchHandler, makeDeferredDispatch, StoreProvider } from './restore'
-
+import { DeferredDispatchHandler, makeDeferredDispatch, RootState, StoreProvider } from './restore'
+import { DEFAULT_PROFILE } from './restore/gameSlice'
 export const MAX_HIT_DISTAANCE = 20 // 20 meters
 
 export const ENTITY_TTL = 5000
@@ -41,7 +40,7 @@ export const createEngine = (config: Config) => {
     onDeferredDispatch,
   })
 
-  const updateEntity = (() => {
+  const handleEntityUpdated = (() => {
     const positionTimeouts: { [_ in EntityId]: Timeout } = {}
 
     return (e: EntityUpdatedEvent) => {
@@ -64,7 +63,7 @@ export const createEngine = (config: Config) => {
         gc().catch(console.error)
         deferredDispatch(() => dispatch(nearbyEntityRemoved(id)))
       }, ENTITY_TTL)
-      const playerPosition = getState().game.position
+      const playerPosition = getState().game.player.position
       if (!playerPosition) {
         throw new Error(`Player position must be known before updating nearby entity`)
       }
@@ -90,6 +89,20 @@ export const createEngine = (config: Config) => {
   
   @returns stop()
   */
+  const observe = <T extends any>(
+    selector: (state: RootState) => T,
+    next: (state: RootState, oldValue: T, newValue: T) => void
+  ) => {
+    let oldValue: T = selector(getState())
+    const unsub = subscribe(() => {
+      const newValue = selector(getState())
+      next(getState(), oldValue, newValue)
+      oldValue = newValue
+    })
+    next(getState(), oldValue, selector(getState()))
+    return unsub
+  }
+
   const start = (() => {
     let isStarting = false
     return async () => {
@@ -97,38 +110,41 @@ export const createEngine = (config: Config) => {
       isStarting = true
 
       try {
-        // Get the uid and begin watching it
-        const uid = await (async () => {
-          if (config.uid) return config.uid
-          return new Promise<EntityId>((resolve) => {
-            const { uid } = firebase.auth().currentUser ?? {}
-            if (uid) {
-              dispatch(uidKnown(uid))
-              resolve(uid)
+        // Wait for UID and position before continuing
+        await new Promise<void>((resolve) => {
+          console.log('Engine waiting for position and UID')
+          const unsub = observe(
+            (state) => ({
+              hasUid: !!state.game.player.uid,
+              hasPosition: !!state.game.player.position,
+            }),
+            (state, oldValue, newValue) => {
+              const { hasUid, hasPosition } = newValue
+              console.log(`Checking for UID and position`, { hasUid, hasPosition })
+              if (hasUid && hasPosition) {
+                unsub()
+                resolve()
+              }
             }
-            firebase.auth().onAuthStateChanged((user) => {
-              const { uid } = user ?? {}
-              if (!uid) return
-              dispatch(uidKnown(uid))
-              resolve(uid)
-            })
-          })
-        })()
-        console.log('Got UID', uid)
+          )
+        })
 
         // Initialize the user's profile
-        const defaultProfile = getState().game.profile
-        const dbProfile = (await storage.getProfile(uid)) as Partial<Profile> | null
+        console.log(`Initializing user profile`)
+        const defaultProfile = DEFAULT_PROFILE
+        const dbProfile = (await storage.getProfile(uidOrDie())) as Partial<Profile> | null
         const realProfile = deepmerge(defaultProfile, dbProfile ?? {})
-        await storage.setProfile(uid, realProfile)
+        await storage.setProfile(uidOrDie(), realProfile)
         dispatch(userProfileUpdated(realProfile))
         console.log('initialized profile', realProfile)
 
         // Begin listening for nearby enttity updates
-        storage.onEntityUpdated(updateEntity)
+        storage.onEntityUpdated(handleEntityUpdated)
         console.log('listening for entity updates')
 
-        dispatch(engineReady())
+        dispatch(engineReady(true))
+
+        // Monitor engine rediness
       } catch (e) {
         console.error(e)
       }
@@ -136,7 +152,7 @@ export const createEngine = (config: Config) => {
   })()
 
   const uidOrDie = () => {
-    const uid = config.uid ?? getState().game.uid
+    const uid = config.uid ?? getState().game.player.uid
     if (!uid) {
       throw new Error(`Attempted to update player position before UID was known`)
     }
