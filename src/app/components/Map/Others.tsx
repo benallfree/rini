@@ -38,7 +38,7 @@ const api = (() => {
       playEnter().catch(console.error)
     }
     e.lastSeen = now
-    const distance = engine.select((state) => state.nearbyEntitiesById[id].distance)
+    const distance = engine.getState().game.nearbyEntitiesById[id].distance
     if (distance < 30 && now - e.lastAwarded > LAST_AWARDED_TTL) {
       playScore().catch(console.error)
       e.lastAwarded = now

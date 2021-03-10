@@ -30,7 +30,7 @@ export const Located: FC = ({ children }) => {
       setHasLocation(true)
       const { uid } = auth.currentUser ?? {}
       if (uid) {
-        engine.updatePlayerPosition({ ...coords, time: +new Date() })
+        engine.updatePlayerPosition({ ...coords })
       } else {
         // console.log('got location, awaiting uid', location)
       }

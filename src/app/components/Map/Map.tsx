@@ -1,26 +1,36 @@
 import React, { FC, useEffect, useRef } from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import MapView, { Camera } from 'react-native-maps'
+import { callem } from '../../../callem'
 import { engine } from '../../engine'
+import { useAppStore } from '../../hooks'
 import { Controls } from './Controls'
 import { Me } from './Me'
 import { Others } from './Others'
+import { Overlay } from './Overlay'
 
 const OVERVIEW = { pitch: 0, zoom: 0, altitude: 4000 }
 const DRIVING = { pitch: 50, zoom: 0, altitude: 500 }
 
 export const Map: FC = () => {
-  const center = engine.select((state) => state.position)
+  const isFollowingRef = useRef(
+    (() => {
+      const [on, emit] = callem<boolean>()
+      return { onIsFollowing: on, emitIsFollowing: emit }
+    })()
+  )
+  const store = useAppStore()
+  const center = store.getState().game.position
   if (!center) {
     throw new Error(`Map cannot be renered until player position is known`)
   }
   const mapState = useRef<{
     mode: 'overview' | 'driving'
-    isAutoTracking: boolean
+    isFollowing: boolean
     camera: Camera
   }>({
     mode: 'overview',
-    isAutoTracking: true,
+    isFollowing: true,
     camera: {
       center,
       heading: 0,
@@ -29,7 +39,8 @@ export const Map: FC = () => {
   })
 
   useEffect(() => {
-    const unsub = engine.watchPlayerPosition((bearing) => {
+    const unsub = engine.onPlayerPositionChanged((bearing) => {
+      console.log('position updated', bearing)
       if (!bearing) return
       const { latitude, longitude, heading } = bearing
       mapState.current.camera = {
@@ -38,7 +49,7 @@ export const Map: FC = () => {
         heading: heading !== null ? heading : mapState.current.camera.heading,
       }
       // console.log('mapState', mapState.current)
-      if (!mapState.current.isAutoTracking) return
+      if (!mapState.current.isFollowing) return
       mapRef.current?.setCamera({
         ...mapState.current.camera,
         heading: mapState.current.mode === 'overview' ? 0 : mapState.current.camera.heading,
@@ -51,25 +62,30 @@ export const Map: FC = () => {
 
   console.log('Map')
 
+  const resetToFollowing = () => {
+    mapState.current.isFollowing = true
+    mapRef.current?.animateCamera(mapState.current.camera)
+    isFollowingRef.current.emitIsFollowing(true)
+  }
+
   const handleResetToOverview = () => {
     console.log('resetting to overview')
-    mapState.current.isAutoTracking = true
     mapState.current.mode = 'overview'
     mapState.current.camera = { ...mapState.current.camera, ...OVERVIEW, heading: 0 }
-    mapRef.current?.animateCamera(mapState.current.camera)
+    resetToFollowing()
   }
 
   const handleResetToDriving = () => {
     console.log('resetting to driving')
-    mapState.current.isAutoTracking = true
     mapState.current.mode = 'driving'
     mapState.current.camera = { ...mapState.current.camera, ...DRIVING }
-    mapRef.current?.animateCamera(mapState.current.camera)
+    resetToFollowing()
   }
 
   const handlePanDrag = () => {
     console.log('not tracking')
-    mapState.current.isAutoTracking = false
+    mapState.current.isFollowing = false
+    isFollowingRef.current.emitIsFollowing(false)
   }
 
   return (
@@ -103,6 +119,10 @@ export const Map: FC = () => {
           height={200}
         />
       </View>
+      <Overlay
+        startFollowing={() => resetToFollowing()}
+        onIsFollowing={isFollowingRef.current.onIsFollowing}
+      />
     </View>
   )
 }

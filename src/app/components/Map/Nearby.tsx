@@ -1,12 +1,12 @@
 import React, { FC } from 'react'
 import { Text } from 'react-native-elements'
-import { useNearbyEntityIds } from '../../hooks'
+import { useNearbyEntityCount } from '../../hooks'
 
 export const Nearby: FC = () => {
-  const nearbyIds = useNearbyEntityIds()
+  const count = useNearbyEntityCount()
   return (
     <Text h3 style={{ color: 'white', textAlign: 'center' }}>
-      {nearbyIds.length}
+      {count}
     </Text>
   )
 }

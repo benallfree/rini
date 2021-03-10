@@ -15,11 +15,10 @@ export const Authenticated: FC = ({ children }) => {
     const unsub = auth.onAuthStateChanged((user: firebase.User | null) => {
       unstable_batchedUpdates(() => {
         setFirstTime(false)
-
         if (!user) return
         setIsReady(true)
         engine.setPlayerUid(user.uid)
-        engine.start()
+        engine.start().catch(console.error)
       })
     })
     return () => {

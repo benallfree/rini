@@ -1,67 +1,69 @@
-import { clone } from '@s-libs/micro-dash'
-import { useEffect, useState } from 'react'
-import { unstable_batchedUpdates } from 'react-native'
-import { NearbyEntity, Selector, Setter } from '../engine/store'
+import { keys } from '@s-libs/micro-dash'
+import { shallowEqual, TypedUseSelectorHook, useDispatch, useSelector, useStore } from 'react-redux'
+import { AppDispatch, RootState } from '../engine'
+import { EntityId, IdenticonKey } from '../engine/Database'
 import { engine } from './engine'
 
-const batchCalls: (() => void)[] = []
+// Use throughout your app instead of plain `useDispatch` and `useSelector`
+export const useAppDispatch = () => useDispatch<AppDispatch>()
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
+export const useAppStore = () => useStore<RootState>()
 
-const defer = (cb: Setter<any>) => (e: any) => {
-  batchCalls.push(() => cb(e))
-}
-
-const render = () => {
-  unstable_batchedUpdates(() => {
-    batchCalls.forEach((b) => b())
-    batchCalls.length = 0
-  })
-  setTimeout(render, 15)
-}
-render()
-
-export const useNearbyEntityIds = () => {
-  const [entityIds, setEntityIds] = useState<string[]>([])
-  useEffect(() => {
-    return engine.watchNearbyEntityIds(defer(setEntityIds))
-  }, [])
-  return entityIds
-}
-
-export const useNearbyEntityPosition = (id: string) => {
-  const [entity, setEntity] = useState<NearbyEntity>()
-  useEffect(() => {
-    return engine.watchNearbyEntityPosition(id, defer(setEntity))
-  }, [id])
-  return entity
+export const useIsReady = () => {
+  return useAppSelector((state) => state.game.isReady)
 }
 
 export const usePlayerPosition = () => {
-  const [position, setPosition] = useState(engine.select((state) => state.position))
-  useEffect(() => {
-    return engine.watchPlayerPosition(defer(setPosition))
-  }, [])
-
-  return position
+  const latitude = useAppSelector((state) => state.game.position?.latitude) as number
+  const longitude = useAppSelector((state) => state.game.position?.longitude) as number
+  const heading = useAppSelector((state) => state.game.position?.heading) as number
+  return { latitude, longitude, heading }
 }
 
-export const useHasPlayerPosition = () => {
-  const [hasPosition, setHasPosition] = useState(engine.select((state) => !!state.position))
-  useEffect(() => {
-    return engine.watchPlayerPosition(defer((bearing) => setHasPosition(!!bearing)))
-  }, [])
-
-  return hasPosition
+export const useNearbyEntityCount = () => {
+  const len = useAppSelector((state) => keys(state.game.nearbyEntitiesById).length)
+  return len
 }
 
-export const useSelect = <TRet extends any>(cb: Selector<TRet>) => {
-  const [value, setValue] = useState(engine.select(cb))
-  useEffect(() => {
-    return engine.onStateChanged(defer((state) => setValue(clone(cb(state)))))
-  }, [cb])
+export const useNearbyEntityIds = () => {
+  const ids = useAppSelector((state) => keys(state.game.nearbyEntitiesById).sort(), shallowEqual)
+  return ids
+}
 
-  return value
+export const useNearbyEntityPosition = (id: EntityId) => {
+  return useAppSelector((state) => state.game.nearbyEntitiesById[id])
 }
 
 export const useUid = () => {
-  return useSelect((state) => state.uid)
+  return useAppSelector((state) => state.game.uid)
+}
+
+export const useAvatarType = () => {
+  return useAppSelector((state) => state.game.profile.avatar.type)
+}
+
+export const useAvatarSalt = () => {
+  return useAppSelector((state) => state.game.profile.avatar.salts[state.game.profile.avatar.type])
+}
+
+export const usePlayerAvatar = () => {
+  const uid = useUid()
+  const type = useAvatarType()
+  const salt = useAvatarSalt()
+
+  if (!uid) {
+    throw new Error(`UID must be defined here`)
+  }
+
+  return {
+    uid,
+    salt,
+    type,
+    setType: (type: IdenticonKey) => {
+      engine.setAvatarType(type)
+    },
+    recycle: () => {
+      engine.setAvatarSalt(type, Math.random().toString())
+    },
+  }
 }

@@ -1,7 +1,9 @@
+import firebase from 'firebase'
 import { IdenticonKey } from '../../app/components/Map/Identicon'
 import { db } from '../../app/firebase'
-import { Bearing, ENTITY_TTL, Profile, Timeout } from '../store'
-import { Config, limiter, NoncedPointInTime } from './index'
+import { Bearing, NoncedBearing_Write, Profile } from '../Database'
+import { limiter } from './limiter'
+import { Config } from './types'
 import { createGridWatcher } from './watchGrid'
 
 // hb()
@@ -9,18 +11,9 @@ export const createRealtimeStorageProvider = (config: Config) => {
   const { updateWatchGrid, onEntityUpdated } = createGridWatcher()
 
   const { nanoid } = config
-  const setTtl = (() => {
-    const ttls: { [_: string]: Timeout } = {}
-    return (path: string) => {
-      clearTimeout(ttls[path])
-      ttls[path] = setTimeout(() => {
-        limiter.schedule(() => db.ref(path).remove()).catch((e) => console.error(`Error on ttl`, e))
-      }, ENTITY_TTL)
-    }
-  })()
 
   let oldCenter: string
-  const setPosition = async (uid: string, position: Bearing) => {
+  const setEntityPosition = async (uid: string, position: Bearing) => {
     const { latitude, longitude, heading, speed } = position
     const nonce = await nanoid()
 
@@ -31,19 +24,17 @@ export const createRealtimeStorageProvider = (config: Config) => {
     const mkpath = (hash: string) => `grid/${hash}/${uid}`
     const path = mkpath(hash)
     // console.log('broadcastLocation', { position, oldCenter, hash, uid, path })
-    const update: NoncedPointInTime = {
+    const update: NoncedBearing_Write = {
       latitude,
       longitude,
-      time: +new Date(),
+      time: firebase.database.ServerValue.TIMESTAMP,
       nonce,
       heading,
       speed,
     }
-    return limiter
-      .schedule(() => {
-        return db.ref(path).set(update)
-      })
-      .then(() => setTtl(path))
+    return limiter.schedule(() => {
+      return db.ref(path).set(update)
+    })
   }
 
   const setAvatarSalt = (uid: string, type: IdenticonKey, salt: string) => {
@@ -60,7 +51,11 @@ export const createRealtimeStorageProvider = (config: Config) => {
 
   const getProfile = (uid: string) => {
     return limiter.schedule(() => {
-      return db.ref(`profiles`).child(uid).once('value')
+      return db
+        .ref(`profiles`)
+        .child(uid)
+        .once('value')
+        .then((snap) => snap.val() as Profile | null)
     })
   }
 
@@ -75,7 +70,7 @@ export const createRealtimeStorageProvider = (config: Config) => {
     setProfile,
     setAvatarType,
     setAvatarSalt,
-    setPosition,
+    setEntityPosition,
     onEntityUpdated,
   }
 }

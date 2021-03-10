@@ -1,7 +1,7 @@
 import _getHashesNear from 'geohashes-near'
 import Geohash from '../../latlon-geohash'
-import { Point } from '../store'
-import { HASH_PRECISION_HALF_KM, HASH_PRECISION_HALF_M, SEARCH_RADIUS } from '../store/const'
+import { Point } from '../Database'
+import { HASH_PRECISION_HALF_KM, HASH_PRECISION_HALF_M, SEARCH_RADIUS } from '../restore/const'
 
 const hashCache: { [_: string]: string[] } = {}
 

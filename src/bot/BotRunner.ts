@@ -1,6 +1,8 @@
 import * as admin from 'firebase-admin'
 import { dirname, resolve } from 'path'
+import { createRealtimeStorageProvider } from '../engine'
 import { createEngine } from '../engine/createEngine'
+import { createStore } from '../engine/restore'
 import { nanoid } from '../nanoid'
 import { Bot } from './BotFileProvider'
 import { RouteService } from './RouteService'
@@ -12,17 +14,19 @@ admin.initializeApp({
   databaseURL: 'https://rini-1234a-default-rtdb.firebaseio.com',
 })
 
+const storage = createRealtimeStorageProvider({ nanoid })
+
 export const createBotRunner = (bot: Bot, routeService: RouteService, mph = 30, updateMs = 500) => {
   ;(() => {
-    const engine = createEngine({ uid: bot.uid, nanoid })
-    engine.setPlayerUid(bot.uid)
-    engine.onNearbyEntityHit((e) => {
-      // console.log('hit!', e)
+    const store = createStore()
+    const engine = createEngine({
+      uid: bot.uid,
+      storage,
+      store,
+      onDeferredDispatch: (actions) => actions.forEach((a) => a()),
     })
-    engine.watchNearbyEntityIds((ids) => {
-      // console.log('Nearby', ids)
-    })
-    engine.start()
+
+    engine.start().catch(console.error)
 
     const next = routeService.makeRoute(Math.random() * 30 + 15, 500)
 
@@ -34,7 +38,6 @@ export const createBotRunner = (bot: Bot, routeService: RouteService, mph = 30, 
         longitude,
         heading,
         speed,
-        time: +new Date(),
       })
       setTimeout(move, updateMs)
     }

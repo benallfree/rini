@@ -4,13 +4,14 @@ import React, { FC } from 'react'
 import { View } from 'react-native'
 import { Col, Row } from 'react-native-easy-grid'
 import { Button, Text } from 'react-native-elements'
+import { usePlayerAvatar } from '../../../hooks'
+import { Avatar } from '../Avatar'
 import { IdenticonKey, IDENTICON_STYLES } from '../Identicon'
 import { SettingsSection } from './SettingsSection'
 import { Spacer } from './Spacer'
-import { useAvatar } from './useAvatar'
 
 export const AvatarSettings: FC = () => {
-  const { Avatar, setType, type, recycle } = useAvatar(128)
+  const { uid, salt, setType, type, recycle } = usePlayerAvatar()
   console.log('rendering avatar')
   return (
     <SettingsSection title="I am a...">
@@ -23,7 +24,7 @@ export const AvatarSettings: FC = () => {
               width: 128,
               height: 128,
             }}>
-            <Avatar />
+            <Avatar type={type} salt={salt} uid={uid} size={128} />
           </Row>
           <Spacer />
           <Text>{`Every avatar is unique and you'll never see it again after recycling.`}</Text>
