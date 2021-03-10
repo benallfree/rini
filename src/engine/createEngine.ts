@@ -19,7 +19,7 @@ interface Config {
 }
 
 export const createEngine = (config: Config) => {
-  const { storage, store, onDeferredDispatch } = config
+  const { storage, store, onDeferredDispatch, uid } = config
   const { actions, dispatch, getState, subscribe } = store
 
   const {
@@ -39,6 +39,10 @@ export const createEngine = (config: Config) => {
   const deferredDispatch = makeDeferredDispatch({
     onDeferredDispatch,
   })
+
+  if (uid) {
+    dispatch(uidKnown(uid))
+  }
 
   const handleEntityUpdated = (() => {
     const positionTimeouts: { [_ in EntityId]: Timeout } = {}

@@ -14,9 +14,9 @@ export const useIsReady = () => {
 }
 
 export const usePlayerPosition = () => {
-  const latitude = useAppSelector((state) => state.game.position?.latitude) as number
-  const longitude = useAppSelector((state) => state.game.position?.longitude) as number
-  const heading = useAppSelector((state) => state.game.position?.heading) as number
+  const latitude = useAppSelector((state) => state.game.player.position?.latitude) as number
+  const longitude = useAppSelector((state) => state.game.player.position?.longitude) as number
+  const heading = useAppSelector((state) => state.game.player.position?.heading) as number
   return { latitude, longitude, heading }
 }
 
@@ -35,15 +35,27 @@ export const useNearbyEntityPosition = (id: EntityId) => {
 }
 
 export const useUid = () => {
-  return useAppSelector((state) => state.game.uid)
+  return useAppSelector((state) => state.game.player.uid)
 }
 
 export const useAvatarType = () => {
-  return useAppSelector((state) => state.game.profile.avatar.type)
+  return useAppSelector((state) => {
+    const { profile } = state.game.player
+    if (!profile) {
+      throw new Error(`Profile must be defined here`)
+    }
+    return profile.avatar.type
+  })
 }
 
 export const useAvatarSalt = () => {
-  return useAppSelector((state) => state.game.profile.avatar.salts[state.game.profile.avatar.type])
+  return useAppSelector((state) => {
+    const { profile } = state.game.player
+    if (!profile) {
+      throw new Error(`Profile must be defined here`)
+    }
+    return profile.avatar.salts[profile.avatar.type]
+  })
 }
 
 export const usePlayerAvatar = () => {

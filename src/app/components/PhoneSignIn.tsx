@@ -47,7 +47,7 @@ export const PhoneSignIn: FC = () => {
         setVerificationId(verificationId)
       })
       .catch((e) => {
-        console.log(e)
+        console.error(e)
 
         setStage('phoneInput')
         setError(

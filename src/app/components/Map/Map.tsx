@@ -20,7 +20,7 @@ export const Map: FC = () => {
     })()
   )
   const store = useAppStore()
-  const center = store.getState().game.position
+  const center = store.getState().game.player.position
   if (!center) {
     throw new Error(`Map cannot be renered until player position is known`)
   }
