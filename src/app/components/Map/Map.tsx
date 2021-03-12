@@ -3,7 +3,7 @@ import { Dimensions, StyleSheet, View } from 'react-native'
 import MapView, { Camera } from 'react-native-maps'
 import { callem } from '../../../callem'
 import { engine } from '../../engine'
-import { useAppStore } from '../../hooks/hooks'
+import { useAppStore } from '../../hooks/useAppStore'
 import { Controls } from './Controls'
 import { Me } from './Me'
 import { Others } from './Others'
@@ -19,6 +19,7 @@ export const Map: FC = () => {
       return { onIsFollowing: on, emitIsFollowing: emit }
     })()
   )
+
   const store = useAppStore()
   const center = store.getState().game.player.position
   if (!center) {

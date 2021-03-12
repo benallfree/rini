@@ -1,6 +1,6 @@
 import React, { FC, useEffect } from 'react'
 import { useWebWorker } from '../../../rn-webworker'
-import { useAppSelector } from '../../hooks/hooks'
+import { useAppSelector } from '../../hooks/useAppSelector'
 import {
   AnyMessage,
   DispatchHandler,

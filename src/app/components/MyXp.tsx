@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { useAppSelector } from '../hooks/hooks'
+import { useAppSelector } from '../hooks/useAppSelector'
 import { Xp } from './Xp'
 
 export const MyXp: FC = () => {
