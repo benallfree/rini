@@ -4,7 +4,6 @@ import {
   AvatarSelectionInfo_AtRest,
   AvatarSelectionInfo_InMemory,
   Bearing,
-  IdenticonKey,
   NoncedBearing_Write,
   Profile,
 } from '../Database'
@@ -38,20 +37,9 @@ export const createRealtimeStorageProvider = (config: Config) => {
       heading,
       speed,
     }
+    // console.log('sending to db', update)
     return limiter.schedule(() => {
       return db.ref(path).set(update)
-    })
-  }
-
-  const setAvatarSalt = (uid: string, type: IdenticonKey, salt: string) => {
-    return limiter.schedule(() => {
-      return db.ref(`profiles/${uid}/avatar/salts/${type}`).set(salt)
-    })
-  }
-
-  const setAvatarType = (uid: string, type: IdenticonKey) => {
-    return limiter.schedule(() => {
-      return db.ref(`profiles/${uid}/avatar/type`).set(type)
     })
   }
 
@@ -102,8 +90,6 @@ export const createRealtimeStorageProvider = (config: Config) => {
   return {
     getProfile,
     setProfile,
-    setAvatarType,
-    setAvatarSalt,
     setEntityPosition,
     onEntityUpdated,
     setAvatar,
