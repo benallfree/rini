@@ -13,6 +13,7 @@
 12	≤ 37.2mm	×	18.6mm
 */
 
+export const HASH_PRECISION_20_M = 8
 export const HASH_PRECISION_HALF_KM = 6
 export const HASH_PRECISION_HALF_M = 10
 export const SEARCH_RADIUS = 5000

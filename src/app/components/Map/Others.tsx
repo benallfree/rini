@@ -2,12 +2,13 @@ import { map } from '@s-libs/micro-dash'
 import Bottleneck from 'bottleneck'
 import React, { FC, useEffect } from 'react'
 import { View } from 'react-native'
+import { Text } from 'react-native-elements'
 import { Marker } from 'react-native-maps'
 import { fx } from '../../assets/fx'
 import { engine } from '../../engine'
-import { useNearbyEntityIds } from '../../hooks/useNearbyEntityIds'
-import { useNearbyEntityPosition } from '../../hooks/useNearbyEntityPosition'
-import { Identicon } from './Identicon'
+import { useNearbyEntityIds } from '../../hooks/store/useNearbyEntityIds'
+import { useNearbyEntityPosition } from '../../hooks/store/useNearbyEntityPosition'
+import { Avatar } from './Avatar'
 
 const playScore = (() => {
   const limiter = new Bottleneck({ maxConcurrent: 1, minTime: 100 })
@@ -90,10 +91,10 @@ const Entity: FC<{ entityId: string }> = (props) => {
             opacity: 0.4,
           }}></View>
         <View style={{ width: 32, height: 32, left: 1 }}>
-          <Identicon type={'bottts'} value={entityId} size={32} />
+          <Avatar id={entityId} size={32} />
         </View>
       </View>
-      {/* <Text>{distance}</Text> */}
+      <Text>{distance}</Text>
     </Marker>
   )
 }

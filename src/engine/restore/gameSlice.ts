@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { forEach } from '@s-libs/micro-dash'
 import { getDistance } from 'geolib'
-import { AvatarSalt, Bearing, EntityId, IdenticonKey, Profile } from '../Database'
+import { AvatarSelectionInfo_AtRest, Bearing, EntityId, Profile } from '../Database'
+import { DEFAULT_AVATAR_URI } from './DEFAULT_AVATAR'
 import { NearbyEntitiesById, NearbyEntity } from './types'
-
 export interface SliceState {
   isReady: boolean
   isOnline: boolean
@@ -12,20 +12,16 @@ export interface SliceState {
     profile?: Profile
     position?: Bearing
   }
+  profiles: { [_ in EntityId]: Profile }
   nearbyEntitiesById: NearbyEntitiesById
 }
 
 export const DEFAULT_PROFILE: Profile = {
   avatar: {
-    type: 'bottts',
-    salts: {
-      avataaars: Math.random().toString(),
-      bottts: Math.random().toString(),
-      female: Math.random().toString(),
-      gridy: Math.random().toString(),
-      human: Math.random().toString(),
-      identicon: Math.random().toString(),
-      male: Math.random().toString(),
+    current: {
+      type: 'bottts',
+      uri: DEFAULT_AVATAR_URI,
+      salt: (+new Date()).toString(),
     },
   },
 }
@@ -35,6 +31,7 @@ export const createGameSlice = () => {
     isReady: false,
     isOnline: false,
     player: {},
+    profiles: {},
     nearbyEntitiesById: {},
   }
 
@@ -51,27 +48,22 @@ export const createGameSlice = () => {
       uidKnown: (state, action: PayloadAction<EntityId>) => {
         state.player.uid = action.payload
       },
-      userProfileUpdated: (state, action: PayloadAction<Profile>) => {
-        state.player.profile = action.payload
+      userProfileUpdated: (state, action: PayloadAction<{ id: EntityId; profile: Profile }>) => {
+        const { id, profile } = action.payload
+        if (state.player.uid === id) {
+          state.player.profile = profile
+        }
+        state.profiles[id] = profile
       },
-      avatarSaltUpdated: (
+      primaryAvatarSelected: (
         state,
-        action: PayloadAction<{ type: IdenticonKey; salt: AvatarSalt }>
+        action: PayloadAction<{ id: EntityId; avatar: AvatarSelectionInfo_AtRest }>
       ) => {
-        const { type, salt } = action.payload
-        const { profile } = state.player
-        if (!profile) {
-          throw new Error(`Profile must be valid to set avatar salt`)
-        }
-        profile.avatar.salts[type] = salt
-      },
-      avatarTypeUpdated: (state, action: PayloadAction<IdenticonKey>) => {
-        const type = action.payload
-        const { profile } = state.player
-        if (!profile) {
-          throw new Error(`Profile must be valid to set avatar type`)
-        }
-        profile.avatar.type = type
+        const { id, avatar } = action.payload
+        const profile = state.profiles[id] || undefined
+        if (!profile) return
+        console.log('setting avatar in store', { id, avatar })
+        profile.avatar.current = avatar
       },
       playerPositionUpdated: (state, action: PayloadAction<Bearing>) => {
         state.player.position = action.payload

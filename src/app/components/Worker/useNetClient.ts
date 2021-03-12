@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { client } from '../../bootstrap'
-import { useAppSelector } from '../../hooks/useAppSelector'
+import { useAppSelector } from '../../hooks/store/useAppSelector'
 
 export const useNetClient = () => {
   const idToken = useAppSelector((state) => state.session.idToken)

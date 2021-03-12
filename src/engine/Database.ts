@@ -6,7 +6,7 @@ export const IDENTICON_STYLES = {
   human: 'Person',
   bottts: 'Robot',
   avataaars: 'Avatar',
-  identicon: 'Symbol',
+  jdenticon: 'Symbol',
   gridy: 'Mask',
 }
 
@@ -16,10 +16,7 @@ export type AvatarSalt = string
 
 export interface Profile {
   avatar: {
-    type: IdenticonKey
-    salts: {
-      [_ in IdenticonKey]: AvatarSalt
-    }
+    current: AvatarSelectionInfo_AtRest
   }
 }
 
@@ -49,4 +46,17 @@ export interface NoncedBearing_Write extends NoncedBearing {
   heading: number | null
   speed: number | null
   time: typeof firebase.database.ServerValue.TIMESTAMP
+}
+
+export type AvatarSelectionInfo_InMemory = {
+  id: EntityId
+  type: IdenticonKey
+  salt: string
+  svg: string
+}
+
+export type AvatarSelectionInfo_AtRest = {
+  type: IdenticonKey
+  salt: string
+  uri: string
 }

@@ -3,7 +3,7 @@ import { Dimensions, StyleSheet, View } from 'react-native'
 import MapView, { Camera } from 'react-native-maps'
 import { callem } from '../../../callem'
 import { engine } from '../../engine'
-import { useAppStore } from '../../hooks/useAppStore'
+import { useAppStore } from '../../hooks/store/useAppStore'
 import { Controls } from './Controls'
 import { Me } from './Me'
 import { Others } from './Others'
@@ -41,7 +41,7 @@ export const Map: FC = () => {
 
   useEffect(() => {
     const unsub = engine.onPlayerPositionChanged((bearing) => {
-      console.log('position updated', bearing)
+      // console.log('position updated', bearing)
       if (!bearing) return
       const { latitude, longitude, heading } = bearing
       mapState.current.camera = {

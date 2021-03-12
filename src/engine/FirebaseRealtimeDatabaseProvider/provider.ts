@@ -1,7 +1,13 @@
 import firebase from 'firebase'
-import { IdenticonKey } from '../../app/components/Map/Identicon'
-import { db } from '../../app/firebase'
-import { Bearing, NoncedBearing_Write, Profile } from '../Database'
+import { db, storage } from '../../app/firebase'
+import {
+  AvatarSelectionInfo_AtRest,
+  AvatarSelectionInfo_InMemory,
+  Bearing,
+  IdenticonKey,
+  NoncedBearing_Write,
+  Profile,
+} from '../Database'
 import { limiter } from './limiter'
 import { Config } from './types'
 import { createGridWatcher } from './watchGrid'
@@ -65,6 +71,34 @@ export const createRealtimeStorageProvider = (config: Config) => {
     })
   }
 
+  const uploadAvatar = async (info: AvatarSelectionInfo_InMemory): Promise<string> => {
+    const { id, type, salt, svg } = info
+    const path = `avatars/${salt}/${id}/${type}.svg`
+    const storageRef = storage.ref(path)
+    console.log('storing to ', path, info, typeof svg)
+    const snap = await storageRef.put(new Blob([svg], { type: 'image/svg+xml' }))
+    console.log(snap.bytesTransferred, snap.metadata)
+    const uri = (await storageRef.getDownloadURL()) as string
+    console.log('download url is', uri)
+    return uri
+  }
+
+  const setAvatar = async (
+    info: AvatarSelectionInfo_InMemory
+  ): Promise<AvatarSelectionInfo_AtRest> => {
+    const { id, type, salt, svg } = info
+    const uri = await uploadAvatar(info)
+    const rec: AvatarSelectionInfo_AtRest = {
+      type: info.type,
+      salt: info.salt,
+      uri,
+    }
+    const path = `profiles/${id}/avatar/current`
+    console.log(`saving at-rest object to ${path}`, rec)
+    await db.ref(path).set(rec)
+    return rec
+  }
+
   return {
     getProfile,
     setProfile,
@@ -72,5 +106,6 @@ export const createRealtimeStorageProvider = (config: Config) => {
     setAvatarSalt,
     setEntityPosition,
     onEntityUpdated,
+    setAvatar,
   }
 }

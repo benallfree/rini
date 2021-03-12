@@ -88,7 +88,7 @@
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-react-native": "^3.10.0",
-    "expo-cli": "^4.2.1",
+    "expo-cli": "^4.3.0",
     "firebase-tools": "^9.5.0",
     "gatsby-cli": "^3.0.0",
     "prettier": "^2.2.1",

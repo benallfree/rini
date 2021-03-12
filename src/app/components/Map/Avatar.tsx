@@ -1,16 +1,27 @@
-import React, { FC, useMemo } from 'react'
+import React, { FC, useEffect, useMemo, useState } from 'react'
+import { SvgFromXml } from 'react-native-svg'
 import { EntityId } from '../../../engine/Database'
-import { Identicon, IdenticonKey } from './Identicon'
+import { DEFAULT_AVATAR_SVG } from '../../../engine/restore/DEFAULT_AVATAR'
+import { useAvatarUri } from '../../hooks/store/useAvatarUri'
+import { smartTextFetch } from '../../smartFetch'
 
-export const Avatar: FC<{ uid: EntityId; salt: string; size: number; type: IdenticonKey }> = ({
-  uid,
-  salt,
-  size,
-  type,
-}) => {
+export const Avatar: FC<{ id: EntityId; size: number }> = ({ id, size }) => {
+  const uri = useAvatarUri(id)
+  const [svg, setSvg] = useState<string>()
+
+  useEffect(() => {
+    if (!uri) return
+    smartTextFetch(uri)
+      .then(setSvg)
+      .catch((e) => {
+        console.error(e)
+        setSvg(DEFAULT_AVATAR_SVG)
+      })
+  }, [uri])
+
   return useMemo(() => {
-    console.log('Avatar', { uid, type, salt })
-    if (!uid) return <></>
-    return <Identicon value={uid + salt} size={size} type={type} />
-  }, [uid, salt, size, type])
+    if (!svg) return null
+    // console.log('Avatar', { svg, size })
+    return <SvgFromXml height={size} width={size} xml={svg.replace(/undefined/, '')} />
+  }, [size, svg])
 }

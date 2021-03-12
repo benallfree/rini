@@ -4,7 +4,7 @@ import React, { FC, useCallback, useRef, useState } from 'react'
 import { Button as RNEButton, Input, Text } from 'react-native-elements'
 import PhoneInput from 'react-native-phone-number-input'
 import { auth, firebaseConfig } from '../firebase'
-import { useIsOnline } from '../hooks/useIsOnline'
+import { useIsOnline } from '../hooks/store/useIsOnline'
 
 const Button: FC<{ title: string; onPress: () => void }> = (props) => {
   const { onPress, title } = props

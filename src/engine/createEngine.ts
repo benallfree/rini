@@ -2,7 +2,7 @@ import deepmerge from 'deepmerge'
 import 'firebase/auth'
 import { getDistance } from 'geolib'
 import { callem } from '../callem'
-import { AvatarSalt, Bearing, EntityId, IdenticonKey, Profile } from './Database'
+import { AvatarSelectionInfo_InMemory, Bearing, EntityId, Profile } from './Database'
 import { EntityUpdatedEvent, StorageProvider } from './FirebaseRealtimeDatabaseProvider'
 import { DeferredDispatchHandler, makeDeferredDispatch, RootState, StoreProvider } from './restore'
 import { DEFAULT_PROFILE } from './restore/gameSlice'
@@ -26,8 +26,7 @@ export const createEngine = (config: Config) => {
     uidKnown,
     userProfileUpdated,
     engineReady,
-    avatarSaltUpdated,
-    avatarTypeUpdated,
+    primaryAvatarSelected,
     playerPositionUpdated,
     nearbyEntityRemoved,
     nearbyEntityUpdated,
@@ -139,7 +138,7 @@ export const createEngine = (config: Config) => {
         const dbProfile = (await storage.getProfile(uidOrDie())) as Partial<Profile> | null
         const realProfile = deepmerge(defaultProfile, dbProfile ?? {})
         await storage.setProfile(uidOrDie(), realProfile)
-        dispatch(userProfileUpdated(realProfile))
+        dispatch(userProfileUpdated({ profile: realProfile, id: uidOrDie() }))
         console.log('initialized profile', realProfile)
 
         // Begin listening for nearby enttity updates
@@ -163,19 +162,17 @@ export const createEngine = (config: Config) => {
     return uid
   }
 
+  const changePrimaryAvatar = async (e: AvatarSelectionInfo_InMemory) => {
+    const { id, type, salt, svg } = e
+    console.log('saving in-mem avatar', e)
+    const avatar = await storage.setAvatar(e)
+    dispatch(primaryAvatarSelected({ id, avatar }))
+  }
+
   return {
     store: store.store,
     getState: store.store.getState.bind(store.store),
-    setAvatarSalt: (type: IdenticonKey, salt: AvatarSalt) => {
-      const uid = uidOrDie()
-      storage.setAvatarSalt(uid, type, salt).catch(console.error)
-      dispatch(avatarSaltUpdated({ type, salt }))
-    },
-    setAvatarType: (type: IdenticonKey) => {
-      const uid = uidOrDie()
-      storage.setAvatarType(uid, type).catch(console.error)
-      dispatch(avatarTypeUpdated(type))
-    },
+
     updatePlayerPosition: (position: Bearing) => {
       const uid = uidOrDie()
       // console.log('updating position for ', uid, position)
@@ -195,5 +192,6 @@ export const createEngine = (config: Config) => {
       console.log({ isOnline })
       dispatch(onlineStatusChanged(isOnline))
     },
+    changePrimaryAvatar,
   }
 }

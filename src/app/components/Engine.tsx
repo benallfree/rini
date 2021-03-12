@@ -1,6 +1,6 @@
 import React, { FC, useEffect } from 'react'
 import { engine } from '../engine'
-import { useIsReady } from '../hooks/useIsReady'
+import { useIsReady } from '../hooks/store/useIsReady'
 
 export const Engine: FC = ({ children }) => {
   const isReady = useIsReady()

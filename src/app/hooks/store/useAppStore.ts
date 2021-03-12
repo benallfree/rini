@@ -1,3 +1,3 @@
-import { engine } from '../engine'
+import { engine } from '../../engine'
 
 export const useAppStore = () => engine.store
