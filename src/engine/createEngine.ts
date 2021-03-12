@@ -31,7 +31,7 @@ export const createEngine = (config: Config) => {
     playerPositionUpdated,
     nearbyEntityRemoved,
     nearbyEntityUpdated,
-    nearbyEntityDistanceChanged,
+    onlineStatusChanged,
   } = actions
 
   const [onPlayerPositionChanged, emitPlayerPositionChanged] = callem<Bearing>()
@@ -191,5 +191,9 @@ export const createEngine = (config: Config) => {
     },
     start,
     onPlayerPositionChanged,
+    onlineStatusChanged: (isOnline: boolean) => {
+      console.log({ isOnline })
+      dispatch(onlineStatusChanged(isOnline))
+    },
   }
 }

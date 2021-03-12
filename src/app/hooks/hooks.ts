@@ -1,8 +1,8 @@
 import { keys } from '@s-libs/micro-dash'
 import { shallowEqual, TypedUseSelectorHook, useDispatch, useSelector, useStore } from 'react-redux'
-import { AppDispatch, RootState } from '../engine'
-import { EntityId, IdenticonKey } from '../engine/Database'
-import { engine } from './engine'
+import { AppDispatch, RootState } from '../../engine'
+import { EntityId, IdenticonKey } from '../../engine/Database'
+import { engine } from '../engine'
 
 // Use throughout your app instead of plain `useDispatch` and `useSelector`
 export const useAppDispatch = () => useDispatch<AppDispatch>()

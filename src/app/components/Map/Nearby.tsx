@@ -1,6 +1,6 @@
 import React, { FC } from 'react'
 import { Text } from 'react-native-elements'
-import { useNearbyEntityCount } from '../../hooks'
+import { useNearbyEntityCount } from '../../hooks/hooks'
 
 export const Nearby: FC = () => {
   const count = useNearbyEntityCount()

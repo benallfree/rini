@@ -6,6 +6,7 @@ import { NearbyEntitiesById, NearbyEntity } from './types'
 
 export interface SliceState {
   isReady: boolean
+  isOnline: boolean
   player: {
     uid?: string
     profile?: Profile
@@ -32,6 +33,7 @@ export const DEFAULT_PROFILE: Profile = {
 export const createGameSlice = () => {
   const initialState: SliceState = {
     isReady: false,
+    isOnline: false,
     player: {},
     nearbyEntitiesById: {},
   }
@@ -40,6 +42,9 @@ export const createGameSlice = () => {
     name: 'game',
     initialState,
     reducers: {
+      onlineStatusChanged: (state, action: PayloadAction<boolean>) => {
+        state.isOnline = action.payload
+      },
       engineReady: (state, action: PayloadAction<boolean>) => {
         state.isReady = action.payload
       },

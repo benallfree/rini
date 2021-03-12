@@ -4,6 +4,7 @@ import React, { FC, useCallback, useRef, useState } from 'react'
 import { Button as RNEButton, Input, Text } from 'react-native-elements'
 import PhoneInput from 'react-native-phone-number-input'
 import { auth, firebaseConfig } from '../firebase'
+import { useIsOnline } from '../hooks/useIsOnline'
 
 const Button: FC<{ title: string; onPress: () => void }> = (props) => {
   const { onPress, title } = props
@@ -25,40 +26,53 @@ export const PhoneSignIn: FC = () => {
   const fbAuthRef = useRef<FirebaseRecaptchaVerifierModal>(null)
   const [code, setCode] = useState('')
   const phoneInput = useRef<PhoneInput>(null)
+  const isOnline = useIsOnline()
   const [error, setError] = useState('')
   const [stage, setStage] = useState<'phoneInput' | 'verifying' | 'confirmInput' | 'confirming'>(
     'phoneInput'
   )
 
   // Handle the button press
-  const signInWithPhoneNumber = useCallback((phoneNumber: string) => {
-    if (!fbAuthRef.current) {
-      throw new Error('Firebase auth modal not ready')
-    }
-    const phoneProvider = new firebase.auth.PhoneAuthProvider()
-    console.log('provider', phoneNumber)
-    setStage('verifying')
-    setError('')
-    phoneProvider
-      .verifyPhoneNumber(phoneNumber, fbAuthRef.current)
-      .then((verificationId) => {
-        console.log('finished')
-        setStage('confirmInput')
-        setVerificationId(verificationId)
-      })
-      .catch((e) => {
-        console.error(e)
+  const signInWithPhoneNumber = useCallback(
+    (phoneNumber: string) => {
+      if (!fbAuthRef.current) {
+        throw new Error('Firebase auth modal not ready')
+      }
+      const phoneProvider = new firebase.auth.PhoneAuthProvider()
+      console.log('provider', phoneNumber)
+      setError('')
+      if (!isOnline) {
+        setTimeout(() => setError(`You must have an Internet connection to log in.`), 500)
+        return
+      }
+      setStage('verifying')
+      phoneProvider
+        .verifyPhoneNumber(phoneNumber, fbAuthRef.current)
+        .then((verificationId) => {
+          console.log('finished')
+          setStage('confirmInput')
+          setVerificationId(verificationId)
+        })
+        .catch((e) => {
+          console.error(e)
 
-        setStage('phoneInput')
-        setError(
-          `There was a problem sending your verification code. Please check your number and try again`
-        )
-      })
-  }, [])
+          setStage('phoneInput')
+          setError(
+            `There was a problem sending your verification code. Please check your number and try again`
+          )
+        })
+    },
+    [isOnline]
+  )
 
   const confirmCode = useCallback(() => {
     if (!verificationId) {
       throw new Error(`No verification ID`)
+    }
+    setError('')
+    if (!isOnline) {
+      setTimeout(() => setError(`You must have an Internet connection to log in.`), 500)
+      return
     }
     console.log('confirming')
     setStage('confirming')
@@ -73,7 +87,7 @@ export const PhoneSignIn: FC = () => {
         console.log(e)
         setError(`Confrmation code was invalid. Try again.`)
       })
-  }, [code, verificationId])
+  }, [code, verificationId, isOnline])
 
   return (
     <>

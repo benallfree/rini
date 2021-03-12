@@ -5,7 +5,7 @@ import { View } from 'react-native'
 import { Marker } from 'react-native-maps'
 import { fx } from '../../assets/fx'
 import { engine } from '../../engine'
-import { useNearbyEntityIds, useNearbyEntityPosition } from '../../hooks'
+import { useNearbyEntityIds, useNearbyEntityPosition } from '../../hooks/hooks'
 import { Identicon } from './Identicon'
 
 const playScore = (() => {

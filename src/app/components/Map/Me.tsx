@@ -3,7 +3,7 @@ import { View } from 'react-native'
 import { Text } from 'react-native-elements'
 import { Marker } from 'react-native-maps'
 import Pulse from 'react-native-pulse'
-import { usePlayerAvatar, usePlayerPosition } from '../../hooks'
+import { usePlayerAvatar, usePlayerPosition } from '../../hooks/hooks'
 import { Avatar } from './Avatar'
 
 export const Me: FC = () => {
