@@ -25,5 +25,6 @@ module.exports = {
     '@typescript-eslint/no-var-requires': 1,
     '@typescript-eslint/no-empty-function': 1,
     '@typescript-eslint/no-unsafe-assignment': 1,
+    '@typescript-eslint/explicit-module-boundary-types': 0,
   },
 }

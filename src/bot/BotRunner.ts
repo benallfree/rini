@@ -27,7 +27,7 @@ export const createBotRunner = (bot: Bot, routeService: RouteService, mph = 30, 
 
     engine.start().catch(console.error)
 
-    const next = routeService.makeRoute(Math.random() * 30 + 15, 500)
+    const next = routeService.makeRoute(Math.random() * mph + 15, 500)
 
     const move = () => {
       const { latitude, longitude, heading, speed } = next()
