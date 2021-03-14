@@ -70,21 +70,21 @@ export const Map: FC = () => {
   }
 
   const handleResetToOverview = () => {
-    console.log('resetting to overview')
+    // console.log('resetting to overview')
     mapState.current.mode = 'overview'
     mapState.current.camera = { ...mapState.current.camera, ...OVERVIEW, heading: 0 }
     resetToFollowing()
   }
 
   const handleResetToDriving = () => {
-    console.log('resetting to driving')
+    // console.log('resetting to driving')
     mapState.current.mode = 'driving'
     mapState.current.camera = { ...mapState.current.camera, ...DRIVING }
     resetToFollowing()
   }
 
   const handlePanDrag = () => {
-    console.log('not tracking')
+    // console.log('not tracking')
     mapState.current.isFollowing = false
     isFollowingRef.current.emitIsFollowing(false)
   }
