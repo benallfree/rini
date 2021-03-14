@@ -28,6 +28,7 @@ export const Located: FC = ({ children }) => {
       if (!location) return
       const { coords } = location
       setHasLocation(true)
+
       const { uid } = auth.currentUser ?? {}
       if (uid) {
         engine.updatePlayerPosition({ ...coords })

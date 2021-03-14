@@ -71,6 +71,7 @@ export const createEngine = (config: Config) => {
         throw new Error(`Player position must be known before updating nearby entity`)
       }
       const distance = getDistance(position, playerPosition)
+      // console.log('handleEntityUpdated', id, { position, distance })
       // console.log(`Entity ${id} is ${distance} meters away`)
       deferredDispatch(() =>
         dispatch(
@@ -180,6 +181,7 @@ export const createEngine = (config: Config) => {
         dispatch(playerPositionUpdated(position))
         emitPlayerPositionChanged(position)
       })
+      // console.log('updatePlayerPosition', uid, position)
       storage.setEntityPosition(uid, position).catch((e) => console.error(e))
       // console.log(' queuing Took', end - start)
     },
