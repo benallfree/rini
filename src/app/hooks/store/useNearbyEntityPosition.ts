@@ -1,4 +1,4 @@
-import { EntityId } from '../../engine/Database'
+import { EntityId } from '../../../engine'
 import { useAppSelector } from './useAppSelector'
 
 export const useNearbyEntityPosition = (id: EntityId) => {
