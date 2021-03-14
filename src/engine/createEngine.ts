@@ -55,14 +55,11 @@ export const createEngine = (config: Config) => {
         return
       }
       if (id === uidOrDie()) return // This is the player, no need to track it locally
-      if (position.time < getState().game.nearbyEntitiesById[id]?.time) {
-        console.log(`Entity is out of date, deleting ${id}`)
-        gc().catch(console.error) // This entity is too old, remove it
-        return
-      }
+      if (position.time < getState().game.nearbyEntitiesById[id]?.time) return // Incoming entity update is older than current info. Ignore this update.
+
       clearTimeout(positionTimeouts[id])
       positionTimeouts[id] = setTimeout(() => {
-        console.log('Entity stopped updating, purging', id)
+        console.log('Entity stopped updating, purging from state and db', id)
         gc().catch(console.error)
         deferredDispatch(() => dispatch(nearbyEntityRemoved(id)))
       }, ENTITY_TTL)
