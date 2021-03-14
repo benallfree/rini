@@ -45,7 +45,7 @@ export const createEngine = (config: Config) => {
     dispatch(uidKnown(uid))
   }
 
-  const handleEntityUpdated = (() => {
+  const handleGridEntityUpdated = (() => {
     const positionTimeouts: { [_ in EntityId]: Timeout } = {}
 
     return (e: EntityUpdatedEvent) => {
@@ -142,7 +142,7 @@ export const createEngine = (config: Config) => {
         console.log('initialized profile', realProfile)
 
         // Begin listening for nearby enttity updates
-        storage.onEntityUpdated(handleEntityUpdated)
+        storage.onGridEntityUpdated(handleGridEntityUpdated)
         console.log('listening for entity updates')
 
         dispatch(engineReady(true))

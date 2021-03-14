@@ -24,21 +24,25 @@ export const createGridWatcher = () => {
   const watchers: WatchCollection = {}
   const pointCache: { [center: string]: string[] } = {}
 
-  const [onEntityUpdated, fireEntityUpdated] = callem<EntityUpdatedEvent>()
+  const [onGridEntityUpdated, fireGridEntityUpdated] = callem<EntityUpdatedEvent>()
 
   const handleChildAdded = (snap: firebase.database.DataSnapshot) => {
     const data = snap.val() as NoncedBearing_Read | null
     if (!snap.key) throw new Error(`Snapshot has no key on child added`)
     if (!data) return // No data available
     const id = snap.key
-    fireEntityUpdated({ id, position: data, gc: () => limiter.schedule(() => snap.ref.remove()) })
+    fireGridEntityUpdated({
+      id,
+      position: data,
+      gc: () => limiter.schedule(() => snap.ref.remove()),
+    })
     // console.log('added', { data, snap })
   }
   const handleChildChanged = (snap: firebase.database.DataSnapshot) => {
     const data = snap.val() as NoncedBearing_Read | null
     if (!data) return // data removed // FIXME??
     if (!snap.key) throw new Error(`Snapshot has no key on child added`)
-    fireEntityUpdated({
+    fireGridEntityUpdated({
       id: snap.key,
       position: data,
       gc: () => limiter.schedule(() => snap.ref.remove()),
@@ -92,5 +96,5 @@ export const createGridWatcher = () => {
     return center
   }
 
-  return { onEntityUpdated, updateWatchGrid }
+  return { onGridEntityUpdated, updateWatchGrid }
 }

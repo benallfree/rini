@@ -13,7 +13,7 @@ import { createGridWatcher } from './watchGrid'
 
 // hb()
 export const createRealtimeStorageProvider = (config: Config) => {
-  const { updateWatchGrid, onEntityUpdated } = createGridWatcher()
+  const { updateWatchGrid, onGridEntityUpdated } = createGridWatcher()
 
   const { nanoid } = config
 
@@ -91,7 +91,7 @@ export const createRealtimeStorageProvider = (config: Config) => {
     getProfile,
     setProfile,
     setEntityPosition,
-    onEntityUpdated,
+    onGridEntityUpdated,
     setAvatar,
   }
 }
