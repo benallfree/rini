@@ -1,12 +1,12 @@
 import firebase from 'firebase'
-import { db, storage } from '../../app/firebase'
+import { db, storage } from '../../../../app/firebase'
 import {
   AvatarSelectionInfo_AtRest,
   AvatarSelectionInfo_InMemory,
   Bearing,
   NoncedBearing_Write,
   Profile,
-} from '../Database'
+} from '../../Database'
 import { limiter } from './limiter'
 import { Config } from './types'
 import { createGridWatcher } from './watchGrid'

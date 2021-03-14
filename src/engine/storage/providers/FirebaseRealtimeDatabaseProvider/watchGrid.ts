@@ -1,7 +1,7 @@
 import { forEach } from '@s-libs/micro-dash'
 import firebase from 'firebase'
-import { callem } from '../../callem'
-import { EntityId, NoncedBearing_Read, Point } from '../Database'
+import { callem } from '../../../../callem'
+import { EntityId, NoncedBearing_Read, Point } from '../../Database'
 import { getHashesNear } from './getHashesNear'
 import { limiter } from './limiter'
 interface Watcher {

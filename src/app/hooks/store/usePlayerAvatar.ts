@@ -1,4 +1,4 @@
-import { IdenticonKey } from '../../../engine/Database'
+import { IdenticonKey } from '../../../engine/storage/Database'
 import { engine } from '../../engine'
 import { useAvatarSalt } from './useAvatarSalt'
 import { useAvatarType } from './useAvatarType'

@@ -1,4 +1,4 @@
-import { Bearing } from '../Database'
+import { Bearing } from '../storage/Database'
 import { createStore } from './createStore'
 
 export interface Entity extends Bearing {

@@ -5,13 +5,13 @@ import { Row, RowProps } from 'react-native-easy-grid'
 import { Avatar, Text } from 'react-native-elements'
 import { SvgFromXml } from 'react-native-svg'
 import Geohash from '../../../../../bin/latlon-geohash'
+import { HASH_PRECISION_HALF_KM } from '../../../../engine/redux/const'
 import {
   AvatarSelectionInfo_InMemory,
   EntityId,
   IdenticonKey,
   IDENTICON_STYLES,
-} from '../../../../engine/Database'
-import { HASH_PRECISION_HALF_KM } from '../../../../engine/restore/const'
+} from '../../../../engine/storage/Database'
 import { engine } from '../../../engine'
 import { usePlayerPosition } from '../../../hooks/store/usePlayerPosition'
 import { useUid } from '../../../hooks/store/useUid'

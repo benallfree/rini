@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useMemo, useState } from 'react'
 import { SvgFromXml } from 'react-native-svg'
-import { EntityId } from '../../../engine/Database'
-import { DEFAULT_AVATAR_SVG } from '../../../engine/restore/DEFAULT_AVATAR'
+import { DEFAULT_AVATAR_SVG } from '../../../engine/redux/DEFAULT_AVATAR'
+import { EntityId } from '../../../engine/storage/Database'
 import { useAvatarUri } from '../../hooks/store/useAvatarUri'
 import { smartTextFetch } from '../../smartFetch'
 

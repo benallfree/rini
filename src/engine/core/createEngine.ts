@@ -1,18 +1,20 @@
 import deepmerge from 'deepmerge'
 import 'firebase/auth'
 import { getDistance } from 'geolib'
-import { callem } from '../callem'
-import { AvatarSelectionInfo_InMemory, Bearing, EntityId, Profile } from './Database'
-import { EntityUpdatedEvent, StorageProvider } from './FirebaseRealtimeDatabaseProvider'
-import { DeferredDispatchHandler, makeDeferredDispatch, RootState, StoreProvider } from './restore'
-import { DEFAULT_PROFILE } from './restore/gameSlice'
-export const MAX_HIT_DISTAANCE = 20 // 20 meters
-
-export const ENTITY_TTL = 5000
-export type Timeout = ReturnType<typeof setTimeout>
+import { callem } from '../../callem'
+import { RootState, StoreProvider } from '../redux'
+import { DEFAULT_PROFILE } from '../redux/gameSlice'
+import { AvatarSelectionInfo_InMemory, Bearing, EntityId, Profile } from '../storage/Database'
+import {
+  EntityUpdatedEvent,
+  StorageProvider,
+} from '../storage/providers/FirebaseRealtimeDatabaseProvider'
+import { ENTITY_TTL, MAX_HIT_DISTAANCE } from './const'
+import { createDeferredActionService, DeferredActionHandler } from './DeferredAction'
+import { Timeout } from './types'
 
 interface Config {
-  onDeferredDispatch: DeferredDispatchHandler
+  onDeferredDispatch: DeferredActionHandler
   store: StoreProvider
   storage: StorageProvider
   uid?: EntityId
@@ -35,8 +37,8 @@ export const createEngine = (config: Config) => {
 
   const [onPlayerPositionChanged, emitPlayerPositionChanged] = callem<Bearing>()
 
-  const deferredDispatch = makeDeferredDispatch({
-    onDeferredDispatch,
+  const deferredDispatch = createDeferredActionService({
+    onExecuteDeferredActions: onDeferredDispatch,
   })
 
   if (uid) {

@@ -1,4 +1,4 @@
-import { IdenticonKey } from '../../../engine/Database'
+import { IdenticonKey } from '../../../engine/storage/Database'
 import { useAppSelector } from './useAppSelector'
 
 export const useAvatarType = (): IdenticonKey => {

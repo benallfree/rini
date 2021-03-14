@@ -1,4 +1,4 @@
-import { nanoid } from '../../nanoid'
+import { nanoid } from '../../../../nanoid'
 import { createRealtimeStorageProvider } from './provider'
 
 export interface Config {

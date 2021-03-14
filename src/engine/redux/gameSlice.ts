@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { forEach } from '@s-libs/micro-dash'
 import { getDistance } from 'geolib'
-import { AvatarSelectionInfo_AtRest, Bearing, EntityId, Profile } from '../Database'
+import { AvatarSelectionInfo_AtRest, Bearing, EntityId, Profile } from '../storage/Database'
 import { DEFAULT_AVATAR_URI } from './DEFAULT_AVATAR'
 import { NearbyEntitiesById, NearbyEntity } from './types'
 export interface SliceState {

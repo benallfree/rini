@@ -4,7 +4,7 @@ import { bearing } from '@turf/turf'
 import { getDistance } from 'geolib'
 import gpxParser from 'gpxparser'
 import interpolateLineRange from 'line-interpolate-points'
-import { Bearing, Point } from '../engine/Database'
+import { Bearing, Point } from '../engine/storage/Database'
 
 export type GpxPoint = gpxParser.Point
 export type GpxRoute = GpxPoint[]
