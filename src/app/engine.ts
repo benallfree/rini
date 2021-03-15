@@ -1,8 +1,7 @@
 import { batch } from 'react-redux'
 import { createEngine, createRealtimeStorageProvider, createStore } from '../engine'
-import { nanoid } from '../nanoid/index.native'
 
-const storage = createRealtimeStorageProvider({ nanoid })
+const storage = createRealtimeStorageProvider()
 const store = createStore()
 export const engine = createEngine({
   store,

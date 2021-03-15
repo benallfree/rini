@@ -1,10 +1,8 @@
-import deepmerge from 'deepmerge'
 import 'firebase/auth'
 import { getDistance } from 'geolib'
 import { callem } from '../../callem'
 import { RootState, StoreProvider } from '../redux'
-import { DEFAULT_PROFILE } from '../redux/gameSlice'
-import { AvatarSelectionInfo_InMemory, Bearing, EntityId, Profile } from '../storage/Database'
+import { EntityId, Movement } from '../storage/Database'
 import {
   EntityUpdatedEvent,
   StorageProvider,
@@ -26,16 +24,14 @@ export const createEngine = (config: Config) => {
 
   const {
     uidKnown,
-    userProfileUpdated,
     engineReady,
-    primaryAvatarSelected,
-    playerPositionUpdated,
+    playerMovementUpdated: playerPositionUpdated,
     nearbyEntityRemoved,
     nearbyEntityUpdated,
     onlineStatusChanged,
   } = actions
 
-  const [onPlayerPositionChanged, emitPlayerPositionChanged] = callem<Bearing>()
+  const [onPlayerMovementChanged, emitPlayerMovementChanged] = callem<Movement>()
 
   const deferredDispatch = createDeferredActionService({
     onExecuteDeferredActions: onDeferredDispatch,
@@ -65,7 +61,7 @@ export const createEngine = (config: Config) => {
         gc().catch(console.error)
         deferredDispatch(() => dispatch(nearbyEntityRemoved(id)))
       }, ENTITY_TTL)
-      const playerPosition = getState().game.player.position
+      const playerPosition = getState().game.player.movement
       if (!playerPosition) {
         throw new Error(`Player position must be known before updating nearby entity`)
       }
@@ -119,7 +115,7 @@ export const createEngine = (config: Config) => {
           const unsub = observe(
             (state) => ({
               hasUid: !!state.game.player.uid,
-              hasPosition: !!state.game.player.position,
+              hasPosition: !!state.game.player.movement,
             }),
             (state, oldValue, newValue) => {
               const { hasUid, hasPosition } = newValue
@@ -131,15 +127,6 @@ export const createEngine = (config: Config) => {
             }
           )
         })
-
-        // Initialize the user's profile
-        console.log(`Initializing user profile`)
-        const defaultProfile = DEFAULT_PROFILE
-        const dbProfile = (await storage.getProfile(uidOrDie())) as Partial<Profile> | null
-        const realProfile = deepmerge(defaultProfile, dbProfile ?? {})
-        await storage.setProfile(uidOrDie(), realProfile)
-        dispatch(userProfileUpdated({ profile: realProfile, id: uidOrDie() }))
-        console.log('initialized profile', realProfile)
 
         // Begin listening for nearby enttity updates
         storage.onGridEntityUpdated(handleGridEntityUpdated)
@@ -162,37 +149,29 @@ export const createEngine = (config: Config) => {
     return uid
   }
 
-  const changePrimaryAvatar = async (e: AvatarSelectionInfo_InMemory) => {
-    const { id, type, salt, svg } = e
-    console.log('saving in-mem avatar', e)
-    const avatar = await storage.setAvatar(e)
-    dispatch(primaryAvatarSelected({ id, avatar }))
-  }
-
   return {
     store: store.store,
     getState: store.store.getState.bind(store.store),
 
-    updatePlayerPosition: (position: Bearing) => {
+    updatePlayerPosition: (position: Movement) => {
       const uid = uidOrDie()
       // console.log('updating position for ', uid, position)
       deferredDispatch(() => {
         dispatch(playerPositionUpdated(position))
-        emitPlayerPositionChanged(position)
+        emitPlayerMovementChanged(position)
       })
       // console.log('updatePlayerPosition', uid, position)
-      storage.setEntityPosition(uid, position).catch((e) => console.error(e))
+      storage.setEntityMovement(uid, position).catch((e) => console.error(e))
       // console.log(' queuing Took', end - start)
     },
     setPlayerUid: (id: EntityId) => {
       dispatch(uidKnown(id))
     },
     start,
-    onPlayerPositionChanged,
+    onPlayerMovementChanged,
     onlineStatusChanged: (isOnline: boolean) => {
       console.log({ isOnline })
       dispatch(onlineStatusChanged(isOnline))
     },
-    changePrimaryAvatar,
   }
 }

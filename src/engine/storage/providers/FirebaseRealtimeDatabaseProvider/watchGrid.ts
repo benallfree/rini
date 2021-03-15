@@ -1,7 +1,7 @@
 import { forEach } from '@s-libs/micro-dash'
 import firebase from 'firebase'
 import { callem } from '../../../../callem'
-import { EntityId, NoncedBearing_Read, Point } from '../../Database'
+import { EntityId, Movement_Read, Point } from '../../Database'
 import { getHashesNear } from './getHashesNear'
 import { limiter } from './limiter'
 interface Watcher {
@@ -15,7 +15,7 @@ interface WatchCollection {
 
 export interface EntityUpdatedEvent {
   id: EntityId
-  position: NoncedBearing_Read
+  position: Movement_Read
   gc: () => Promise<void>
 }
 
@@ -27,7 +27,7 @@ export const createGridWatcher = () => {
   const [onGridEntityUpdated, fireGridEntityUpdated] = callem<EntityUpdatedEvent>()
 
   const handleChildAdded = (snap: firebase.database.DataSnapshot) => {
-    const data = snap.val() as NoncedBearing_Read | null
+    const data = snap.val() as Movement_Read | null
     if (!snap.key) throw new Error(`Snapshot has no key on child added`)
     if (!data) return // No data available
     const id = snap.key
@@ -39,7 +39,7 @@ export const createGridWatcher = () => {
     // console.log('added', { data, snap })
   }
   const handleChildChanged = (snap: firebase.database.DataSnapshot) => {
-    const data = snap.val() as NoncedBearing_Read | null
+    const data = snap.val() as Movement_Read | null
     if (!data) return // data removed // FIXME??
     if (!snap.key) throw new Error(`Snapshot has no key on child added`)
     fireGridEntityUpdated({

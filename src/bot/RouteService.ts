@@ -4,7 +4,7 @@ import { bearing } from '@turf/turf'
 import { getDistance } from 'geolib'
 import gpxParser from 'gpxparser'
 import interpolateLineRange from 'line-interpolate-points'
-import { Bearing, Point } from '../engine/storage/Database'
+import { Movement, Point } from '../engine/storage/Database'
 
 export type GpxPoint = gpxParser.Point
 export type GpxRoute = GpxPoint[]
@@ -41,7 +41,7 @@ export const createRouteService = (routes: GpxRoute[]) => {
       return idx + delta
     }
 
-    const next = (): Bearing => {
+    const next = (): Movement => {
       idx = nextIdx(idx)
       const starting: Coord = {
         type: 'Point',

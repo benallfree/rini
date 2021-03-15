@@ -21,7 +21,7 @@ export const Map: FC = () => {
   )
 
   const store = useAppStore()
-  const center = store.getState().game.player.position
+  const center = store.getState().game.player.movement
   if (!center) {
     throw new Error(`Map cannot be renered until player position is known`)
   }
@@ -40,7 +40,7 @@ export const Map: FC = () => {
   })
 
   useEffect(() => {
-    const unsub = engine.onPlayerPositionChanged((bearing) => {
+    const unsub = engine.onPlayerMovementChanged((bearing) => {
       // console.log('position updated', bearing)
       if (!bearing) return
       const { latitude, longitude, heading } = bearing

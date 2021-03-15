@@ -1,7 +1,7 @@
-import { Bearing } from '../storage/Database'
+import { Movement } from '../storage/Database'
 import { createStore } from './createStore'
 
-export interface Entity extends Bearing {
+export interface Entity extends Movement {
   id: string
 }
 

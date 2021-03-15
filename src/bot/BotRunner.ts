@@ -2,7 +2,6 @@ import * as admin from 'firebase-admin'
 import { dirname, resolve } from 'path'
 import { createEngine, createRealtimeStorageProvider } from '../engine'
 import { createStore } from '../engine/redux'
-import { nanoid } from '../nanoid'
 import { Bot } from './BotFileProvider'
 import { RouteService } from './RouteService'
 
@@ -13,7 +12,7 @@ admin.initializeApp({
   databaseURL: 'https://rini-1234a-default-rtdb.firebaseio.com',
 })
 
-const storage = createRealtimeStorageProvider({ nanoid })
+const storage = createRealtimeStorageProvider()
 
 export const createBotRunner = (bot: Bot, routeService: RouteService, mph = 30, updateMs = 500) => {
   ;(() => {

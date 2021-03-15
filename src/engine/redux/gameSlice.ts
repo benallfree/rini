@@ -1,29 +1,16 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { forEach } from '@s-libs/micro-dash'
 import { getDistance } from 'geolib'
-import { AvatarSelectionInfo_AtRest, Bearing, EntityId, Profile } from '../storage/Database'
-import { DEFAULT_AVATAR_URI } from './DEFAULT_AVATAR'
+import { EntityId, Movement } from '../storage/Database'
 import { NearbyEntitiesById, NearbyEntity } from './types'
 export interface SliceState {
   isReady: boolean
   isOnline: boolean
   player: {
     uid?: string
-    profile?: Profile
-    position?: Bearing
+    movement?: Movement
   }
-  profiles: { [_ in EntityId]: Profile }
   nearbyEntitiesById: NearbyEntitiesById
-}
-
-export const DEFAULT_PROFILE: Profile = {
-  avatar: {
-    current: {
-      type: 'bottts',
-      uri: DEFAULT_AVATAR_URI,
-      salt: (+new Date()).toString(),
-    },
-  },
 }
 
 export const createGameSlice = () => {
@@ -31,7 +18,6 @@ export const createGameSlice = () => {
     isReady: false,
     isOnline: false,
     player: {},
-    profiles: {},
     nearbyEntitiesById: {},
   }
 
@@ -48,25 +34,9 @@ export const createGameSlice = () => {
       uidKnown: (state, action: PayloadAction<EntityId>) => {
         state.player.uid = action.payload
       },
-      userProfileUpdated: (state, action: PayloadAction<{ id: EntityId; profile: Profile }>) => {
-        const { id, profile } = action.payload
-        if (state.player.uid === id) {
-          state.player.profile = profile
-        }
-        state.profiles[id] = profile
-      },
-      primaryAvatarSelected: (
-        state,
-        action: PayloadAction<{ id: EntityId; avatar: AvatarSelectionInfo_AtRest }>
-      ) => {
-        const { id, avatar } = action.payload
-        const profile = state.profiles[id] || undefined
-        if (!profile) return
-        console.log('setting avatar in store', { id, avatar })
-        profile.avatar.current = avatar
-      },
-      playerPositionUpdated: (state, action: PayloadAction<Bearing>) => {
-        state.player.position = action.payload
+
+      playerMovementUpdated: (state, action: PayloadAction<Movement>) => {
+        state.player.movement = action.payload
         forEach(state.nearbyEntitiesById, (e) => {
           e.distance = getDistance(action.payload, e)
         })

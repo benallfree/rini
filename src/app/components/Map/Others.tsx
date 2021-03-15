@@ -7,7 +7,7 @@ import { Marker } from 'react-native-maps'
 import { fx } from '../../assets/fx'
 import { engine } from '../../engine'
 import { useNearbyEntityIds } from '../../hooks/store/useNearbyEntityIds'
-import { useNearbyEntityPosition } from '../../hooks/store/useNearbyEntityPosition'
+import { useNearbyEntityMovement } from '../../hooks/store/useNearbyEntityMovement'
 import { Avatar } from './Avatar'
 
 const playScore = (() => {
@@ -60,7 +60,7 @@ const api = (() => {
 
 const Entity: FC<{ entityId: string }> = (props) => {
   const { entityId } = props
-  const state = useNearbyEntityPosition(entityId)
+  const state = useNearbyEntityMovement(entityId)
   useEffect(() => {
     if (!state) return
     const { id } = state
@@ -91,7 +91,7 @@ const Entity: FC<{ entityId: string }> = (props) => {
             opacity: 0.4,
           }}></View>
         <View style={{ width: 32, height: 32, left: 1 }}>
-          <Avatar id={entityId} size={32} />
+          <Avatar uid={entityId} size={32} />
         </View>
       </View>
       <Text>{distance}</Text>

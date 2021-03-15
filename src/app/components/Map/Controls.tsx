@@ -4,7 +4,6 @@ import { Navigate } from './Navigate'
 import { Nearby } from './Nearby'
 import { Overview } from './Overview'
 import { Pill } from './Pill'
-import { Settings } from './Settings/Settings'
 
 export const Controls: FC<{
   onOverviewPress: () => void
@@ -56,9 +55,6 @@ export const Controls: FC<{
         </Pill>
         <Pill>
           <Nearby />
-        </Pill>
-        <Pill>
-          <Settings />
         </Pill>
       </View>
     </View>
