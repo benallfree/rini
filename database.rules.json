@@ -1,6 +1,64 @@
 {
   "rules": {
-    ".read": true,
-    ".write": true
+    "profiles": {
+      "$uid": {
+        "avatars": {
+          "saved": {
+            "$md5": {
+              "type": {
+                ".validate": "newData.isString() && newData.val().matches(/male|female|human|bottts|avataaars|jdenticon|gridy/)"
+              },
+              "locationFound": {
+                ".validate": "newData.isString() && newData.val().length===10"
+              },
+              "uri": {
+                ".validate": "newData.isString() && newData.val().beginsWith('https://firebasestorage.googleapis.com/v0/b/rini-1234a.appspot.com/o')",
+                ".read": "auth!==null"
+              },
+              ".validate": "$md5.length===32 && newData.hasChildren(['locationFound', 'type', 'uri'])",
+              "$other": { ".validate": false }
+            }
+          },
+          "current": {
+            ".validate": "newData.isString() && newData.val().length===32 && newData.parent().child('saved/'+newData.val()).exists()",
+            ".read": "auth!==null"
+          },
+          "$other": { ".validate": false }
+        },
+        "$other": { ".validate": false },
+        ".validate": "newData.hasChildren(['avatars'])",
+        ".write": "auth.token.admin===true || auth.uid===$uid",
+        ".read": "auth.token.admin===true || auth.uid===$uid"
+      }
+    },
+    "grid": {
+      "$hash_id": {
+        "$uid": {
+          "heading": {
+            ".validate": "newData.isNumber() && newData.val()>=0 && newData.val()<=360"
+          },
+          "latitude": {
+            ".validate": "newData.isNumber() && newData.val()>=-90 && newData.val()<=90"
+          },
+          "longitude": {
+            ".validate": "newData.isNumber() && newData.val()>=-180 && newData.val()<=180"
+          },
+          "nonce": {
+            ".validate": "newData.isString() && newData.val().length<=20"
+          },
+          "speed": {
+            ".validate": "newData.isNumber() && newData.val()>=0 && newData.val()<=200"
+          },
+          "time": {
+            ".validate": "newData.isNumber() && newData.val()>1615746995"
+          },
+          "$other": { ".validate": false },
+          ".write": "auth.token.admin===true || auth.uid===$uid",
+          ".validate": "newData.hasChildren(['heading', 'latitude', 'longitude', 'nonce', 'speed', 'time'])"
+        },
+        ".validate": "$hash_id.length===6"
+      },
+      ".read": "auth!==null"
+    }
   }
 }
