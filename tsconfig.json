@@ -9,7 +9,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "baseUrl": ".",
     "strict": true,
     "typeRoots": ["./src/@types", "./node_modules/@types"]
   },

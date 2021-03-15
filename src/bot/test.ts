@@ -1,38 +1,19 @@
 import firebase from 'firebase'
 import * as admin from 'firebase-admin'
-import { dirname, resolve } from 'path'
-import { auth, db } from '../app/firebase'
+import { db } from '../app/firebase'
 import { DEFAULT_AVATAR_URI } from '../engine/redux/DEFAULT_AVATAR'
-
-const serviceAccount = require(resolve(dirname(__filename), '../../.secrets/firebase-admin.json'))
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://rini-1234a-default-rtdb.firebaseio.com',
-})
-
-const login = async (uid: string) => {
-  await admin.auth().setCustomUserClaims(uid, { admin: true })
-  const token = await admin.auth().createCustomToken(uid)
-  await auth.signInWithCustomToken(token)
-  const newId = auth.currentUser?.uid
-  if (!newId) {
-    throw new Error(`Failed to log in as ${uid}`)
-  }
-  console.log(`Signed in as ${newId}`)
-}
-
+import { loginWebFromAdmin } from './firebase'
 ;(async () => {
   // Initialize
   await (async () => {
     const uid = `PFOtuigEswd8AqFsQFFfw9KtFSv2` // 805-403-2380
-    await login(uid)
+    await loginWebFromAdmin(uid)
     await admin.auth().setCustomUserClaims(uid, { admin: true })
   })()
 
   await (async () => {
     const uid = `rfP4mN9Pe8NjLTgxk3KMQYgEsTp2` // 555-555-1212
-    await login(uid)
+    await loginWebFromAdmin(uid)
 
     await db.ref(`/grid/122456/${uid}`).set({
       heading: 123,

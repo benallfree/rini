@@ -1,6 +1,7 @@
 import prompts from 'prompts'
 import { createBotFileProvider } from './BotFileProvider'
 import { createBotRunner } from './BotRunner'
+import { loginWebFromAdmin } from './firebase'
 import AmbroseLoop from './gpx/parsed/AmbroseLoop'
 import Brightonloop from './gpx/parsed/BrightonLoop'
 import { createRouteService } from './RouteService'
@@ -24,6 +25,9 @@ const bd = createBotFileProvider()
     message: 'How many bots?',
     validate: (value) => (value < 1 || value > 5000 ? `1-5000 bots` : true),
   })
+
+  const uid = `PFOtuigEswd8AqFsQFFfw9KtFSv2` // 805-403-2380
+  await loginWebFromAdmin(uid)
 
   for (let i = 0; i < response.value; i++) {
     createBotRunner(bd.next(), rs)
