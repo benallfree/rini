@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { forEach } from '@s-libs/micro-dash'
 import { getDistance } from 'geolib'
-import { debug } from '../core/logger'
+import { debug, LogEvent } from '../core/logger'
 import { EntityId, Movement } from '../storage/Database'
 import { NearbyEntitiesById, NearbyEntity } from './types'
 
@@ -13,6 +13,7 @@ export interface Settings {
   }
 }
 export interface SliceState {
+  logs: LogEvent[]
   settings: Settings
   isReady: boolean
   isOnline: boolean
@@ -25,6 +26,7 @@ export interface SliceState {
 
 export const createGameSlice = () => {
   const initialState: SliceState = {
+    logs: [],
     settings: {
       beta: {
         showDistances: true,
@@ -81,6 +83,12 @@ export const createGameSlice = () => {
       },
       updateAvailabilityUpdated: (state, action: PayloadAction<boolean>) => {
         state.settings.beta.isUpdateAvailable = action.payload
+      },
+      newLogEvent: (state, action: PayloadAction<LogEvent>) => {
+        state.logs = [...state.logs.slice(-1000), action.payload]
+      },
+      clearLogs: (state) => {
+        state.logs = []
       },
     },
   })

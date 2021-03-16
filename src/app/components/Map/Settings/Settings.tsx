@@ -1,9 +1,10 @@
 import React, { FC, useRef, useState } from 'react'
-import { Dimensions, View } from 'react-native'
+import { Dimensions, ScrollView, View } from 'react-native'
 import { Grid, Row } from 'react-native-easy-grid'
 import { Badge, Icon, Overlay, Text } from 'react-native-elements'
 import { useBetaSettings } from '../../../hooks/store/useBetaSettings'
 import { BetaSettings } from './BetaSettings'
+import { Diagnostics } from './Diagnostics'
 
 export const Settings: FC<{
   size?: number
@@ -49,9 +50,14 @@ export const Settings: FC<{
               />
             </View>
           </Row>
-          <Row>
-            <BetaSettings />
-          </Row>
+          <ScrollView>
+            <Row>
+              <BetaSettings />
+            </Row>
+            <Row>
+              <Diagnostics />
+            </Row>
+          </ScrollView>
         </Grid>
       </Overlay>
       <View

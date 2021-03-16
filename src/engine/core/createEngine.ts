@@ -10,7 +10,7 @@ import {
 } from '../storage/providers/FirebaseRealtimeDatabaseProvider'
 import { ENTITY_TTL, MAX_HIT_DISTAANCE } from './const'
 import { createDeferredActionService, DeferredActionHandler } from './DeferredAction'
-import { logger } from './logger'
+import { LogEventType, logger } from './logger'
 import { Timeout } from './types'
 
 interface Config {
@@ -34,6 +34,8 @@ export const createEngine = (config: Config) => {
     onlineStatusChanged,
     settingsUpdated,
     updateAvailabilityUpdated,
+    newLogEvent,
+    clearLogs,
   } = actions
 
   const [onPlayerMovementChanged, emitPlayerMovementChanged] = callem<Movement>()
@@ -140,6 +142,15 @@ export const createEngine = (config: Config) => {
         storage.onGridEntityUpdated(handleGridEntityUpdated)
         info('listening for entity updates')
 
+        // Mount some logging middlware to tell the store new messages are available
+        logger.use((event) => {
+          if (event.type === LogEventType.Clear) {
+            dispatch(clearLogs())
+          } else {
+            deferredDispatch(() => dispatch(newLogEvent(event)))
+          }
+        })
+
         // Check for updates
         ;(() => {
           if (!isUpdateAvailableDelegate) return
@@ -153,7 +164,7 @@ export const createEngine = (config: Config) => {
               .catch(error)
               .finally(() => {
                 debug('resetting timeout')
-                setTimeout(checkUpdate, 5000) // check every 30s
+                setTimeout(checkUpdate, 30000) // check every 30s
               })
           }
           checkUpdate()
@@ -200,6 +211,9 @@ export const createEngine = (config: Config) => {
       },
       settingsUpdated: (settings: Settings) => {
         dispatch(settingsUpdated(settings))
+      },
+      clearLogs: () => {
+        logger.clear()
       },
     },
     start,

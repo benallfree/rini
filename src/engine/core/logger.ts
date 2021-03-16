@@ -1,8 +1,9 @@
-export enum LogType {
+export enum LogEventType {
   Info = 'info',
   Debug = 'debug',
   Warn = 'warn',
   Error = 'error',
+  Clear = 'clear',
 }
 
 type AnyJson = boolean | number | string | null | JsonArray | JsonMap
@@ -12,8 +13,8 @@ interface JsonMap {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface JsonArray extends Array<AnyJson> {}
 
-export type LogMessage = { time: Date; type: LogType; args: unknown[] }
-export type LogMiddlewareProvider = (msg: LogMessage) => void
+export type LogEvent = { time: Date; type: LogEventType; payload?: unknown[] }
+export type LogMiddlewareProvider = (event: LogEvent) => void
 
 export type LoggerConfig = {
   maxLogs: number
@@ -24,10 +25,10 @@ export const createLogger = (config?: Partial<LoggerConfig>) => {
     maxLogs: 1000,
     ...config,
   }
-  const logs: LogMessage[] = []
+  const logs: LogEvent[] = []
   const middleware: LogMiddlewareProvider[] = []
 
-  function log(type: LogType, args: unknown[]) {
+  function log(type: LogEventType, args: unknown[]) {
     const serializedArgs = ((): unknown[] | undefined => {
       try {
         return JSON.parse(JSON.stringify(args)) as unknown[]
@@ -39,7 +40,7 @@ export const createLogger = (config?: Partial<LoggerConfig>) => {
       console.error(`Not serializable`, args)
       throw new Error(`Not serializable`)
     }
-    const msg: LogMessage = { type, time: new Date(), args: serializedArgs }
+    const msg: LogEvent = { type, time: new Date(), payload: serializedArgs }
     logs.push(msg)
     if (logs.length > _config.maxLogs) {
       logs.shift()
@@ -49,12 +50,13 @@ export const createLogger = (config?: Partial<LoggerConfig>) => {
 
   return {
     logs: () => [...logs],
-    debug: (...args: unknown[]) => log(LogType.Debug, args),
-    info: (...args: unknown[]) => log(LogType.Info, args),
-    error: (...args: unknown[]) => log(LogType.Error, args),
-    warn: (...args: unknown[]) => log(LogType.Warn, args),
+    debug: (...args: unknown[]) => log(LogEventType.Debug, args),
+    info: (...args: unknown[]) => log(LogEventType.Info, args),
+    error: (...args: unknown[]) => log(LogEventType.Error, args),
+    warn: (...args: unknown[]) => log(LogEventType.Warn, args),
     clear: () => {
       logs.length = 0
+      middleware.forEach((m) => m({ type: LogEventType.Clear, time: new Date() }))
     },
     use: (provider: LogMiddlewareProvider) => {
       middleware.push(provider)
@@ -62,15 +64,19 @@ export const createLogger = (config?: Partial<LoggerConfig>) => {
   }
 }
 
-export const consoleMiddleware: LogMiddlewareProvider = (msg) => {
-  switch (msg.type) {
-    case LogType.Info:
-    case LogType.Debug:
-      return console.log(...msg.args)
-    case LogType.Warn:
-      return console.warn(...msg.args)
-    case LogType.Error:
-      return console.error(...msg.args)
+export const consoleMiddleware: LogMiddlewareProvider = (event) => {
+  const { payload } = event
+  if (!payload) return
+  const prefix = `[${event.type.toString().padStart(5)}]`
+  const _payload = [prefix, ...payload]
+  switch (event.type) {
+    case LogEventType.Info:
+    case LogEventType.Debug:
+      return console.log(..._payload)
+    case LogEventType.Warn:
+      return console.warn(..._payload)
+    case LogEventType.Error:
+      return console.error(..._payload)
   }
 }
 
