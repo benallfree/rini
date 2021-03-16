@@ -10,6 +10,7 @@ import {
 } from '../storage/providers/FirebaseRealtimeDatabaseProvider'
 import { ENTITY_TTL, MAX_HIT_DISTAANCE } from './const'
 import { createDeferredActionService, DeferredActionHandler } from './DeferredAction'
+import { logger } from './logger'
 import { Timeout } from './types'
 
 interface Config {
@@ -43,6 +44,8 @@ export const createEngine = (config: Config) => {
     dispatch(uidKnown(uid))
   }
 
+  const { info, debug, warn, error } = logger
+
   const handleGridEntityUpdated = (() => {
     const positionTimeouts: { [_ in EntityId]: Timeout } = {}
 
@@ -50,7 +53,7 @@ export const createEngine = (config: Config) => {
       const { id, position, gc } = e
       const age = +new Date() - position.time
       if (age > ENTITY_TTL) {
-        console.log(`Entity is expired, deleting ${id}`)
+        // info(`Entity is expired, deleting ${id}`)
         gc().catch(console.error) // This entity is too old, remove it
         return
       }
@@ -68,8 +71,8 @@ export const createEngine = (config: Config) => {
         throw new Error(`Player position must be known before updating nearby entity`)
       }
       const distance = getDistance(position, playerPosition)
-      // console.log('handleEntityUpdated', id, { position, distance })
-      // console.log(`Entity ${id} is ${distance} meters away`)
+      // info('handleEntityUpdated', { id, position, distance })
+      // info(`Entity ${id} is ${distance} meters away`)
       deferredDispatch(() =>
         dispatch(
           nearbyEntityUpdated({
@@ -105,6 +108,7 @@ export const createEngine = (config: Config) => {
   }
 
   const start = (() => {
+    debug('engine is starting')
     let isStarting = false
     return async () => {
       if (isStarting) return
