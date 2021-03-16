@@ -4,7 +4,6 @@ import React, { FC, useEffect, useRef } from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import MapView, { Camera } from 'react-native-maps'
 import { callem } from '../../../callem'
-import { info } from '../../../engine/core/logger'
 import { engine } from '../../engine'
 import { useAppStore } from '../../hooks/store/useAppStore'
 import { Controls } from './Controls'
@@ -44,7 +43,7 @@ export const Map: FC = () => {
 
   useEffect(() => {
     const unsub = engine.onPlayerMovementChanged((movement) => {
-      info('position updated', movement)
+      // info('position updated', movement)
       if (!movement) return
       const { latitude, longitude, heading } = (() => {
         const { latitude, longitude, heading } = movement
@@ -56,9 +55,9 @@ export const Map: FC = () => {
         const distance = 1500
         const bearing = heading
         const options: { units: Units } = { units: 'feet' }
-        info({ point, distance, bearing, options })
+        // info({ point, distance, bearing, options })
         const destination = turf.destination(point, distance, bearing, options)
-        info({ destination })
+        // info({ destination })
         return {
           latitude: destination.geometry.coordinates[1],
           longitude: destination.geometry.coordinates[0],

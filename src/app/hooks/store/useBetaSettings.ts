@@ -14,7 +14,7 @@ export const useBetaSettings = (): [
   const { beta } = settings
   const update = useCallback(
     (beta: Partial<Settings['beta']>) => {
-      debug(`update has been called `, beta)
+      // debug(`update has been called `, beta)
       settingsUpdated({ ...settings, beta: { ...settings.beta, ...beta } })
     },
     [settings, settingsUpdated]
