@@ -1,13 +1,14 @@
 import { map } from '@s-libs/micro-dash'
 import React, { FC } from 'react'
 import { Button, Text } from 'react-native-elements'
+import { shallowEqual } from 'react-redux'
 import { useAppDispatch } from '../../../hooks/store/useAppDispatch'
 import { useAppSelector } from '../../../hooks/store/useAppSelector'
 import { PaddedRow } from './PaddedRow'
 import { SettingsSection } from './SettingsSection'
 
 export const useLogs = () => {
-  return useAppSelector((state) => state.game.logs)
+  return useAppSelector((state) => state.game.logs, shallowEqual)
 }
 
 export const Diagnostics: FC = () => {

@@ -20,10 +20,11 @@ export const createDeferredActionService: DeferredActionServiceFactory = (config
     if (tid) return
     tid = setTimeout(() => {
       // const start = +new Date()
-      onExecuteDeferredActions(deferredActions)
+      const actionsNow = [...deferredActions]
+      deferredActions.length = 0
+      onExecuteDeferredActions(actionsNow)
       // const end = +new Date()
       // console.log(`Took`, end - start, deferred.length)
-      deferredActions.length = 0
       tid = undefined
     }, DEFERRED_INTERVAL)
   }
