@@ -1,16 +1,7 @@
-import * as admin from 'firebase-admin'
-import { dirname, resolve } from 'path'
 import { createEngine, createRealtimeStorageProvider } from '../engine'
 import { createStore } from '../engine/redux'
 import { Bot } from './BotFileProvider'
 import { RouteService } from './RouteService'
-
-const serviceAccount = require(resolve(dirname(__filename), '../../.secrets/firebase-admin.json'))
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://rini-1234a-default-rtdb.firebaseio.com',
-})
 
 const storage = createRealtimeStorageProvider()
 
