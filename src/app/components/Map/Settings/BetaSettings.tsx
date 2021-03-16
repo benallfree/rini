@@ -1,17 +1,30 @@
+import { map } from '@s-libs/micro-dash'
 import Constants from 'expo-constants'
-import { reloadAsync } from 'expo-updates'
-import React, { FC } from 'react'
+import { fetchUpdateAsync, reloadAsync } from 'expo-updates'
+import React, { FC, useState } from 'react'
 import { Button, CheckBox, Text } from 'react-native-elements'
+import { logger } from '../../../../engine/core/logger'
 import { useBetaSettings } from '../../../hooks/store/useBetaSettings'
 import { PaddedRow } from './PaddedRow'
 import { SettingsSection } from './SettingsSection'
 
 export const BetaSettings: FC = () => {
   const [{ showLocation, showDistances, isUpdateAvailable }, update] = useBetaSettings()
+  const [isDownloading, setIsDownloading] = useState(false)
 
   const handleAppUpdate = () => {
-    if (!isUpdateAvailable) return
-    reloadAsync().catch(console.error)
+    if (!isUpdateAvailable || isDownloading) return
+    setIsDownloading(true)
+    fetchUpdateAsync()
+      .then((res) => {
+        if (res.isNew) {
+          return reloadAsync()
+        }
+      })
+      .catch(console.error)
+      .finally(() => {
+        setIsDownloading(false)
+      })
   }
 
   return (
@@ -32,9 +45,27 @@ export const BetaSettings: FC = () => {
 
       {isUpdateAvailable && (
         <PaddedRow>
-          <Button title={`Update available. Tap to reload.`} onPress={handleAppUpdate}></Button>
+          <Button
+            disabled={isDownloading}
+            title={`Update available. Tap to reload.`}
+            onPress={handleAppUpdate}
+            loading={isDownloading}></Button>
         </PaddedRow>
       )}
+      <PaddedRow>
+        <Button
+          title={`Clear logs`}
+          onPress={() => {
+            logger.clear()
+          }}></Button>
+      </PaddedRow>
+      {map(logger.logs(), (log, i) => {
+        return (
+          <PaddedRow key={i} style={{ flexWrap: 'wrap' }}>
+            <Text>{JSON.stringify(log.args)}</Text>
+          </PaddedRow>
+        )
+      })}
     </SettingsSection>
   )
 }

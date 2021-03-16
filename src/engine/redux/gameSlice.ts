@@ -79,6 +79,9 @@ export const createGameSlice = () => {
         debug('updating settings', action.payload)
         state.settings = action.payload
       },
+      updateAvailabilityUpdated: (state, action: PayloadAction<boolean>) => {
+        state.settings.beta.isUpdateAvailable = action.payload
+      },
     },
   })
 

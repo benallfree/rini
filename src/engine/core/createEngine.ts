@@ -14,6 +14,7 @@ import { logger } from './logger'
 import { Timeout } from './types'
 
 interface Config {
+  isUpdateAvailableDelegate?: () => Promise<boolean>
   onDeferredDispatch: DeferredActionHandler
   store: StoreProvider
   storage: StorageProvider
@@ -21,7 +22,7 @@ interface Config {
 }
 
 export const createEngine = (config: Config) => {
-  const { storage, store, onDeferredDispatch, uid } = config
+  const { storage, store, onDeferredDispatch, uid, isUpdateAvailableDelegate } = config
   const { actions, dispatch, getState, subscribe } = store
 
   const {
@@ -32,6 +33,7 @@ export const createEngine = (config: Config) => {
     nearbyEntityUpdated,
     onlineStatusChanged,
     settingsUpdated,
+    updateAvailabilityUpdated,
   } = actions
 
   const [onPlayerMovementChanged, emitPlayerMovementChanged] = callem<Movement>()
@@ -125,7 +127,7 @@ export const createEngine = (config: Config) => {
             }),
             (state, oldValue, newValue) => {
               const { hasUid, hasPosition } = newValue
-              console.log(`Checking for UID and position`, { hasUid, hasPosition })
+              info(`Checking for UID and position`, { hasUid, hasPosition })
               if (hasUid && hasPosition) {
                 unsub()
                 resolve()
@@ -136,7 +138,26 @@ export const createEngine = (config: Config) => {
 
         // Begin listening for nearby enttity updates
         storage.onGridEntityUpdated(handleGridEntityUpdated)
-        console.log('listening for entity updates')
+        info('listening for entity updates')
+
+        // Check for updates
+        ;(() => {
+          if (!isUpdateAvailableDelegate) return
+          const checkUpdate = () => {
+            debug(`Checking for updates`)
+            isUpdateAvailableDelegate()
+              .then((isAvailable) => {
+                debug(`update is available`, isAvailable)
+                dispatch(updateAvailabilityUpdated(isAvailable))
+              })
+              .catch(error)
+              .finally(() => {
+                debug('resetting timeout')
+                setTimeout(checkUpdate, 5000) // check every 30s
+              })
+          }
+          checkUpdate()
+        })()
 
         dispatch(engineReady(true))
 
