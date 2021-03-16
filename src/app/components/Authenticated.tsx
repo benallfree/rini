@@ -17,7 +17,7 @@ export const Authenticated: FC = ({ children }) => {
         setFirstTime(false)
         if (!user) return
         setIsReady(true)
-        engine.setPlayerUid(user.uid)
+        engine.dispatch.setPlayerUid(user.uid)
         engine.start().catch(console.error)
       })
     })

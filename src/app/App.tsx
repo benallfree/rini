@@ -6,7 +6,6 @@ import { StyleSheet, View } from 'react-native'
 import { Provider } from 'react-redux'
 import { InternetCheck } from './components/InternetCheck'
 import { Root } from './components/Root'
-import { DebugBar } from './DebugBar'
 import { engine } from './engine'
 
 const App: FC = () => {
@@ -16,7 +15,6 @@ const App: FC = () => {
         <View style={styles.container}>
           <StatusBar style="auto" />
           <Root />
-          <DebugBar />
         </View>
       </InternetCheck>
     </Provider>

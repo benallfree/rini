@@ -2,6 +2,7 @@ import 'firebase/auth'
 import { getDistance } from 'geolib'
 import { callem } from '../../callem'
 import { RootState, StoreProvider } from '../redux'
+import { Settings } from '../redux/gameSlice'
 import { EntityId, Movement } from '../storage/Database'
 import {
   EntityUpdatedEvent,
@@ -25,10 +26,11 @@ export const createEngine = (config: Config) => {
   const {
     uidKnown,
     engineReady,
-    playerMovementUpdated: playerPositionUpdated,
+    playerMovementUpdated,
     nearbyEntityRemoved,
     nearbyEntityUpdated,
     onlineStatusChanged,
+    settingsUpdated,
   } = actions
 
   const [onPlayerMovementChanged, emitPlayerMovementChanged] = callem<Movement>()
@@ -152,26 +154,30 @@ export const createEngine = (config: Config) => {
   return {
     store: store.store,
     getState: store.store.getState.bind(store.store),
-
-    updatePlayerPosition: (position: Movement) => {
-      const uid = uidOrDie()
-      // console.log('updating position for ', uid, position)
-      deferredDispatch(() => {
-        dispatch(playerPositionUpdated(position))
-        emitPlayerMovementChanged(position)
-      })
-      // console.log('updatePlayerPosition', uid, position)
-      storage.setEntityMovement(uid, position).catch((e) => console.error(e))
-      // console.log(' queuing Took', end - start)
-    },
-    setPlayerUid: (id: EntityId) => {
-      dispatch(uidKnown(id))
+    dispatch: {
+      updatePlayerMovement: (movement: Movement) => {
+        const uid = uidOrDie()
+        // console.log('updating position for ', uid, position)
+        deferredDispatch(() => {
+          dispatch(playerMovementUpdated(movement))
+          emitPlayerMovementChanged(movement)
+        })
+        // console.log('updatePlayerPosition', uid, position)
+        storage.setEntityMovement(uid, movement).catch((e) => console.error(e))
+        // console.log(' queuing Took', end - start)
+      },
+      setPlayerUid: (id: EntityId) => {
+        dispatch(uidKnown(id))
+      },
+      onlineStatusChanged: (isOnline: boolean) => {
+        console.log({ isOnline })
+        dispatch(onlineStatusChanged(isOnline))
+      },
+      settingsUpdated: (settings: Settings) => {
+        dispatch(settingsUpdated(settings))
+      },
     },
     start,
     onPlayerMovementChanged,
-    onlineStatusChanged: (isOnline: boolean) => {
-      console.log({ isOnline })
-      dispatch(onlineStatusChanged(isOnline))
-    },
   }
 }

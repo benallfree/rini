@@ -6,7 +6,7 @@ export const InternetCheck: FC = ({ children }) => {
   useEffect(() => {
     const connectedRef = db.ref('.info/connected')
     connectedRef.on('value', (snap) => {
-      engine.onlineStatusChanged(!!snap.val())
+      engine.dispatch.onlineStatusChanged(!!snap.val())
     })
   }, [])
   return <>{children}</>

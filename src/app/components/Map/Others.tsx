@@ -6,6 +6,7 @@ import { Text } from 'react-native-elements'
 import { Marker } from 'react-native-maps'
 import { fx } from '../../assets/fx'
 import { engine } from '../../engine'
+import { useBetaSettings } from '../../hooks/store/useBetaSettings'
 import { useNearbyEntityIds } from '../../hooks/store/useNearbyEntityIds'
 import { useNearbyEntityMovement } from '../../hooks/store/useNearbyEntityMovement'
 import { Avatar } from './Avatar'
@@ -66,6 +67,7 @@ const Entity: FC<{ entityId: string }> = (props) => {
     const { id } = state
     api.update(id)
   }, [state])
+  const [{ showDistances }] = useBetaSettings()
   // console.log('Entity', state)
   if (!state) return <></>
   const { latitude, longitude, id, distance } = state
@@ -94,7 +96,7 @@ const Entity: FC<{ entityId: string }> = (props) => {
           <Avatar uid={entityId} size={32} />
         </View>
       </View>
-      <Text>{distance}</Text>
+      {showDistances && <Text>{distance}</Text>}
     </Marker>
   )
 }

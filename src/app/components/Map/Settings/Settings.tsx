@@ -1,12 +1,14 @@
 import React, { FC, useRef, useState } from 'react'
 import { Dimensions, View } from 'react-native'
 import { Grid, Row } from 'react-native-easy-grid'
-import { Icon, Overlay, Text } from 'react-native-elements'
-import { AvatarSettings } from './AvatarSettings'
+import { Badge, Icon, Overlay, Text } from 'react-native-elements'
+import { useBetaSettings } from '../../../hooks/store/useBetaSettings'
+import { BetaSettings } from './BetaSettings'
 
 export const Settings: FC<{
   size?: number
 }> = ({ size = 50 }) => {
+  const [{ isUpdateAvailable }] = useBetaSettings()
   const [isVisible, setVisible] = useState(false)
   const overlayRef = useRef<Overlay>(null)
   const iconSize = size * 0.5
@@ -48,7 +50,7 @@ export const Settings: FC<{
             </View>
           </Row>
           <Row>
-            <AvatarSettings />
+            <BetaSettings />
           </Row>
         </Grid>
       </Overlay>
@@ -61,6 +63,13 @@ export const Settings: FC<{
         }}></View>
       <View style={{ position: 'absolute', top: leftTop, left: leftTop - 1 }}>
         <Icon type="font-awesome-5" name="cog" onPress={() => setVisible(true)} size={iconSize} />
+        {isUpdateAvailable && (
+          <Badge
+            status="error"
+            value="1"
+            containerStyle={{ position: 'absolute', left: 15, top: -5 }}
+          />
+        )}
       </View>
     </View>
   )

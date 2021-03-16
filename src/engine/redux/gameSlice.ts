@@ -3,7 +3,16 @@ import { forEach } from '@s-libs/micro-dash'
 import { getDistance } from 'geolib'
 import { EntityId, Movement } from '../storage/Database'
 import { NearbyEntitiesById, NearbyEntity } from './types'
+
+export interface Settings {
+  beta: {
+    showLocation: boolean
+    showDistances: boolean
+    isUpdateAvailable: boolean
+  }
+}
 export interface SliceState {
+  settings: Settings
   isReady: boolean
   isOnline: boolean
   player: {
@@ -15,6 +24,13 @@ export interface SliceState {
 
 export const createGameSlice = () => {
   const initialState: SliceState = {
+    settings: {
+      beta: {
+        showDistances: true,
+        showLocation: true,
+        isUpdateAvailable: false,
+      },
+    },
     isReady: false,
     isOnline: false,
     player: {},
@@ -57,6 +73,10 @@ export const createGameSlice = () => {
         const e = state.nearbyEntitiesById[id]
         if (!e) return
         e.distance = distance
+      },
+      settingsUpdated: (state, action: PayloadAction<Settings>) => {
+        console.log('updating settings', action.payload)
+        state.settings = action.payload
       },
     },
   })

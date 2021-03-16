@@ -22,7 +22,7 @@ export const createBotRunner = (bot: Bot, routeService: RouteService, mph = 30, 
     const move = () => {
       const { latitude, longitude, heading, speed } = next()
       // console.log({ lat, lng, distanceFromLast })
-      engine.updatePlayerPosition({
+      engine.dispatch.updatePlayerMovement({
         latitude,
         longitude,
         heading,
