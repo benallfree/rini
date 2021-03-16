@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { forEach } from '@s-libs/micro-dash'
 import { getDistance } from 'geolib'
+import { debug } from '../core/logger'
 import { EntityId, Movement } from '../storage/Database'
 import { NearbyEntitiesById, NearbyEntity } from './types'
 
@@ -75,7 +76,7 @@ export const createGameSlice = () => {
         e.distance = distance
       },
       settingsUpdated: (state, action: PayloadAction<Settings>) => {
-        console.log('updating settings', action.payload)
+        debug('updating settings', action.payload)
         state.settings = action.payload
       },
     },
