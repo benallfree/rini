@@ -26,8 +26,8 @@ export const createRealtimeStorageProvider = () => {
       heading,
       speed,
     }
-    console.log('sending to db', path)
-    console.log(JSON.stringify(update, null, 2))
+    // console.log('sending to db', path)
+    // console.log(JSON.stringify(update, null, 2))
     return limiter.schedule(() => {
       return db.ref(path).set(update)
     })

@@ -9,7 +9,7 @@ export const DebugBar: FC = () => {
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false)
 
   useEffect(() => {
-    if (!Device.isDevice) return
+    if (!Device.isDevice || __DEV__) return
     checkForUpdateAsync()
       .then((value) => {
         setIsUpdateAvailable(value.isAvailable)
@@ -27,7 +27,7 @@ export const DebugBar: FC = () => {
       style={{
         position: 'absolute',
         width: '100%',
-        height: 20,
+        height: 50,
         bottom: 0,
         backgroundColor: 'black',
       }}
@@ -38,7 +38,7 @@ export const DebugBar: FC = () => {
             style={{
               color: 'white',
             }}>
-            Revision: {Constants.manifest.releaseId ?? 'Unknown'}
+            Revision: {Constants.manifest.releaseId ?? 'Development Mode'}
           </Text>
         )}
         {isUpdateAvailable && (
