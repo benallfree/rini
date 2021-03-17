@@ -16,6 +16,7 @@ export interface SliceState {
   logs: LogEvent[]
   settings: Settings
   isReady: boolean
+  isBeta: boolean
   isOnline: boolean
   player: {
     uid?: string
@@ -27,10 +28,11 @@ export interface SliceState {
 export const createGameSlice = () => {
   const initialState: SliceState = {
     logs: [],
+    isBeta: false,
     settings: {
       beta: {
-        showDistances: true,
-        showLocation: true,
+        showDistances: false,
+        showLocation: false,
         isUpdateAvailable: false,
       },
     },
@@ -89,6 +91,9 @@ export const createGameSlice = () => {
       },
       clearLogs: (state) => {
         state.logs = []
+      },
+      permitBetaUser: (state, action: PayloadAction<boolean>) => {
+        state.isBeta = action.payload
       },
     },
   })

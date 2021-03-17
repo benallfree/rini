@@ -36,6 +36,7 @@ export const createEngine = (config: Config) => {
     updateAvailabilityUpdated,
     newLogEvent,
     clearLogs,
+    permitBetaUser,
   } = actions
 
   const [onPlayerMovementChanged, emitPlayerMovementChanged] = callem<Movement>()
@@ -215,6 +216,7 @@ export const createEngine = (config: Config) => {
       clearLogs: () => {
         logger.clear()
       },
+      permitBetaUser: (isBeta: boolean) => dispatch(permitBetaUser(isBeta)),
     },
     start,
     onPlayerMovementChanged,

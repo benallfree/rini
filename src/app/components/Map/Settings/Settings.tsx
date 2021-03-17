@@ -2,9 +2,12 @@ import React, { FC, useRef, useState } from 'react'
 import { Dimensions, ScrollView, View } from 'react-native'
 import { Grid, Row } from 'react-native-easy-grid'
 import { Badge, Icon, Overlay, Text } from 'react-native-elements'
+import { info } from '../../../../engine/core/logger'
 import { useBetaSettings } from '../../../hooks/store/useBetaSettings'
+import { useIsBeta } from '../../../hooks/store/useIsBeta'
 import { BetaSettings } from './BetaSettings'
 import { Diagnostics } from './Diagnostics'
+import { UpdateSettings } from './UpdateSettings'
 
 export const Settings: FC<{
   size?: number
@@ -12,6 +15,7 @@ export const Settings: FC<{
   const [{ isUpdateAvailable }] = useBetaSettings()
   const [isVisible, setVisible] = useState(false)
   const overlayRef = useRef<Overlay>(null)
+  const isBeta = useIsBeta()
   const iconSize = size * 0.5
   const leftTop = (size - iconSize) / 2
   return (
@@ -38,24 +42,35 @@ export const Settings: FC<{
         }}>
         <Grid>
           <Row style={{ height: 50, marginBottom: 10 }}>
-            <Text h3 style={{ textAlign: 'center', top: 5, width: '100%' }}>
+            <Text h3 style={{ textAlign: 'center', top: 5, width: '100%', backgroundColor: 'red' }}>
               Settings
             </Text>
             <View style={{ position: 'absolute', right: 10, top: 0, zIndex: 9999 }}>
               <Icon
                 type="font-awesome-5"
                 name="times-circle"
-                onPress={() => setVisible(false)}
+                onPress={() => {
+                  info('close')
+                  setVisible(false)
+                }}
+                containerStyle={{ backgroundColor: 'green' }}
                 size={50}
               />
             </View>
           </Row>
           <ScrollView>
+            {isBeta && (
+              <Row>
+                <BetaSettings />
+              </Row>
+            )}
+            {isBeta && (
+              <Row>
+                <Diagnostics />
+              </Row>
+            )}
             <Row>
-              <BetaSettings />
-            </Row>
-            <Row>
-              <Diagnostics />
+              <UpdateSettings />
             </Row>
           </ScrollView>
         </Grid>
