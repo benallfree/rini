@@ -9,7 +9,7 @@
     "icon": "./src/app/assets/generated/icon.png",
     "splash": {
       "image": "./src/app/assets/generated/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "updates": {
