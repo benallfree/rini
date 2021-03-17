@@ -27,6 +27,10 @@ const Footer = ({ siteTitle }) => (
         >
           Contact Us
         </a>
+        |
+        <a style={{ textDecoration: "none" }} href="/privacy">
+          Privacy Policy
+        </a>
       </div>
       <div style={{ color: COLORS.gray }}>
         © {new Date().getFullYear()}

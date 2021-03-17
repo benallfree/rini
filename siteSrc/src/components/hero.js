@@ -32,9 +32,9 @@ const Header = ({ siteTitle }) => (
     </h3>
     <h1 style={{ textAlign: "center" }}>Say Hi.</h1>
     <p style={{ textAlign: "center", maxWidth: 440 }}>
-      Rini is the way to say hi to other Tesla drivers while you're out. I miss
-      those days in my Jeep. Rini will notify you when other Tesla drivers are
-      around and want to play.
+      Rini is the way to say hi to other Tesla drivers. I miss those days in my
+      Jeep. Everyone gets a totally unique avatar, too. Rini will notify you
+      when other Tesla drivers are around and want to play.
     </p>
     <Button>Rini for iOS</Button>
     <div style={{ margin: 60, width: `250px`, position: "relative" }}>

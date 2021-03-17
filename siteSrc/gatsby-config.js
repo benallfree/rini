@@ -1,9 +1,9 @@
 module.exports = {
   siteMetadata: {
-    title: `Starter Landing Page`,
-    description: `A barebone landing page starter with some minimal styles.`,
-    author: `@gillkyle`,
-    siteUrl: `https://gatsby-starter-landing-page.netlify.com`,
+    title: `Rini`,
+    description: `An app that lets you say hi to other Tesla drivers.`,
+    author: `Ben Allfree`,
+    siteUrl: `https://riniapp.com`,
   },
   plugins: [
     `gatsby-plugin-react-helmet`,
