@@ -5,7 +5,7 @@ import { Text } from 'react-native-elements'
 
 export const SettingsSection: FC<{ title: string }> = ({ title, children }) => {
   const titleWidth = 300
-  const titleHeight = 30
+  const titleHeight = 40
   const titleRadius = titleHeight / 2
   return (
     <Grid>
