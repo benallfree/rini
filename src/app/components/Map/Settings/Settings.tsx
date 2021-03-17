@@ -42,7 +42,7 @@ export const Settings: FC<{
         }}>
         <Grid>
           <Row style={{ height: 50, marginBottom: 10 }}>
-            <Text h3 style={{ textAlign: 'center', top: 5, width: '100%', backgroundColor: 'red' }}>
+            <Text h3 style={{ textAlign: 'center', top: 5, width: '100%' }}>
               Settings
             </Text>
             <View style={{ position: 'absolute', right: 10, top: 0, zIndex: 9999 }}>
@@ -53,12 +53,14 @@ export const Settings: FC<{
                   info('close')
                   setVisible(false)
                 }}
-                containerStyle={{ backgroundColor: 'green' }}
                 size={50}
               />
             </View>
           </Row>
           <ScrollView>
+            <Row>
+              <UpdateSettings />
+            </Row>
             {isBeta && (
               <Row>
                 <BetaSettings />
@@ -69,9 +71,6 @@ export const Settings: FC<{
                 <Diagnostics />
               </Row>
             )}
-            <Row>
-              <UpdateSettings />
-            </Row>
           </ScrollView>
         </Grid>
       </Overlay>

@@ -24,7 +24,7 @@ export const Authenticated: FC = ({ children }) => {
   }, [])
 
   useEffect(() => {
-    // auth.signOut().catch(console.error)
+    auth.signOut().catch(console.error)
     const unsub = auth.onAuthStateChanged((user: firebase.User | null) => {
       unstable_batchedUpdates(() => {
         setFirstTime(false)
