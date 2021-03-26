@@ -7,7 +7,10 @@
     "app:ios": "expo start --ios",
     "app:web": "expo start --web",
     "app:eject": "expo eject",
-    "bot:dev": "ts-node-dev --respawn --transpile-only src/bot/run.ts"
+    "bot:dev": "ts-node-dev --respawn --transpile-only src/bot/run.ts",
+    "app:build": "expo build:ios",
+    "app:submit": "eas submit --url=",
+    "app:publish": "expo publish"
   },
   "dependencies": {
     "@dicebear/avatars": "^4.5.4",
@@ -85,6 +88,7 @@
     "@typescript-eslint/eslint-plugin": "^4.16.1",
     "@typescript-eslint/parser": "^4.16.1",
     "babel-plugin-replace-ts-export-assignment": "^0.0.2",
+    "eas-cli": "^0.7.0",
     "eslint": "^7.21.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-config-universe": "^7.0.1",
