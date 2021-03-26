@@ -36,7 +36,13 @@ const Header = ({ siteTitle }) => (
       Jeep. Everyone gets a totally unique avatar, too. Rini will notify you
       when other Tesla drivers are around and want to play.
     </p>
-    <Button>Rini for iOS</Button>
+    <Button
+      onClick={() =>
+        (window.location = "https://apps.apple.com/us/app/rini/id1550533577")
+      }
+    >
+      Rini for iOS
+    </Button>
     <div style={{ margin: 60, width: `250px`, position: "relative" }}>
       <div style={{ clipPath: "inset(2% 5% round 2% 5%)" }}>
         <MockupContent />

@@ -3,8 +3,9 @@ import React from "react"
 import { COLORS, BORDER_RADIUS, GRADIENT } from "../styles/constants"
 import "../styles/button.css"
 
-const Button = ({ children }) => (
+const Button = ({ children, ...rest }) => (
   <button
+    {...rest}
     style={{
       padding: ".5rem 2.5rem",
       color: COLORS.lightWhite,
