@@ -6,10 +6,8 @@ export const Pill: FC = (props) => {
   return (
     <View
       style={{
-        marginBottom: 5,
-        flex: 1,
         width: 50,
-        flexDirection: 'column',
+        flex: 1,
       }}>
       {children}
     </View>

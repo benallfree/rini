@@ -1,5 +1,6 @@
 import React, { FC } from 'react'
 import { ThemeProvider } from 'react-native-elements'
+import FlashMessage from 'react-native-flash-message'
 import { Authenticated } from './Authenticated'
 import { Engine } from './Engine'
 import { GameRoot } from './GameRoot'
@@ -16,6 +17,7 @@ export const Root: FC = () => {
           </Engine>
         </Located>
       </Authenticated>
+      <FlashMessage position="bottom" />
     </ThemeProvider>
   )
 }

@@ -137,7 +137,7 @@ export const Map: FC = () => {
           onOverviewPress={handleResetToOverview}
           onNavigatePress={handleResetToDriving}
           width={60}
-          height={200}
+          height={300}
         />
       </View>
       <Overlay
